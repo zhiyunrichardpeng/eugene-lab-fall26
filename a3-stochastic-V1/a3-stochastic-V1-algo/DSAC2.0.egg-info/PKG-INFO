@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: DSAC2.0
+Version: 1.1.0
+Summary: Distributional Soft Actor-Critic 2.0
+Home-page: https://gitee.com/tsinghua-university-iDLab-GOPS/gops
+Author: Intelligent Driving Lab (iDLab)-Jingliang Duan
+Requires-Python: >=3.6
+Requires-Dist: torch>=1.6.0
+Requires-Dist: numpy>1.16.0
+Requires-Dist: ray>=1.0.0
+Requires-Dist: gym==0.23.1
+Requires-Dist: pygame
+Requires-Dist: box2d
+Requires-Dist: pandas
+Requires-Dist: tensorboard>=2.5.0
+Requires-Dist: matplotlib
+Requires-Dist: pyglet
+Requires-Dist: seaborn
+Requires-Dist: scipy
+Requires-Dist: slxpy
+Requires-Dist: openpyxl

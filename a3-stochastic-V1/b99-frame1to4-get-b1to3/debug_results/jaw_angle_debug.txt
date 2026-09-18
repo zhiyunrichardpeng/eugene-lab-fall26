@@ -1,0 +1,42 @@
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Angle between jaws: 0.00 degrees
+------------------------
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Angle between jaws: 0.00 degrees
+------------------------
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Angle between jaws: 0.00 degrees
+------------------------
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Angle between jaws: 0.00 degrees
+------------------------
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Angle between jaws: 0.00 degrees
+------------------------
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Angle between jaws: 0.00 degrees
+------------------------
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Angle between jaws: 0.00 degrees
+------------------------

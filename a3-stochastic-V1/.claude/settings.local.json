@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python fix_json_paths.py:*)",
+      "Bash(python -c \"import json, glob, os; db_path = ''deformation_path_db.json''; base = ''C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/results/DSAC_V2_m1_vertexMove_Va003/job_251201-102910''; subdirs = glob.glob(os.path.join(base, ''*/'')); print(''Found subdirs:'', subdirs if subdirs else ''None''); latest = max(subdirs, key=os.path.getmtime).replace(''\\\\'', ''/'').rstrip(''/'') if subdirs else base; print(''Latest path:'', latest)\")",
+      "Bash(python:*)",
+      "Bash(del \"c:\\Users\\zpa18\\a3-stochastic-V1\\automation\\check_and_fix_phoneme_IY_path.py\")",
+      "Bash(timeout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

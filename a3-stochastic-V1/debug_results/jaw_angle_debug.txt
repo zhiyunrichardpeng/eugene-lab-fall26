@@ -1,0 +1,6 @@
+
+=== Jaw Angle Calculation ===
+Normal vector 1: [ 7.53168205e-07 -4.65271339e-01 -8.85168109e-01]
+Normal vector 2: [ 8.54551732e-07 -5.11026615e-01 -8.59564889e-01]
+Angle between jaws: 3.00 degrees
+------------------------
