@@ -976,7 +976,7 @@ def main(x_bar):
                 
                 # x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave
 
-                # # folder_path = str(a3_stochastic_relative_path /b98-sampling-joint\joint_positions\joint_position_ooc_r"
+                # # folder_path = r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r"
                 # # sys.path.insert(0, folder_path)
                 # # # Call the function and get the combined x_joint_position_1
                 # # x_joint_combined = combine_x_joint_positions_from_folder(folder_path)

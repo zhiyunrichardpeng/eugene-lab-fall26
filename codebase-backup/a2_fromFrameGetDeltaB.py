@@ -26,15 +26,15 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
     #import numpy as np
 
     import sys
-    sys.path.insert(0, str(a3_stochastic_, elative_path) / "a3-stochasstic-V1-algo"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "a3-stochastic-V1-algo" ,"example_train"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "a3-stochastic-V1-algo", "env_gym"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "a1-blendshape-guided-animation-pipeline", "database"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "300joints_suite_good_old"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "joint_positions", "joint_position_ooc_l"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "joint_positions", "joint_position_ooc_r"))
-    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "joint_positions", "joint_position_frontalis"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochasstic-V1-algo"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline" / "database"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "300joints_suite_good_old"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "joint_positions" / "joint_position_ooc_l"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "joint_positions" / "joint_position_ooc_r"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "joint_positions" / "joint_position_frontalis"))
 
 
     import matplotlib.pyplot as plt

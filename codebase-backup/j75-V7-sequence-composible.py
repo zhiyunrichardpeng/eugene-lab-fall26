@@ -519,7 +519,7 @@ print(f"  Saved combined: {combined_output_path}")
 # Add new overlap-aware entries to the database so that h99-UI-mayascipt-V1.py
 # can look up each transition individually with the overlap baked in.
 
-db_path = str(a3_stochastic_relative_path / "automation", "deformation_path_db.json")
+db_path = str(a3_stochastic_relative_path / "automation"/ "deformation_path_db.json")
 
 print(f"\n--- Updating deformation_path_db.json ---")
 

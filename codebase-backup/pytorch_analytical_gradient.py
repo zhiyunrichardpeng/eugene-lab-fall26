@@ -295,8 +295,8 @@ def run_standalone_experiment():
     
     # 1. Initialize the calculator with your REAL Maya data
     calc = AnalyticalGradientCalculator(
-        str(a3_stochastic_relative_path / "automation", "oor_bind_pose.json"),
-        str(a3_stochastic_relative_path / "automation", "oor_skin_weights.json")
+        str(a3_stochastic_relative_path / "automation" / "oor_bind_pose.json"),
+        str(a3_stochastic_relative_path / "automation" / "oor_skin_weights.json")
     )
     
     # 2. Create a challenging target mesh (e.g. moving all landmarks by some known amounts)

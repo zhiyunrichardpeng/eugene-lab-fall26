@@ -17,7 +17,7 @@ sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a1-blendshape-guided-animation-pipeline\database")
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo", "training", "analysic_gradient"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "training"/ "analysic_gradient"))
 
 import importlib
 from pytorch_analytical_gradient import AnalyticalGradientCalculator
@@ -156,29 +156,29 @@ class Evaluator:
         self.phase_manager.current_phase = phase  # Set the current phase        
         # 1. Instantiate the specific analytical calculators for all tissues
         self.analytical_calculator = AnalyticalGradientCalculator(
-            str(a3_stochastic_relative_path / "automation", "oor_bind_pose.json"),
-            str(a3_stochastic_relative_path / "automation", "oor_skin_weights.json"),
+            str(a3_stochastic_relative_path / "automation"/ "oor_bind_pose.json"),
+            str(a3_stochastic_relative_path / "automation"/ "oor_skin_weights.json"),
             vertex_index=self.vertex_index
         )
         self.analytical_calculator_jaw = AnalyticalGradientCalculator(
-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation", "jaw_bind_pose.json"), 
-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation", "jaw_skin_weights.json"), 
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_bind_pose.json"), 
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_skin_weights.json"), 
             vertex_index=self.vertex_jaw_index,
-            joint_pivots_json_path=str(a3_stochastic_relative_path / "automation", "jaw_joint_pivots.json")
+            joint_pivots_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_joint_pivots.json")
         )
         self.analytical_calculator_ooc_l = AnalyticalGradientCalculator(
-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation", "ooc_l_bind_pose.json"),
-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation", "ooc_l_skin_weights.json"),
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_bind_pose.json"),
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_skin_weights.json"),
             vertex_index=self.vertex_ooc_l_index
         )
         self.analytical_calculator_ooc_r = AnalyticalGradientCalculator(
             bind_pose_json_path=str(a3_stochastic_relative_path / "automation", "ooc_r_bind_pose.json"),
-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation", "ooc_r_skin_weights.json"),
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_skin_weights.json"),
             vertex_index=self.vertex_ooc_r_index
         )
         self.analytical_calculator_frontalis = AnalyticalGradientCalculator(
-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation", "frontalis_bind_pose.json"),
-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation", "frontalis_skin_weights.json"),
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_bind_pose.json"),
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_skin_weights.json"),
             vertex_index=self.vertex_frontalis_index
         )
 

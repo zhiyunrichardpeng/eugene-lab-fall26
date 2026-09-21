@@ -17,6 +17,7 @@ import time
 import datetime
 import re
 import sys
+from config import a3_stochastic_relative_path
 
 try:
     import matplotlib.pyplot as plt
@@ -35,7 +36,7 @@ HAND_TRANSFORM = "hand"           # The transform node of your hand/finger zBone
 IMPACT_AXIS = "tx"                # The axis to translate the hand towards the cheek
 IMPACT_MAGNITUDE = -6.133346      # The distance the hand moves to penetrate the cheek
 
-OUTPUT_DIR = os.path.join(a3_stochastic_relative_path,automation"
+OUTPUT_DIR = os.path.join(a3_stochastic_relative_path, "automation")
 
 # Target vertices to track force propagation
 FINGER_VERTEX = f"{HAND_TRANSFORM}.vtx[100]"
@@ -87,7 +88,7 @@ def run_playblast():
         percent=100
     )
     print(f"Playblast Complete in {time.time() - start_time:.2f} seconds.")
-    VIDEO_SCRIPT = os.path.join(a3_stochastic_relative_path,b99-frame1to4-get-b1to3\d2 helper functions\make_playblast_video.py"
+    VIDEO_SCRIPT = os.path.join(a3_stochastic_relative_path, "b99-frame1to4-get-b1to3", "d2 helper functions", "make_playblast_video.py")
     print("Running video generation script...")
     try:
         with open(VIDEO_SCRIPT, "r") as f:
@@ -234,7 +235,7 @@ def main(auto_playblast=False):
         
         if FINGER_CLAP_ENABLED:
             print("[PBD] Initializing Custom Physics Solver with Kinematic Push...")
-            impact_json_path = os.path.join(a3_stochastic_relative_path,automation\impact_area_vertices.json"
+            impact_json_path = os.path.join(a3_stochastic_relative_path, "automation", "impact_area_vertices.json")
             try:
                 with open(impact_json_path, 'r') as f:
                     skin_vertices = json.load(f)
