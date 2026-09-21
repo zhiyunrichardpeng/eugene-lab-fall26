@@ -40,9 +40,10 @@ import datetime
 import csv
 
 import importlib
+from config import a3_stochastic_relative_path
 
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
+sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline", "database"))
+sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint", "300joints_suite_good_old"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
 
 import dataV22
@@ -2336,7 +2337,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                 import numpy as np
                 # import sys
-                sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
+                sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline", "database"))
                 import importlib
 
                 # import dataV22_after_deform
@@ -3345,7 +3346,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                         import numpy as np
                         # import sys
-                        sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
+                        sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline", "database"))
                         import importlib
 
                         # import dataV22_after_deform

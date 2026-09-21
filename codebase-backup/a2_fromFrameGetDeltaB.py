@@ -1,8 +1,3 @@
-
-
-
-
-
 def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFunctional, x_ooc_r_joint_interFunctional, x_frontalis_joint_interFunctional, 
                           x_jaw_joint_rotation_interFunctional, s_next_interFunctional, s_jaw_next_interFunctional, 
                           s_ooc_l_next_interFunctional, s_ooc_r_next_interFunctional, s_frontalis_next_interFunctional,
@@ -27,18 +22,19 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
     import argparse
     import os
+    from config import a3_stochastic_relative_path
     #import numpy as np
 
     import sys
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\example_train")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\env_gym")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+    sys.path.insert(0, str(a3_stochastic_, elative_path) / "a3-stochasstic-V1-algo"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "a3-stochastic-V1-algo" ,"example_train"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "a3-stochastic-V1-algo", "env_gym"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "a1-blendshape-guided-animation-pipeline", "database"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "300joints_suite_good_old"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "joint_positions", "joint_position_ooc_l"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "joint_positions", "joint_position_ooc_r"))
+    sys.path.insert(0, str(a3_stochastic_relative_path) / "b98-sampling-joint", "joint_positions", "joint_position_frontalis"))
 
 
     import matplotlib.pyplot as plt
@@ -417,7 +413,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         ################################################
         # 7. Data savings
         #parser.add_argument("--save_folder", type=str, default= "/home/wangwenxuan/gops_idp/gops/results/DSAC2/humanoid_r_0.2_sb_20_si_1_2")
-        parser.add_argument("--save_folder", type=str, default= None)  #r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\results\DSAC_V2_m1_vertexMove_Va001\rewardOutput_001"
+        parser.add_argument("--save_folder", type=str, default= None)  #str(a3_stochastic_relative_path) / "a3-stochastic-V1-algo", "results", "DSAC_V2_m1_vertexMove_Va001", "rewardOutput_001"
         # Save value/policy every N updates
         parser.add_argument("--apprfunc_save_interval", type=int, default=5000)
 
@@ -474,7 +470,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
             
 
             # Save the plot to a file
-            output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\d83 initiate rest to AU12 smile"
+            output_folder = r"C:", "keyLabLocal_D", "a3-stochastic-V1-backup-and-results", "backup", "d83 initiate rest to AU12 smile"
             output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
             plt.savefig(output_file, dpi=300, bbox_inches='tight')
             plt.close()     
@@ -706,7 +702,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # max_array_jaw = np.maximum(x_jaw_bar_conca, x_jaw_conca)
         # min_array_jaw = np.minimum(x_jaw_bar_conca, x_jaw_conca)  
 
-        # print("vertices dimention N", N, "\n  joints dimention n is ", n, "\n  joint_num is ", joint_num, "\n  vertices_num is ", vertices_num)
+        # print("vertices dimention N", N, "", "n  joints dimention n is ", n, "", "n  joint_num is ", joint_num, "", "n  vertices_num is ", vertices_num)
 
 
         x_bar_conca = np.asarray(x_bar_conca)
@@ -949,7 +945,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         #     expected_total_steps_for_jaw_phase2 = 33076 
         #     rotation_anatomy_limit_phase2 = 0.00030677
 
-        # print("\nParameters ready for use in your simulation:")
+        # print("", "nParameters ready for use in your simulation:")
         # print(f"expected_total_steps_for_jaw = {expected_total_steps_for_jaw}")
         # print(f"rotation_anatomy_limit = {rotation_anatomy_limit}")
 
@@ -974,7 +970,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         #     UNIT_PRIME_jaw_translate = rotation_anatomy_limit
 
         
-        rest_pose_rotational_position_degree = -5.2205880446952335  # or 5.43429431912 if using 0.1 case in "C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250604-025434\250604-025448"
+        rest_pose_rotational_position_degree = -5.2205880446952335  # or 5.43429431912 if using 0.1 case in "C:", "keyLabLocal_D", "a3-stochastic-V1-backup-and-results", "results", "DSAC_V2_m1_vertexMove_Va003", "job_250604-025434", "250604-025448"
 
 
         max_expected_work = 0.45 # Joule, set by past accumulated work done by muscle 's  plot.
@@ -1023,7 +1019,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
 
         
-        # previous_pose_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250428-184837\250428-184853"
+        # previous_pose_folder = r"C:", "keyLabLocal_D", "a3-stochastic-V1-backup-and-results", "results", "DSAC_V2_m1_vertexMove_Va003", "job_250428-184837", "250428-184853"
         debug_mode = False
         
         if debug_mode == True:
@@ -1196,7 +1192,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
                 'maya_file_to_open': maya_file_to_open,
                 })
 
-        print(" \n\n\n *************************** max_iteration, step_counter_internal_max, initial_distance, distance_min, initial_distance ooc r, distance_min ooc r, initial_distance ooc l, distance_min ooc l,  initial_distance frontalis, distance_min frontalis, UNIT_PRIME", 
+        print(" ", "n", "n", "n *************************** max_iteration, step_counter_internal_max, initial_distance, distance_min, initial_distance ooc r, distance_min ooc r, initial_distance ooc l, distance_min ooc l,  initial_distance frontalis, distance_min frontalis, UNIT_PRIME", 
               args['max_iteration'], args['step_counter_internal_max'], initial_distance, args['distance_min'], 
               initial_ooc_r_distance, args['distance_ooc_r_min'], 
               initial_ooc_l_distance, args['distance_ooc_l_min'], 
@@ -1214,7 +1210,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # code source
 
         with open(args['save_folder'] + "/log" + str(i_func) +".txt", 'w') as f:
-            print("log starts \n \n", file = f)  
+            print("log starts ", "n ", "n", file = f)  
 
 
         with open(args['save_folder'] + "/log" + str(i_func) +".txt", 'a') as f:
@@ -1274,24 +1270,24 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
         # toc = time.time()
         # with open(args['save_folder'] + "/log" + str(i_func) +".txt", 'a') as f:
-        #     print("\n ----- Computation time = " + str(  round(   (toc - tic)/60 ,1)    ) + "m", file = f) 
+        #     print("", "n ----- Computation time = " + str(  round(   (toc - tic)/60 ,1)    ) + "m", file = f) 
         def log_computation_time():
             toc = time.time()  # End time using time.time()
             elapsed_minutes = round((toc - tic) / 60, 1)
             with open(args['save_folder'] + "/log" + str(i_func) + ".txt", 'a') as f:
-                print("\n ----- Computation time = " + str(elapsed_minutes) + "m", file=f)
+                print("", "n ----- Computation time = " + str(elapsed_minutes) + "m", file=f)
 
         log_computation_time()
 
         with open(args['save_folder'] + "/log" + str(i_func) + ".txt", 'a') as f:
-            print("\n vertex_index = ", vertex_index, file=f)
+            print("", "n vertex_index = ", vertex_index, file=f)
 
 
         ################################################
         # Plot and save training figures
         #plot_all(args["save_folder"])
 
-        # controls the save to csv with the RL data to a folder called "data", and contains around 10 files, from "a3-stochastic-V1-algo\utils\tensorboard_setup.py"
+        # controls the save to csv with the RL data to a folder called "data", and contains around 10 files, from "a3-stochastic-V1-algo", "utils", "tensorboard_setup.py"
         # save_tb_to_csv(args["save_folder"])
 
         # print("Plot & Save are finished!")

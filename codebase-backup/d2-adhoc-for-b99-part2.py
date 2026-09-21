@@ -17,15 +17,18 @@ neutral_to_other_pose_flag = 1
 debug_mode_vsCode = 0
 
 import sys
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\example_train")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\env_gym")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+import os
+from config import a3_stochastic_relative_path
+
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo", "example_train"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo", "env_gym"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline", "database"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint", "300joints_suite_good_old"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint", "joint_positions", "joint_position_ooc_l"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint", "joint_positions", "joint_position_ooc_r"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint", "joint_positions", "joint_position_frontalis"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
 
 

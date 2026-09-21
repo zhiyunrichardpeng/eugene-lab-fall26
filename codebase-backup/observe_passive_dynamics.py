@@ -21,7 +21,7 @@ BONE_REFERENCE = "middleres_skull"
 SKIN_VERTEX = "skin_cloth_copy_v5_pull_back.vtx[11109]" 
 MUSCLE_VERTEX = "middleres_OrbicularisOris.vtx[100]"
 
-OUTPUT_DIR = r"C:\Users\zpa18\a3-stochastic-V1\automation"
+OUTPUT_DIR = os.path.join(a3_stochastic_relative_path,automation"
 CSV_FILE_PATH = os.path.join(OUTPUT_DIR, "observed_passive_dynamics_V3_SKIN.csv")
 PLOT_FILE_PATH = os.path.join(OUTPUT_DIR, "observed_passive_dynamics_plot_V3_SKIN.pdf")
 

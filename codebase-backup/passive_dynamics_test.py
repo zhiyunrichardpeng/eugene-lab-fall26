@@ -9,6 +9,7 @@ import maya.api.OpenMaya as om
 import csv
 import os
 import math
+from config import a3_stochastic_relative_path
 
 try:
     import matplotlib.pyplot as plt
@@ -29,7 +30,7 @@ FRAMES_PER_LOOP = 10
 SHAKE_END_FRAME = SHAKE_START_FRAME + (SHAKE_LOOPS * FRAMES_PER_LOOP)
 END_FRAME = SHAKE_END_FRAME + 40 # Give it time to settle afterwards
 
-OUTPUT_DIR = r"C:\Users\zpa18\a3-stochastic-V1\automation"
+OUTPUT_DIR = os.path.join(a3_stochastic_relative_path," automation")
 CSV_FILE_PATH = os.path.join(OUTPUT_DIR, "passive_dynamics_results_V5.csv")
 PLOT_FILE_PATH = os.path.join(OUTPUT_DIR, "passive_dynamics_plot_V5.pdf")
 

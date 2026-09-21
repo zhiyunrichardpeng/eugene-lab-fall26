@@ -103,14 +103,14 @@ class LinearBlendSkinning(nn.Module):
             lbs_deformation = torch.matmul(self.weights, translations) # (N, K) @ (K, 3) -> (N, 3)
             lbs_vertices = self.bind_pose + lbs_deformation
 
-        # print("\n" + "="*50)
+        # print(""n" + "="*50)
         # print("🔍 DEBUG [pytorch_analytical_gradient.py - forward]")
         # print(f"  self.bind_pose shape:  {self.bind_pose.shape} (N, 3)")
         # print(f"  self.weights shape:    {self.weights.shape} (N, K)")
         # print(f"  translations shape:    {translations.shape}")
         # print(f"  lbs_vertices shape:    {lbs_vertices.shape} (Expected N, 3)")
         # print(f"  positions shape:       {positions.shape} (Input observation)")
-        # print("="*50 + "\n")
+        # print("="*50 + ""n")
 
         # 2. Compute the true residual from the observation
         # We use .detach() so PyTorch treats this residual as a constant offset, NOT a differentiable variable
@@ -290,11 +290,13 @@ class AnalyticalGradientCalculator:
 def run_standalone_experiment():
     print("\n=== Running Standalone Analytical Gradient Experiment (Set B) ===")
     import time
+    import os
+    from config import a3_stochastic_relative_path
     
     # 1. Initialize the calculator with your REAL Maya data
     calc = AnalyticalGradientCalculator(
-        r"C:\Users\zpa18\a3-stochastic-V1\automation\oor_bind_pose.json",
-        r"C:\Users\zpa18\a3-stochastic-V1\automation\oor_skin_weights.json"
+        str(a3_stochastic_relative_path / "automation", "oor_bind_pose.json"),
+        str(a3_stochastic_relative_path / "automation", "oor_skin_weights.json")
     )
     
     # 2. Create a challenging target mesh (e.g. moving all landmarks by some known amounts)

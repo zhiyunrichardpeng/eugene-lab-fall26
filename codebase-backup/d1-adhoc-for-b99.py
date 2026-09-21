@@ -1,15 +1,17 @@
 import datetime
 import os
 import sys
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\example_train")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+from config import a3_stochastic_relative_path
+
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline" / "database"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"/ "300joints_suite_good_old"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"/ "joint_positions"/ "joint_position_ooc_l"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"/ "joint_positions"/ "joint_position_ooc_r"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"/ "joint_positions"/ "joint_position_frontalis"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b95-debug-use")
+sys.path.insert(0, str(a3_stochastic_relative_path / "b95-debug-use"))
 from generate_debug_output import generate_output
 import maya.standalone
 import maya.cmds as cmds
@@ -545,9 +547,9 @@ importlib.reload(dataV22)
 import dataV22_for_rest_adhoc
 importlib.reload(dataV22_for_rest_adhoc)
 
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint" / "joint_positions" / "joint_position_ooc_l"))
+sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint" / "joint_positions" / "joint_position_ooc_r"))
+sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint" / "joint_positions" / "joint_position_frontalis"))
 
 import joint_position_ooc_l_base_0
 import joint_position_ooc_l_base_pose11_0
@@ -974,7 +976,7 @@ def main(x_bar):
                 
                 # x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave
 
-                # # folder_path = r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r"
+                # # folder_path = str(a3_stochastic_relative_path /b98-sampling-joint\joint_positions\joint_position_ooc_r"
                 # # sys.path.insert(0, folder_path)
                 # # # Call the function and get the combined x_joint_position_1
                 # # x_joint_combined = combine_x_joint_positions_from_folder(folder_path)

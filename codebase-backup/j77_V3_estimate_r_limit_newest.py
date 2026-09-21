@@ -10,6 +10,7 @@ def calculate_rotation_parameters():
     import sys
     from os import path
     import importlib
+    from config import a3_stochastic_relative_path
 
     empirical_factor = 9.95657316385
     # empirical_factor = 85/48.52657980700467 # 9.95657316385
@@ -38,7 +39,7 @@ def calculate_rotation_parameters():
     # Copy file from source to destination (Kept as is)
     # copy_from = r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/dataV22_phoneme_N.py"
     copy_from = r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/dataV22_phoneme_N.py"
-    copy_to = r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database\dataV22.py"
+    copy_to = str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline", "database", "dataV22.py")
     shutil.copy(copy_from, copy_to)
 
     # maya_file_to_open = r"C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb"
@@ -50,8 +51,8 @@ def calculate_rotation_parameters():
     sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
     sys.path.insert(0, r"C:\Users\zpa18\a1-blendshape-guided-animation-pipeline\database")
     sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo")
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
+    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint", "300joints_suite_good_old"))
 
     # Module imports (Kept as is)
     import joint_position
