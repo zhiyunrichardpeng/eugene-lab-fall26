@@ -6,7 +6,7 @@ import glob
 # 1. MAIN CONFIGURATION
 # ==========================================
 # The base name of your playblast sequence without the numbers/extension
-BASE_NAME = "unnamed_playblast_20260710_111139"
+BASE_NAME = "unnamed_playblast_20260806_003949"
 
 # TODO: Update this path to where your playblast PNG files are actually saved!
 # For example: r"C:\Users\zpa18\Documents\maya\projects\default\images"

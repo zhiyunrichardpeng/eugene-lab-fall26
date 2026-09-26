@@ -1,8 +1,5 @@
-one night task batch 148 tasks done
+backup the codebase before release to undergrad 2026 fall
 
-using three conponent of the objective function. equal weight to them. 0.34, 0.33, 0.33.
 
-all results looks good. around 5 min per task.
-
-the path db json is refilled with new paths.
+used the code base from "i73 finished the highreso video next is landmark increase"
 

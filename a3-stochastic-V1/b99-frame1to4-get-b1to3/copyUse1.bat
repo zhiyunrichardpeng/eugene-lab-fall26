@@ -1,5 +1,5 @@
 @echo off
-set BACKUP_FOLDER_NAME="h19 backup before clean the project folder then share to team"
+set BACKUP_FOLDER_NAME="i43 backup the codebase before release to undergrad 2026 fall"
 set BACKUP_PATH="C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\"
 
 mkdir %BACKUP_PATH%%BACKUP_FOLDER_NAME%
@@ -90,3 +90,6 @@ copy "C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d2 helper function
 copy "C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d2 helper functions\make_playblast_video.py" %BACKUP_PATH%%BACKUP_FOLDER_NAME%
 
 copy "C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\training\analysic_gradient\pytorch_analytical_gradient.py" %BACKUP_PATH%%BACKUP_FOLDER_NAME%
+
+@REM copy "C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\d2-possion-sampling.py" %BACKUP_PATH%%BACKUP_FOLDER_NAME%
+@REM copy "C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old\joint_position_oor_four_hundred.py" %BACKUP_PATH%%BACKUP_FOLDER_NAME%

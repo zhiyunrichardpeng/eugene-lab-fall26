@@ -6,6 +6,7 @@ import math
 import os
 
 from os import path
+from config import a3_stochastic_relative_path
 
 from utils.initialization import create_env
 from utils.common_utils import set_seed
@@ -16,7 +17,7 @@ sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a1-blendshape-guided-animation-pipeline\database")
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\training\analysic_gradient")
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "training"/ "analysic_gradient"))
 
 import importlib
 from pytorch_analytical_gradient import AnalyticalGradientCalculator
@@ -153,32 +154,31 @@ class Evaluator:
         self.next_info = {}
         # self.phase_2_flag = 0
         self.phase_manager.current_phase = phase  # Set the current phase        
-
         # 1. Instantiate the specific analytical calculators for all tissues
         self.analytical_calculator = AnalyticalGradientCalculator(
-            r"C:\Users\zpa18\a3-stochastic-V1\automation\oor_bind_pose.json",
-            r"C:\Users\zpa18\a3-stochastic-V1\automation\oor_skin_weights.json",
+            str(a3_stochastic_relative_path / "automation"/ "oor_bind_pose.json"),
+            str(a3_stochastic_relative_path / "automation"/ "oor_skin_weights.json"),
             vertex_index=self.vertex_index
         )
         self.analytical_calculator_jaw = AnalyticalGradientCalculator(
-            bind_pose_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\jaw_bind_pose.json", 
-            skin_weights_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\jaw_skin_weights.json", 
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_bind_pose.json"), 
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_skin_weights.json"), 
             vertex_index=self.vertex_jaw_index,
-            joint_pivots_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\jaw_joint_pivots.json"
+            joint_pivots_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_joint_pivots.json")
         )
         self.analytical_calculator_ooc_l = AnalyticalGradientCalculator(
-            bind_pose_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\ooc_l_bind_pose.json",
-            skin_weights_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\ooc_l_skin_weights.json",
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_bind_pose.json"),
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_skin_weights.json"),
             vertex_index=self.vertex_ooc_l_index
         )
         self.analytical_calculator_ooc_r = AnalyticalGradientCalculator(
-            bind_pose_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\ooc_r_bind_pose.json",
-            skin_weights_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\ooc_r_skin_weights.json",
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation", "ooc_r_bind_pose.json"),
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_skin_weights.json"),
             vertex_index=self.vertex_ooc_r_index
         )
         self.analytical_calculator_frontalis = AnalyticalGradientCalculator(
-            bind_pose_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\frontalis_bind_pose.json",
-            skin_weights_json_path=r"C:\Users\zpa18\a3-stochastic-V1\automation\frontalis_skin_weights.json",
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_bind_pose.json"),
+            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_skin_weights.json"),
             vertex_index=self.vertex_frontalis_index
         )
 
@@ -285,9 +285,13 @@ class Evaluator:
         # self.w2 = 0
         # self.w3 = 0
 
-        self.w1 = 1.0
-        self.w2 = 0.0
-        self.w3 = 0.0
+        # self.w1 = 1.0
+        # self.w2 = 0.0
+        # self.w3 = 0.0
+
+        self.w1 = 0.34
+        self.w2 = 0.33
+        self.w3 = 0.33
 
         # pre-compute the selected observing vertices.
         self.x_bar_j_selected = self.control_vertices_slice(self.x_bar_j, self.vertex_index)
@@ -715,6 +719,10 @@ class Evaluator:
                     calculator=self.analytical_calculator_ooc_r,
                     object_name=object_name
                 )
+            # RECORD IT HERE!
+            self.record_gradient_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
+            # RECORD THE MAGNITUDE HERE!
+            self.record_gradient_magnitude_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
 
             # --- 4. FRONTALIS ---
             object_name = "frontalis"
@@ -803,9 +811,9 @@ class Evaluator:
             self.action_iteration_count += 1
 
             # Only plot every 100 iterations
-            if self.action_iteration_count % 200 == 0:
+            if self.action_iteration_count % 10 == 0:
                 # Plot gradients
-                object_names = ["oor", "ooc_l", "frontalis"]  # "oor", ooc_l
+                object_names = ["oor", "ooc_l","ooc_r", "frontalis"]  # "oor", ooc_l
                 for obj_name in object_names:
                     self.plot_gradient_magnitudes(obj_name, self.phase_manager.current_phase)
                     self.plot_gradients_over_iterations(obj_name, self.phase_manager.current_phase)
@@ -818,138 +826,6 @@ class Evaluator:
             # sys.exit(0)  # Exit with status code 0  
 
             # # Add this debug code where you want to monitor the ooc_l actions
-
-            if False:
-                if not hasattr(self, 'action_iteration_count'):
-                    self.action_iteration_count = 0
-                    self.max_action_iterations = 200
-                    
-                #     # Create debug file header (ONLY ONCE)
-                    # action_debug_path = os.path.join(self.save_folder, "ooc_l_actions_debug.csv")
-                    # with open(action_debug_path, 'w', newline='') as csvfile:
-                    #     writer = csv.writer(csvfile)
-                #         # Create header with joint indices
-                #         header = ['iteration']
-                #         for i in range(3*self.joint_ooc_l_num):
-                #             header.append(f'joint_ooc_l_action_{i}')
-                #         writer.writerow(header)
-                #     print(f"Created action debug file: {action_debug_path}")
-
-                # # Extract and print the ooc_l actions
-                # start_idx = 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num
-                # end_idx = 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num
-
-                oor_actions_numerical_sparse = action[0:3*self.joint_num]
-                oor_actions_numerical_dense = self.oor_dense_numerical_gradient
-
-                oor_actions_analytical = self.compute_analytical_gradient(
-                    positions_lip_joint, 
-                    targets, 
-                    self.initial_distance
-                )
-
-                # Apply threshold to analytical gradient
-                epsilon = 1e-3
-                threshold = 1e-5
-                estimated_reward_diff_ana = np.abs(oor_actions_analytical) * (2 * epsilon)
-                oor_actions_analytical_thresholded = np.copy(oor_actions_analytical)
-                oor_actions_analytical_thresholded[estimated_reward_diff_ana < threshold] = 0.0
-
-                # Select 1 coordinate to update for analytical (similar to rule 3)
-                if not hasattr(self, 'analytical_recent_indices'):
-                    self.analytical_recent_indices = []
-                
-                avoid_indices = set(self.analytical_recent_indices)
-                sorted_indices = np.argsort(np.abs(oor_actions_analytical_thresholded))
-                selected_indices = [idx for idx in sorted_indices if idx not in avoid_indices][-1:]
-                
-                self.analytical_recent_indices.extend(selected_indices)
-                if len(self.analytical_recent_indices) > self.history_size:
-                    self.analytical_recent_indices = self.analytical_recent_indices[-self.history_size:]
-                    
-                oor_actions_analytical_sparse = np.zeros_like(oor_actions_analytical)
-                if len(selected_indices) > 0:
-                    idx = selected_indices[0]
-                    oor_actions_analytical_sparse[idx] = oor_actions_analytical_thresholded[idx]
-
-                # Compare decisions at iteration 0
-                if self.action_iteration_count == 0:
-                    num_non_zeros = [(i, val) for i, val in enumerate(oor_actions_numerical_sparse) if val != 0]
-                    num_idx = num_non_zeros[0][0] if len(num_non_zeros) > 0 else -1
-                    num_val = num_non_zeros[0][1] if len(num_non_zeros) > 0 else 0.0
-                    
-                    ana_non_zeros = [(i, val) for i, val in enumerate(oor_actions_analytical_sparse) if val != 0]
-                    ana_idx = ana_non_zeros[0][0] if len(ana_non_zeros) > 0 else -1
-                    ana_val = ana_non_zeros[0][1] if len(ana_non_zeros) > 0 else 0.0
-                    
-                    print("\n" + "="*50)
-                    print("=== ITERATION 0 GRADIENT DECISION COMPARISON ===")
-                    print(f"Numerical Decision:")
-                    if num_idx != -1:
-                        joint_id = num_idx // 3
-                        axis = ['X', 'Y', 'Z'][num_idx % 3]
-                        print(f"  Selected Coordinate Index: {num_idx} (Joint: {joint_id}, Axis: {axis})")
-                        print(f"  Move Amount (sparse action value): {num_val:.6f}")
-                        print(f"  Dense Numerical Gradient value at this index: {oor_actions_numerical_dense[num_idx]:.6f}")
-                    else:
-                        print("  None selected")
-                    
-                    print(f"\nAnalytical Decision:")
-                    if ana_idx != -1:
-                        joint_id = ana_idx // 3
-                        axis = ['X', 'Y', 'Z'][ana_idx % 3]
-                        print(f"  Selected Coordinate Index: {ana_idx} (Joint: {joint_id}, Axis: {axis})")
-                        print(f"  Move Amount (sparse action value): {ana_val:.6f}")
-                        print(f"  Dense Analytical Gradient value at this index: {oor_actions_analytical[ana_idx]:.6f}")
-                    else:
-                        print("  None selected")
-                    
-                    if num_idx == ana_idx:
-                        print("\nMATCH: Both algorithms picked the exact same coordinate to move!")
-                    else:
-                        print(f"\nMISMATCH: Numerical picked {num_idx}, Analytical picked {ana_idx}")
-                        print(f"  Reason: Numerical value at {num_idx} is {oor_actions_numerical_dense[num_idx]:.6f} (Analytical value: {oor_actions_analytical[num_idx]:.6f})")
-                        print(f"  Analytical value at {ana_idx} is {oor_actions_analytical[ana_idx]:.6f} (Numerical value: {oor_actions_numerical_dense[ana_idx]:.6f})")
-                    print("="*50 + "\n")
-
-                # Compare dense numerical vs analytical
-                diff_dense = np.abs(oor_actions_numerical_dense - oor_actions_analytical)
-                max_diff_dense = np.max(diff_dense)
-                mean_diff_dense = np.mean(diff_dense)
-
-                print(f"Iteration {self.action_iteration_count}: Numerical (Dense) vs Analytical")
-                print(f"   Max Difference:  {max_diff_dense:.8e}")
-                print(f"   Mean Difference: {mean_diff_dense:.8e}")
-
-                compare_debug_path = os.path.join(self.save_folder, "gradient_comparison.csv")
-                
-                if self.action_iteration_count == 0:
-                    with open(compare_debug_path, 'w', newline='') as csvfile:
-                        writer = csv.writer(csvfile)
-                        header = ['iteration', 'max_diff_dense', 'mean_diff_dense']
-                        header.extend([f"num_dense_{i}" for i in range(len(oor_actions_numerical_dense))])
-                        header.extend([f"num_sparse_{i}" for i in range(len(oor_actions_numerical_sparse))])
-                        header.extend([f"ana_{i}" for i in range(len(oor_actions_analytical))])
-                        header.extend([f"ana_sparse_{i}" for i in range(len(oor_actions_analytical_sparse))])
-                        writer.writerow(header)
-
-                with open(compare_debug_path, 'a', newline='') as csvfile:
-                    writer = csv.writer(csvfile)
-                    row = [self.action_iteration_count, max_diff_dense, mean_diff_dense]
-                    row.extend(oor_actions_numerical_dense)
-                    row.extend(oor_actions_numerical_sparse)
-                    row.extend(oor_actions_analytical)
-                    row.extend(oor_actions_analytical_sparse)
-                    writer.writerow(row)
-
-                self.action_iteration_count += 1
-
-                if self.action_iteration_count >= self.max_action_iterations:
-                    print("\n=== Gradient Comparison Test Completed ===")
-                    print(f"Recorded {self.max_action_iterations} iterations of comparison")
-                    print("Exiting now.")
-                    sys.exit(0)
-
 
 
             # Prepare parameters for environment step
@@ -1188,6 +1064,11 @@ class Evaluator:
                 }
                 
                 self.plot_objective_terms_diff(self.phase_manager.current_phase)
+
+                # print("passed the test, now quit.")
+                # sys.exit(0)  # Exit with status code 0  
+
+
                 # self.plot_objective_terms_forward(self.phase_2_flag)
                 self.plot_objective_terms_forward(self.phase_manager.current_phase)
 
@@ -1435,20 +1316,6 @@ class Evaluator:
                 # Increment iteration counter
                 self.distance_debug_count += 1
 
-                # Check if we've reached the maximum iterations
-                if 1 == 0: # self.distance_debug_count >= self.max_distance_debug_iterations:
-                    print("\n=== Distance Debug Test Completed ===")
-                    print(f"Recorded {self.max_distance_debug_iterations} iterations")
-                    print("Distance debug completed, now exiting.")
-                    
-                    # Print summary analysis
-                    print("\n=== Summary Analysis ===")
-                    print("The issue is likely that when temp_init_distance is very small (2.4951874100556814e-05),")
-                    print("normalized_distance = distance_remain / temp_init_distance becomes LARGE.")
-                    print("But when using real distances (which are larger), normalized_distance becomes SMALL.")
-                    print("This affects the distance_contribution significantly!")
-                    
-                    sys.exit(0)
 
 
 
@@ -1467,6 +1334,7 @@ class Evaluator:
 
             # Muscle work term
             enlarge_contribution_factor = 10e2
+           
             normalized_muscle_work = np.sum(muscle_forces * landmark_displacements  * (enlarge_contribution_factor * scaling_factor/ self.max_muscle_work))  # For lips
             
             muscle_work = normalized_muscle_work
@@ -1844,39 +1712,494 @@ class Evaluator:
     #     return translations.grad.view(-1).detach().numpy() * self.analytical_gradient_scale
 
     # def compute_analytical_gradient(self, positions_lip_joint, targets, initial_distance, positions):
+    # def compute_analytical_gradient(self, positions_lip_joint, targets, initial_distance, position, calculator):    
+    #     # note that "positions_lip_joint" can be other joints, (i.e. landmarks) for other muscles
+    #     import torch
+
+    #     # 1. Convert inputs to PyTorch Tensors
+    #     translations = torch.tensor(positions_lip_joint, dtype=torch.float32).view(-1, 3)
+    #     translations.requires_grad_(True)
+        
+    #     targets_tensor = torch.tensor(targets, dtype=torch.float32).view(-1, 3)
+    #     positions_tensor = torch.tensor(position, dtype=torch.float32).view(-1, 3)
+
+    #     # 2. Forward pass USING THE PASSED CALCULATOR
+    #     y_e = calculator.maya_lbs(translations, positions_tensor)
+        
+    #     # 3. Compute Distance (geometric vertex distance to target in Maya units)
+    #     distance_remain = torch.sqrt(torch.sum((targets_tensor - y_e)**2))
+        
+    #     # 4. Compute Strain Energy matching evaluator_5month.py formulation:
+    #     # In 5month, strain_distance is the distance from current mesh to target shape.
+    #     # scaling_factor = 9.62e-4 converts Maya units to meters.
+    #     scaling_factor = 9.62e-4
+    #     strain_distance_m = distance_remain * scaling_factor
+    #     k_tissue = getattr(calculator, 'k_tissue', 10000.0)
+    #     strain_energy = 0.5 * k_tissue * (strain_distance_m ** 2)
+        
+    #     # 5. Compute Muscle Work matching evaluator_5month.py formulation:
+    #     # F_max_new = 17 / 300 = 0.056667 N per landmark
+    #     # Muscle work penalty is scaled so distance minimization drives the optimization
+    #     F_max_new = 17.0 / 300.0
+    #     joint_displacement_m = torch.sqrt(torch.sum(translations**2) + 1e-12) * scaling_factor
+    #     muscle_work = F_max_new * joint_displacement_m
+
+    #     w1 = getattr(calculator, 'w1', self.w1)
+    #     w2 = getattr(calculator, 'w2', self.w2)
+    #     w3 = getattr(calculator, 'w3', self.w3)
+
+    #     max_strain = getattr(calculator, 'max_strain_energy', 1.0)
+    #     max_muscle = getattr(calculator, 'max_muscle_work', 10.0)
+
+    #     # Normalized components matching 5month
+    #     init_dist = initial_distance if (initial_distance is not None and initial_distance > 0) else 1.0
+    #     normalized_distance = distance_remain / init_dist
+    #     normalized_strain_energy = strain_energy / (max_strain if max_strain > 0 else 1.0)
+    #     normalized_muscle_work = muscle_work / (max_muscle if max_muscle > 0 else 10.0)
+
+    #     distance_contrib = (w1 * normalized_distance).item()
+    #     strain_contrib = (w2 * normalized_strain_energy).item()
+    #     muscle_contrib = (w3 * normalized_muscle_work).item()
+
+    #     # Store term contributions on calculator for logging
+    #     calculator.dist_grad_mag = distance_contrib
+    #     calculator.strain_grad_mag = strain_contrib
+    #     calculator.muscle_grad_mag = muscle_contrib
+    #     calculator.total_grad_mag = (distance_remain).item()
+
+    #     # Compute weighted loss matching evaluator_5month.py
+    #     weighted_loss = w1 * normalized_distance + w2 * normalized_strain_energy + w3 * normalized_muscle_work
+
+    #     reward = -weighted_loss
+    #     reward.backward()
+
+    #     gradients_flat = translations.grad.view(-1).detach().numpy()
+
+    #     return gradients_flat * self.analytical_gradient_scale
+
+
+    # def compute_analytical_gradient(self, positions_lip_joint, targets, initial_distance, position, calculator):    
+    #         # note that "positions_lip_joint" can be other joints, (i.e. landmarks) for other muscles
+    #         import torch
+
+    #         # 1. Convert inputs to PyTorch Tensors
+    #         translations = torch.tensor(positions_lip_joint, dtype=torch.float32).view(-1, 3)
+    #         translations.requires_grad_(True)
+    #         targets_tensor = torch.tensor(targets, dtype=torch.float32).view(-1, 3)
+    #         positions_tensor = torch.tensor(position, dtype=torch.float32).view(-1, 3)
+
+    #         # 2. Forward pass USING THE PASSED CALCULATOR
+    #         y_e = calculator.maya_lbs(translations, positions_tensor)
+
+    #         # 3. Compute Distance (geometric vertex distance to target in Maya units)
+    #         # Added a small epsilon (1e-12) to prevent NaN gradients at zero distance
+    #         distance_remain = torch.sqrt(torch.sum((targets_tensor - y_e)**2) + 1e-12)
+
+    #         # 4. Compute Strain Energy matching refence.py formulation
+    #         scaling_factor = 9.62e-4
+    #         k_tissue = getattr(calculator, 'k_tissue', 10000.0)
+    #         strain_energy = 0.5 * k_tissue * ((distance_remain * scaling_factor) ** 2)
+
+    #         # 5. Compute Muscle Work matching refence.py formulation
+    #         temp_joint_num = translations.shape[0]
+    #         # enlarge_contribution_factor = 10e2
+    #         enlarge_contribution_factor = 0.1
+            
+    #         # Pull parameters dynamically or fall back to defaults
+    #         max_muscle = getattr(calculator, 'max_muscle_work', 10.0)
+    #         max_strain = getattr(calculator, 'max_strain_energy', 1.0)
+    #         w1 = getattr(calculator, 'w1', self.w1)
+    #         w2 = getattr(calculator, 'w2', self.w2)
+    #         w3 = getattr(calculator, 'w3', self.w3)
+
+    #         # Physiologically constrained parameters
+    #         F_max_new = 17.0 / 300.0
+    #         expected_total_steps = 5500.0
+    #         v_max_new = 1.0 / ((35.0 / 30.0) / expected_total_steps) * 9.62e-4 * 100.0
+    #         K_new = 0.18
+    #         a_new = 0.12
+    #         b_new = v_max_new * a_new / (F_max_new * K_new)
+
+    #         activation = 0.8
+    #         original_length = 2.0e-2
+    #         l_0 = 2.0e-2
+    #         sigma = 0.4
+    #         k_PEE = 0.5
+    #         k_SEE = 0.3
+    #         l_tendon = 0.05
+
+    #         # Compute translations per vertex for the muscle model
+    #         landmark_displacements = torch.sqrt(torch.sum(translations**2, dim=1) + 1e-12) * scaling_factor
+    #         distance_remain_per_vertex = distance_remain / temp_joint_num
+    #         trans_cm = distance_remain_per_vertex * 9.62e-4 * 100.0
+
+    #         # Epsilon-based velocity conversion from refence.py
+    #         epsilon = 1e-3
+    #         vel = epsilon / ((35.0 / 30.0) / expected_total_steps)
+    #         vel_cm = vel * 9.62e-4 * 100.0
+
+    #         # Hill Muscle Length Calculation
+    #         l = (original_length * 100.0) + trans_cm
+    #         l_0_cm = l_0 * 100.0
+    #         normalized_length_diff = (l - l_0_cm) / l_0_cm
+    #         exponent = -(normalized_length_diff ** 2) / (2.0 * (sigma ** 2))
+    #         F_length = F_max_new * torch.exp(exponent)
+
+    #         # Force-velocity Relationship
+    #         if vel_cm >= 0:
+    #             F_velocity = ((F_max_new + a_new) * b_new) / (vel_cm + b_new) - a_new
+    #         else:
+    #             F_velocity = 1.4 - 0.4 * (vel_cm / v_max_new)
+
+    #         # Passive Forces (torch.clamp prevents negative stretch values)
+    #         F_PEE = k_PEE * torch.clamp(l - l_0_cm, min=0.0)
+    #         F_SEE = k_SEE * l_tendon
+
+    #         # Total force generation (clamped to physiological maximum)
+    #         active_force = activation * F_length * F_velocity + F_PEE + F_SEE
+    #         muscle_force = torch.clamp(active_force, max=F_max_new)
+
+    #         # 6. Normalize Components
+    #         init_dist = initial_distance if (initial_distance is not None and initial_distance > 0) else 1.0
+    #         normalized_distance = distance_remain / init_dist
+    #         normalized_strain_energy = strain_energy / (max_strain if max_strain > 0 else 1.0)
+
+    #         # Sum muscle work over all landmarks utilizing the computed muscle_force tensor
+    #         muscle_work_term = muscle_force * landmark_displacements * (enlarge_contribution_factor * scaling_factor / (max_muscle if max_muscle > 0 else 10.0))
+    #         normalized_muscle_work = torch.sum(muscle_work_term)
+
+    #         # Calculate final contributions
+    #         distance_contrib = w1 * normalized_distance
+    #         strain_contrib = w2 * normalized_strain_energy
+    #         muscle_contrib = w3 * normalized_muscle_work
+
+    #         # Store term contributions on calculator for logging
+    #         calculator.dist_grad_mag = distance_contrib.item()
+    #         calculator.strain_grad_mag = strain_contrib.item()
+    #         calculator.muscle_grad_mag = muscle_contrib.item()
+    #         calculator.total_grad_mag = distance_remain.item()
+
+    #         # 7. Compute weighted scaled loss matching reference.py
+    #         objective = distance_contrib + strain_contrib + muscle_contrib
+    #         scaled_objective = objective * init_dist
+            
+    #         # # Formulate as negative objective for reward maximization
+    #         # reward = -scaled_objective
+
+    #         # --- THE FIX: GLOBAL SPEED BOOST ---
+    #         # We scaled down the muscle term by ~10,000x to balance the terms, 
+    #         # which shrank the overall gradients. We multiply the final reward 
+    #         # to restore the gradient magnitude the optimizer expects.
+    #         global_speed_boost = 3000.0 
+            
+    #         # Formulate as negative objective for reward maximization
+    #         reward = -scaled_objective * global_speed_boost
+
+    #         reward.backward()
+
+    #         gradients_flat = translations.grad.view(-1).detach().numpy()
+
+    #         return gradients_flat * self.analytical_gradient_scale
+
+
+    # adam
     def compute_analytical_gradient(self, positions_lip_joint, targets, initial_distance, position, calculator):    
-        # note that "positions_lip_joint" can be other joints, (i.e. landmarks) for other muscles
-        import torch
+            # note that "positions_lip_joint" can be other joints, (i.e. landmarks) for other muscles
+            import torch
 
-        # 1. Convert inputs to PyTorch Tensors
-        translations = torch.tensor(positions_lip_joint, dtype=torch.float32).view(self.joint_num, 3)
-        translations.requires_grad_(True)
-        
-        targets_tensor = torch.tensor(targets, dtype=torch.float32).view(-1, 3)
-        
-        # NOTE: convert observed `positions` to tensor
-        positions_tensor = torch.tensor(position, dtype=torch.float32).view(-1, 3)
+            # 1. Convert inputs to PyTorch Tensors
+            translations = torch.tensor(positions_lip_joint, dtype=torch.float32).view(-1, 3)
+            translations.requires_grad_(True)
+            targets_tensor = torch.tensor(targets, dtype=torch.float32).view(-1, 3)
+            positions_tensor = torch.tensor(position, dtype=torch.float32).view(-1, 3)
 
-        # # 2. Forward pass: LBS (Now taking `positions_tensor`)
-        # y_e = self.analytical_calculator.maya_lbs(translations, positions_tensor)
-        # 2. Forward pass USING THE PASSED CALCULATOR
-        y_e = calculator.maya_lbs(translations, positions_tensor)
-        
-        # 3. Slice to selected vertices
-        # v_idx = torch.tensor(self.vertex_index, dtype=torch.long)
-        # y_e_selected = y_e[v_idx]
+            # 2. Forward pass USING THE PASSED CALCULATOR
+            y_e = calculator.maya_lbs(translations, positions_tensor)
 
-        # 4. Compute Distance (distance-only objective: w1=1.0, w2=0.0, w3=0.0)
-        distance_remain = torch.sqrt(torch.sum((targets_tensor - y_e)**2))
-        normalized_distance = distance_remain # / initial_distance
+            # 3. Compute Distance (geometric vertex distance to target in Maya units)
+            # Added a small epsilon (1e-12) to prevent NaN gradients at zero distance
+            distance_remain = torch.sqrt(torch.sum((targets_tensor - y_e)**2) + 1e-12)
 
-        reward = -normalized_distance
-        reward.backward()
+            # 4. Compute Strain Energy matching refence.py formulation
+            scaling_factor = 9.62e-4
+            k_tissue = getattr(calculator, 'k_tissue', 10000.0)
+            strain_energy = 0.5 * k_tissue * ((distance_remain * scaling_factor) ** 2)
 
-        gradients_flat = translations.grad.view(-1).detach().numpy()
+            # 5. Compute Muscle Work matching refence.py formulation
+            temp_joint_num = translations.shape[0]
+            # enlarge_contribution_factor = 10e2
+            enlarge_contribution_factor = 0.1
+            
+            # Pull parameters dynamically or fall back to defaults
+            max_muscle = getattr(calculator, 'max_muscle_work', 10.0)
+            max_strain = getattr(calculator, 'max_strain_energy', 1.0)
+            w1 = getattr(calculator, 'w1', self.w1)
+            w2 = getattr(calculator, 'w2', self.w2)
+            w3 = getattr(calculator, 'w3', self.w3)
 
-        return gradients_flat * self.analytical_gradient_scale
+            # Physiologically constrained parameters
+            F_max_new = 17.0 / 300.0
+            expected_total_steps = 5500.0
+            v_max_new = 1.0 / ((35.0 / 30.0) / expected_total_steps) * 9.62e-4 * 100.0
+            K_new = 0.18
+            a_new = 0.12
+            b_new = v_max_new * a_new / (F_max_new * K_new)
 
+            activation = 0.8
+            original_length = 2.0e-2
+            l_0 = 2.0e-2
+            sigma = 0.4
+            k_PEE = 0.5
+            k_SEE = 0.3
+            l_tendon = 0.05
+
+            # Compute translations per vertex for the muscle model
+            landmark_displacements = torch.sqrt(torch.sum(translations**2, dim=1) + 1e-12) * scaling_factor
+            distance_remain_per_vertex = distance_remain / temp_joint_num
+            trans_cm = distance_remain_per_vertex * 9.62e-4 * 100.0
+
+            # Epsilon-based velocity conversion from refence.py
+            epsilon = 1e-3
+            vel = epsilon / ((35.0 / 30.0) / expected_total_steps)
+            vel_cm = vel * 9.62e-4 * 100.0
+
+            # Hill Muscle Length Calculation
+            l = (original_length * 100.0) + trans_cm
+            l_0_cm = l_0 * 100.0
+            normalized_length_diff = (l - l_0_cm) / l_0_cm
+            exponent = -(normalized_length_diff ** 2) / (2.0 * (sigma ** 2))
+            F_length = F_max_new * torch.exp(exponent)
+
+            # Force-velocity Relationship
+            if vel_cm >= 0:
+                F_velocity = ((F_max_new + a_new) * b_new) / (vel_cm + b_new) - a_new
+            else:
+                F_velocity = 1.4 - 0.4 * (vel_cm / v_max_new)
+
+            # Passive Forces (torch.clamp prevents negative stretch values)
+            F_PEE = k_PEE * torch.clamp(l - l_0_cm, min=0.0)
+            F_SEE = k_SEE * l_tendon
+
+            # Total force generation (clamped to physiological maximum)
+            active_force = activation * F_length * F_velocity + F_PEE + F_SEE
+            muscle_force = torch.clamp(active_force, max=F_max_new)
+
+            # 6. Normalize Components
+            init_dist = initial_distance if (initial_distance is not None and initial_distance > 0) else 1.0
+            normalized_distance = distance_remain / init_dist
+            normalized_strain_energy = strain_energy / (max_strain if max_strain > 0 else 1.0)
+
+            # Sum muscle work over all landmarks utilizing the computed muscle_force tensor
+            muscle_work_term = muscle_force * landmark_displacements * (enlarge_contribution_factor * scaling_factor / (max_muscle if max_muscle > 0 else 10.0))
+            normalized_muscle_work = torch.sum(muscle_work_term)
+
+            # Calculate final contributions
+            distance_contrib = w1 * normalized_distance
+            strain_contrib = w2 * normalized_strain_energy
+            muscle_contrib = w3 * normalized_muscle_work
+
+            # Store term contributions on calculator for logging
+            calculator.dist_grad_mag = distance_contrib.item()
+            calculator.strain_grad_mag = strain_contrib.item()
+            calculator.muscle_grad_mag = muscle_contrib.item()
+            calculator.total_grad_mag = distance_remain.item()
+
+            # 7. Compute weighted scaled loss matching reference.py
+            objective = distance_contrib + strain_contrib + muscle_contrib
+            scaled_objective = objective * init_dist
+            
+            # # Formulate as negative objective for reward maximization
+            # reward = -scaled_objective
+
+            # --- THE FIX: GLOBAL SPEED BOOST ---
+            # We scaled down the muscle term by ~10,000x to balance the terms, 
+            # which shrank the overall gradients. We multiply the final reward 
+            # to restore the gradient magnitude the optimizer expects.
+            global_speed_boost = 3000.0 
+            
+            # Formulate as negative objective for reward maximization
+            reward = -scaled_objective * global_speed_boost
+
+            reward.backward()
+
+            # gradients_flat = translations.grad.view(-1).detach().numpy()
+
+            # return gradients_flat * self.analytical_gradient_scale
+
+            # --- Adam Optimizer Implementation ---
+            # We store the Adam state on the calculator object to ensure 
+            # independent momentum tracking for each muscle/landmark group.
+            
+            # NOTE: Adam normalizes gradients, making it invariant to 'global_speed_boost'.
+            # The 'adam_lr' here becomes the new primary speed controller.
+            # If the optimization is too slow, increase adam_lr (e.g., to 10.0, 50.0, or 100.0).
+            adam_lr = 5.0
+            
+            if not hasattr(calculator, '_adam_param') or calculator._adam_param.shape != translations.view(-1).shape:
+                calculator._adam_param = torch.nn.Parameter(torch.zeros_like(translations.view(-1)))
+                calculator._adam_opt = torch.optim.Adam([calculator._adam_param], lr=adam_lr)
+            else:
+                # Update learning rate in case you change it dynamically
+                for param_group in calculator._adam_opt.param_groups:
+                    param_group['lr'] = adam_lr
+                    
+            calculator._adam_opt.zero_grad()
+            
+            # Adam minimizes by default, but we want to maximize the reward.
+            # Setting grad to -translations.grad makes Adam step towards the maximum.
+            calculator._adam_param.grad = -translations.grad.view(-1).clone()
+            
+            old_param = calculator._adam_param.data.clone()
+            calculator._adam_opt.step()
+            
+            # The difference is our Adam-adjusted gradient step
+            adam_step = (calculator._adam_param.data - old_param).detach().numpy()
+
+            return adam_step * self.analytical_gradient_scale
+
+    # # gradient + momentum
+    # def compute_analytical_gradient(self, positions_lip_joint, targets, initial_distance, position, calculator):    
+    #         # note that "positions_lip_joint" can be other joints, (i.e. landmarks) for other muscles
+    #         import torch
+
+    #         # 1. Convert inputs to PyTorch Tensors
+    #         translations = torch.tensor(positions_lip_joint, dtype=torch.float32).view(-1, 3)
+    #         translations.requires_grad_(True)
+    #         targets_tensor = torch.tensor(targets, dtype=torch.float32).view(-1, 3)
+    #         positions_tensor = torch.tensor(position, dtype=torch.float32).view(-1, 3)
+
+    #         # 2. Forward pass USING THE PASSED CALCULATOR
+    #         y_e = calculator.maya_lbs(translations, positions_tensor)
+
+    #         # 3. Compute Distance (geometric vertex distance to target in Maya units)
+    #         # Added a small epsilon (1e-12) to prevent NaN gradients at zero distance
+    #         distance_remain = torch.sqrt(torch.sum((targets_tensor - y_e)**2) + 1e-12)
+
+    #         # 4. Compute Strain Energy matching refence.py formulation
+    #         scaling_factor = 9.62e-4
+    #         k_tissue = getattr(calculator, 'k_tissue', 10000.0)
+    #         strain_energy = 0.5 * k_tissue * ((distance_remain * scaling_factor) ** 2)
+
+    #         # 5. Compute Muscle Work matching refence.py formulation
+    #         temp_joint_num = translations.shape[0]
+    #         # enlarge_contribution_factor = 10e2
+    #         enlarge_contribution_factor = 0.1
+            
+    #         # Pull parameters dynamically or fall back to defaults
+    #         max_muscle = getattr(calculator, 'max_muscle_work', 10.0)
+    #         max_strain = getattr(calculator, 'max_strain_energy', 1.0)
+    #         w1 = getattr(calculator, 'w1', self.w1)
+    #         w2 = getattr(calculator, 'w2', self.w2)
+    #         w3 = getattr(calculator, 'w3', self.w3)
+
+    #         # Physiologically constrained parameters
+    #         F_max_new = 17.0 / 300.0
+    #         expected_total_steps = 5500.0
+    #         v_max_new = 1.0 / ((35.0 / 30.0) / expected_total_steps) * 9.62e-4 * 100.0
+    #         K_new = 0.18
+    #         a_new = 0.12
+    #         b_new = v_max_new * a_new / (F_max_new * K_new)
+
+    #         activation = 0.8
+    #         original_length = 2.0e-2
+    #         l_0 = 2.0e-2
+    #         sigma = 0.4
+    #         k_PEE = 0.5
+    #         k_SEE = 0.3
+    #         l_tendon = 0.05
+
+    #         # Compute translations per vertex for the muscle model
+    #         landmark_displacements = torch.sqrt(torch.sum(translations**2, dim=1) + 1e-12) * scaling_factor
+    #         distance_remain_per_vertex = distance_remain / temp_joint_num
+    #         trans_cm = distance_remain_per_vertex * 9.62e-4 * 100.0
+
+    #         # Epsilon-based velocity conversion from refence.py
+    #         epsilon = 1e-3
+    #         vel = epsilon / ((35.0 / 30.0) / expected_total_steps)
+    #         vel_cm = vel * 9.62e-4 * 100.0
+
+    #         # Hill Muscle Length Calculation
+    #         l = (original_length * 100.0) + trans_cm
+    #         l_0_cm = l_0 * 100.0
+    #         normalized_length_diff = (l - l_0_cm) / l_0_cm
+    #         exponent = -(normalized_length_diff ** 2) / (2.0 * (sigma ** 2))
+    #         F_length = F_max_new * torch.exp(exponent)
+
+    #         # Force-velocity Relationship
+    #         if vel_cm >= 0:
+    #             F_velocity = ((F_max_new + a_new) * b_new) / (vel_cm + b_new) - a_new
+    #         else:
+    #             F_velocity = 1.4 - 0.4 * (vel_cm / v_max_new)
+
+    #         # Passive Forces (torch.clamp prevents negative stretch values)
+    #         F_PEE = k_PEE * torch.clamp(l - l_0_cm, min=0.0)
+    #         F_SEE = k_SEE * l_tendon
+
+    #         # Total force generation (clamped to physiological maximum)
+    #         active_force = activation * F_length * F_velocity + F_PEE + F_SEE
+    #         muscle_force = torch.clamp(active_force, max=F_max_new)
+
+    #         # 6. Normalize Components
+    #         init_dist = initial_distance if (initial_distance is not None and initial_distance > 0) else 1.0
+    #         normalized_distance = distance_remain / init_dist
+    #         normalized_strain_energy = strain_energy / (max_strain if max_strain > 0 else 1.0)
+
+    #         # Sum muscle work over all landmarks utilizing the computed muscle_force tensor
+    #         muscle_work_term = muscle_force * landmark_displacements * (enlarge_contribution_factor * scaling_factor / (max_muscle if max_muscle > 0 else 10.0))
+    #         normalized_muscle_work = torch.sum(muscle_work_term)
+
+    #         # Calculate final contributions
+    #         distance_contrib = w1 * normalized_distance
+    #         strain_contrib = w2 * normalized_strain_energy
+    #         muscle_contrib = w3 * normalized_muscle_work
+
+    #         # Store term contributions on calculator for logging
+    #         calculator.dist_grad_mag = distance_contrib.item()
+    #         calculator.strain_grad_mag = strain_contrib.item()
+    #         calculator.muscle_grad_mag = muscle_contrib.item()
+    #         calculator.total_grad_mag = distance_remain.item()
+
+    #         # 7. Compute weighted scaled loss matching reference.py
+    #         objective = distance_contrib + strain_contrib + muscle_contrib
+    #         scaled_objective = objective * init_dist
+            
+    #         # # Formulate as negative objective for reward maximization
+    #         # reward = -scaled_objective
+
+    #         # --- THE FIX: GLOBAL SPEED BOOST ---
+    #         # We scaled down the muscle term by ~10,000x to balance the terms, 
+    #         # which shrank the overall gradients. We multiply the final reward 
+    #         # to restore the gradient magnitude the optimizer expects.
+    #         global_speed_boost = 3000.0 
+            
+    #         # Formulate as negative objective for reward maximization
+    #         reward = -scaled_objective * global_speed_boost
+
+    #         reward.backward()
+
+    #         import numpy as np
+    #         gradients_flat = translations.grad.view(-1).detach().numpy()
+
+    #         # --- Smooth Momentum Implementation (EMA) ---
+    #         # Using an Exponential Moving Average (EMA) of the gradient provides momentum 
+    #         # to dampen zigzagging while maintaining the original trajectory scale and linearity.
+    #         # Unlike Adam, this does not warp the direction by scaling coordinates independently.
+    #         momentum = 0.9
+            
+    #         if not hasattr(calculator, '_grad_momentum') or calculator._grad_momentum.shape != gradients_flat.shape:
+    #             calculator._grad_momentum = np.zeros_like(gradients_flat)
+    #             calculator._momentum_step = 0
+            
+    #         calculator._momentum_step += 1
+            
+    #         # Smoothly interpolate between old direction and new gradient
+    #         calculator._grad_momentum = momentum * calculator._grad_momentum + (1.0 - momentum) * gradients_flat
+            
+    #         # Bias correction to prevent slow start (makes the first step effectively equal to raw gradient)
+    #         bias_correction = 1.0 - (momentum ** calculator._momentum_step)
+    #         smoothed_gradient = calculator._grad_momentum / bias_correction
+            
+    #         return smoothed_gradient * self.analytical_gradient_scale
 
     # def compute_single_gradient(self, position, target, positions_lip_joint, step_t1, 
     #                             object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
@@ -2275,9 +2598,10 @@ class Evaluator:
                         self.debug_iteration += 1     
 
                     else:
-                        print("passed the test, now quit.")
-                        import sys
-                        sys.exit(0)  # Exit with status code 0                          
+                        # print("passed the test, now quit.")
+                        # import sys
+                        # sys.exit(0)  # Exit with status code 0                          
+                        pass
 
                 else:
                     if use_b17_model_distance_only == 1:
@@ -2483,6 +2807,57 @@ class Evaluator:
                 position=observed_position,
                 calculator=calculator
             )
+
+            # Retrieve gradient contribution components for logging
+            grad_norm = float(np.linalg.norm(ana_grad)) if (ana_grad is not None and hasattr(ana_grad, '__len__') and len(ana_grad) > 0) else 0.0
+            
+            # Check calculator attributes with fallback to gradient magnitude
+            reward_diff = getattr(calculator, 'total_grad_mag', grad_norm)
+            if reward_diff == 0.0 and grad_norm > 0.0:
+                reward_diff = grad_norm
+
+            reward_diff_dist = getattr(calculator, 'dist_grad_mag', grad_norm)
+            reward_diff_strain = getattr(calculator, 'strain_grad_mag', 0.0)
+            reward_diff_muscle = getattr(calculator, 'muscle_grad_mag', 0.0)
+
+            # print(f"[DEBUG compute_single_gradient] object='{object_name}', grad_norm={grad_norm:.6e}, dist={reward_diff_dist:.6e}, strain={reward_diff_strain:.6e}, muscle={reward_diff_muscle:.6e}")
+            
+            # Log the analytical objective terms
+            if hasattr(self, 'log_objective_terms') and hasattr(self, 'phase_manager'):
+                self.log_objective_terms(
+                    self.phase_manager.current_phase, 
+                    object_name, 
+                    reward_diff=reward_diff,
+                    reward_diff_distance_contribution=reward_diff_dist,
+                    reward_diff_strain_contribution=reward_diff_strain,
+                    reward_diff_muscle_contribution=reward_diff_muscle,
+                    muscle_contribution_f=0.0,
+                    muscle_contribution_b=0.0
+                )
+
+# --- DEBUG COUNTER & EXIT AT 200 ---
+                if not hasattr(self, '_debug_log_count'):
+                    self._debug_log_count = 0
+                self._debug_log_count += 1
+
+                # if self._debug_log_count >= 200:
+                #     import sys
+                #     print("=" * 60)
+                #     print(f"[DEBUG] Collection reached {self._debug_log_count} calls.")
+                #     print(f"  Last object processed:        '{object_name}'")
+                #     print(f"  Phase:                       {getattr(self.phase_manager, 'current_phase', 'N/A')}")
+                #     print(f"  Total Grad Mag (reward_diff): {reward_diff}")
+                #     print(f"  Distance Contribution:        {reward_diff_dist}")
+                #     print(f"  Strain Contribution:          {reward_diff_strain}")
+                #     print(f"  Muscle Contribution:          {reward_diff_muscle}")
+                #     print(f"  Analytical Gradient Shape:    {getattr(ana_grad, 'shape', type(ana_grad))}")
+                #     print("=" * 60)
+                #     print("passed the test, now quit.")
+                    
+                #     sys.stdout.flush()  # Force console to output text immediately
+                #     sys.exit(0)  # Exit cleanly with status code 0
+
+
             self.prev_gradients = ana_grad
             return ana_grad
         else:
@@ -3495,22 +3870,36 @@ class Evaluator:
         }
         # print(f"Data lengths: {lengths}")
 
-        plt.figure(figsize=(8, 6), dpi=300)
-        plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
+        # plt.figure(figsize=(8, 6), dpi=300)
+        # plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
 
         # Get the data to plot
         steps = data['term_history_diff']['steps']
         distances = data['term_history_diff']['distance']
         strains = data['term_history_diff']['strain']
         muscles = data['term_history_diff']['muscle']
+
+        # print(f"\n[DEBUG plot_objective_terms_diff] Phase: {current_phase}")
+        # print(f"  - Total recorded steps: {len(steps)}")
+        # print(f"  - Recorded steps array: {steps}")
+        # print(f"  - Term history diff keys: {list(data['term_history_diff'].keys())}")
+
+        if len(steps) == 0:
+            print(f"Warning: No objective term data recorded for phase {current_phase}. Plot will be empty.")
+
+        plt.figure(figsize=(8, 6), dpi=300)
+        plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
+
         # Add type verification
         # print(f"Type of distance values: {type(distances[0]) if distances else 'N/A'}")
         # print(f"Type of strain values: {type(strains[0]) if strains else 'N/A'}")
         # print(f"Type of muscle values: {type(muscles[0]) if muscles else 'N/A'}")
         # Sampling logic
-        total_points = len(data['term_history_diff']['steps'])
+        # total_points = len(data['term_history_diff']['steps'])
+        total_points = len(steps)
         if total_points > 20:
-            sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+            # sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+            sample_indices = np.linspace(0, total_points - 1, 20, dtype=int)
             sampled_steps = [steps[i] for i in sample_indices]
             sampled_distance = [distances[i] for i in sample_indices]
             sampled_strain = [strains[i] for i in sample_indices]
@@ -3559,7 +3948,9 @@ class Evaluator:
         # plt.savefig(os.path.join(self.save_folder, f'objective_terms_plot_diff{phase_suffix}.png'), 
         #         bbox_inches='tight', dpi=300)
         # plt.close()
-        plt.savefig(os.path.join(self.save_folder, 
+        # plt.savefig(os.path.join(self.save_folder, 
+        save_folder = getattr(self, 'save_folder', '.')
+        plt.savefig(os.path.join(save_folder,         
                 f'objective_terms_plot_diff{phase_suffix}.png'), 
                 bbox_inches='tight', dpi=300)
         plt.close()
@@ -3753,8 +4144,8 @@ class Evaluator:
                     'muscle': []
                 })
             
-            check_interval = math.floor(self.count_diff_log_interval)  # 1500 default
-            threshold = 1e-6  # Define your threshold here
+            # check_interval = math.floor(self.count_diff_log_interval)  # 1500 default
+            # threshold = 1e-6  # Define your threshold here
             
             # print(f"Type of data: {type(data)}")
             # print(f"Keys in data: {data.keys()}")
@@ -3792,121 +4183,86 @@ class Evaluator:
 
 
 
-            count = data['count_diff_log'].get('value', 0) if isinstance(data['count_diff_log'], dict) else data['count_diff_log']
-            if abs(reward_diff) >= threshold and object_name == "oor": # oor ooc_r
-                if count % check_interval == 0:            
-            # if abs(reward_diff) >= threshold and count % check_interval == 0:
-                # Store the data
-                    data['term_history_diff']['steps'].append(self.step_objective)
-                    data['term_history_diff']['distance'].append(reward_diff_distance_contribution)
-                    data['term_history_diff']['strain'].append(reward_diff_strain_contribution)
-                    data['term_history_diff']['muscle'].append(reward_diff_muscle_contribution)
-                    
-                    # Write to phase-specific CSV file
-                    filename = f"objective_terms_data_diff{phase_suffix}.csv"
-                    file_exists = os.path.exists(os.path.join(self.save_folder, filename))
-                    try:
-                        with open(os.path.join(self.save_folder, filename), 'a', newline='') as csvfile:
-                            writer = csv.writer(csvfile)
-                            
-                            if not file_exists:
-                                writer.writerow(["Step", "Distance Contribution", 
-                                            "Strain Contribution", "Muscle Contribution",
-                                            "muscle_contribution_f", "muscle_contribution_b"])
-                            
-                            writer.writerow([
-                                self.step_objective,
-                                f"{reward_diff_distance_contribution:.6f}",
-                                f"{reward_diff_strain_contribution:.12f}", 
-                                f"{reward_diff_muscle_contribution:.12f}",
-                                f"{muscle_contribution_f:.6f}",
-                                f"{muscle_contribution_b:.6f}"
-                            ])
-                    except Exception as e:
-                        print(f"Error writing to CSV: {e}")
-
-                    # Update the counter - no more phase-specific conditions needed
-                    # data['count_diff_log'] += 1
-                    # self.term_histories[current_phase]['count'] += 1  # Directly increment the count
-                    # data['count_diff_log'] = count + 1
-                    
-
-                # with open(os.path.join(self.save_folder, "count_update_debug.txt"), 'a') as f:
-                #     f.write(f"\n=== Count Update Debug ===\n")
-                #     f.write(f"Step: {self.step_objective}\n")
-                    
-                #     # Before modification
-                #     f.write(f"Initial count_diff_log (data): {data['count_diff_log']}\n")
-                #     f.write(f"Initial term_histories count: {self.term_histories[current_phase]['count']['value']}\n")
-                    
-                #     # After modification
-                #     # data['count_diff_log'] = count + 1
-                #     self.term_histories[current_phase]['count']['value'] = count + 1
-                #     f.write(f"Updated count_diff_log (data): {data['count_diff_log']}\n")
-                #     f.write(f"Updated term_histories count: {self.term_histories[current_phase]['count']['value']}\n")
-                    
-                #     # Memory addresses to check if it's the same object
-                #     f.write(f"Memory address (data['count_diff_log']): {id(data['count_diff_log'])}\n")
-                #     f.write(f"Memory address (term_histories count): {id(self.term_histories[current_phase]['count']['value'])}\n")
-                    
-                #     f.write("------------------------\n")          
-                self.term_histories[current_phase]['count']['value'] = count + 1
-                
-
-
-    # def log_forward_objective_terms(self, phase_2_flag=0, 
-    #                             distance_contribution=None,
-    #                             strain_contribution=None,
-    #                             muscle_contribution=None,
-    #                             muscle_forces=None,
-    #                             landmark_displacements=None,
-    #                             muscle_work=None,
-    #                             enlarge_contribution_factor=1.0):
+            # count = data['count_diff_log'].get('value', 0) if isinstance(data['count_diff_log'], dict) else data['count_diff_log']
+            # if abs(reward_diff) >= threshold and object_name == "oor": # oor ooc_r
         
-    #     data = self._get_term_history(phase_2_flag)
-    #     phase_suffix = "_phase2" if phase_2_flag == 1 else ""
+        # Safely fetch interval (defaulting to 1 if not specified)
+
+        # is_test_mode = (
+        #     getattr(self, 'test_then_exit_mode', False)
+        #     or getattr(self, 'test_mode', False)
+        #     or os.environ.get('TEST_THEN_EXIT_MODE', '0').lower() in ('1', 'true', 'yes')
+        # )
+
+        # if is_test_mode:
+        #     check_interval = 1
+        # else:
+        #     interval_val = getattr(self, 'count_diff_log_interval', 1)
+        #     check_interval = max(1, math.floor(interval_val))
         
-    #     trace_and_log_obj_contribution = 1
-    #     if trace_and_log_obj_contribution == 1:
-    #         # Store contributions for plotting
-    #         if not hasattr(self, f'term_history_forward{phase_suffix}'):
-    #             setattr(self, f'term_history_forward{phase_suffix}', {
-    #                 'steps': [],
-    #                 'distance': [],
-    #                 'strain': [],
-    #                 'muscle': []
-    #             })
+
+        check_interval = 100
+        
+        threshold = 1e-6
+
+        count = data['count_diff_log'].get('value', 0) if isinstance(data['count_diff_log'], dict) else data['count_diff_log']
+        
+        # print(f"[DEBUG log_objective_terms] Called! phase={current_phase}, object_name='{object_name}', reward_diff={reward_diff}, count={count}, check_interval={check_interval}")
+
+        # Accept all valid calls regardless of specific muscle name
+        if count % check_interval == 0:            
+            step_val = count
+            data['term_history_diff']['steps'].append(step_val)
+            data['term_history_diff']['distance'].append(reward_diff_distance_contribution if reward_diff_distance_contribution is not None else 0.0)
+            data['term_history_diff']['strain'].append(reward_diff_strain_contribution if reward_diff_strain_contribution is not None else 0.0)
+            data['term_history_diff']['muscle'].append(reward_diff_muscle_contribution if reward_diff_muscle_contribution is not None else 0.0)
             
-    #         # Log every 40,000 steps (4e4) if self.step_objective % 40000 == 0:
-    #         if self.step_objective % 4e4 == 0:
+            # print(f"[DEBUG log_objective_terms] RECORDED step={step_val} for object='{object_name}'! Total recorded steps now={len(data['term_history_diff']['steps'])}")
 
-    #             data['term_history_forward']['steps'].append(self.step_objective)
-    #             data['term_history_forward']['distance'].append(distance_contribution)
-    #             data['term_history_forward']['strain'].append(strain_contribution)
-    #             data['term_history_forward']['muscle'].append(muscle_contribution/enlarge_contribution_factor)
+            # Write to phase-specific CSV file
+            filename = f"objective_terms_data_diff{phase_suffix}.csv"
+            save_folder = getattr(self, 'save_folder', '.')
+            file_path = os.path.join(save_folder, filename)
+            file_exists = os.path.exists(file_path)
+            
+            try:
+                # with open(file_path, 'a', newline='') as csvfile:
+                #     writer = csv.writer(csvfile)
+                    
+                #     if not file_exists:
+                #         writer.writerow(["Step", "Distance Contribution", 
+                #                     "Strain Contribution", "Muscle Contribution",
+                #                     "muscle_contribution_f", "muscle_contribution_b"])
+                    
+                #     writer.writerow([
+                #         step_val,
+                #         f"{(reward_diff_distance_contribution or 0.0):.6f}",
+                #         f"{(reward_diff_strain_contribution or 0.0):.12f}", 
+                #         f"{(reward_diff_muscle_contribution or 0.0):.12f}",
+                #         f"{(muscle_contribution_f or 0.0):.6f}",
+                #         f"{(muscle_contribution_b or 0.0):.6f}"                                
+                #     ])
+
+                with open(file_path, 'a', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    
+                    if not file_exists:
+                        writer.writerow(["Step", "Distance Contribution", 
+                                    "Strain Contribution", "Muscle Contribution"])
+                    
+                    writer.writerow([
+                        step_val,
+                        f"{(reward_diff_distance_contribution or 0.0):.6f}",
+                        f"{(reward_diff_strain_contribution or 0.0):.12f}", 
+                        f"{(reward_diff_muscle_contribution or 0.0):.12f}"
+                    ])
+
+            except Exception as e:
+                print(f"Error writing to CSV: {e}")
+
+        # Increment count ONCE per log attempt
+        self.term_histories[current_phase]['count']['value'] = count + 1
                 
-    #             # Write to phase-specific CSV file
-    #             filename = f"objective_terms_data_forward{phase_suffix}.csv"
-    #             file_exists = os.path.exists(os.path.join(self.save_folder, filename))
-
-    #             with open(os.path.join(self.save_folder, filename), 'a', newline='') as csvfile:
-    #                 writer = csv.writer(csvfile)
-                    
-    #                 if not file_exists:
-    #                     writer.writerow(["Step", "Distance Contribution", 
-    #                                 "Strain Contribution", "Muscle Contribution",
-    #                                 "muscle_forces", "landmark_displacements", 
-    #                                 "muscle_work"])
-                    
-    #                 writer.writerow([
-    #                     self.step_objective,
-    #                     f"{distance_contribution:.6f}",
-    #                     f"{strain_contribution:.6f}", 
-    #                     f"{muscle_contribution:.6f}",
-    #                     f"{muscle_forces:.12f}",
-    #                     f"{landmark_displacements:.12f}",
-    #                     f"{muscle_work:.12f}"
-    #                 ])
 
     def log_forward_objective_terms(self, phase=None, 
                                 distance_contribution=None,

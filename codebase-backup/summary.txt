@@ -1,5 +1,0 @@
-backup the codebase before release to undergrad 2026 fall
-
-
-used the code base from "i73 finished the highreso video next is landmark increase"
-
