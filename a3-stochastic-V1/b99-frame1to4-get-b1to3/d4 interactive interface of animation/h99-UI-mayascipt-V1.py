@@ -16,17 +16,16 @@ import maya.OpenMaya as OpenMaya
 import csv
 import datetime
 import inspect
-from config import a3_stochastic_relative_path
-
+from config import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
 
 import sys
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "example_train"))
-sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
-sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"))
-sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "300joints_suite_good_old"))
-sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "joint_positions"/ "joint_position_ooc_l"))
-sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "joint_positions"/ "joint_position_ooc_r"))
-sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "joint_positions"/ "joint_position_frontalis"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(b98_sampling_path))
+sys.path.insert(0, str(b98_sampling_path/ "300joints_suite_good_old"))
+sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_ooc_l"))
+sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_ooc_r"))
+sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_frontalis"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
 sys.path.insert(0, str(a3_stochastic_relative_path / "b95-debug-use"))
 
@@ -162,7 +161,7 @@ PHONEME_TO_KEY = {v['phoneme']: v for k, v in KEYBOARD_PHONEME_MAP.items()}
 def load_database():
     """Load the deformation path database and state map from the JSON file"""
     # Use hardcoded base directory path since __file__ is not available in Maya
-    base_dir = r"c:\Users\zpa18\a3-stochastic-V1"
+    base_dir = str(a3_stochastic_relative_path)
     db_path = os.path.join(base_dir, "automation", "deformation_path_db.json")
 
     try:

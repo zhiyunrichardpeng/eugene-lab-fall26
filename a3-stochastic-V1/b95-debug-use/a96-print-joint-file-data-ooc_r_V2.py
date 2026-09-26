@@ -12,9 +12,10 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QLabel
+from config import b98_sampling_path
 
 # Add paths to import joint position data
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"))
 
 import joint_position_ooc_r_base_0
 import joint_position_ooc_r_base_pose11_0
