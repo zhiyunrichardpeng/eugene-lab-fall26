@@ -16,15 +16,17 @@ self_strain_energy = []
 
 
 import sys
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\example_train")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\env_gym")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+from config import a3_stochastic_relative_path, a1_blendshape_path, b98_sampling_path
+
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(b98_sampling_path))
+sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_l"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_frontalis"))
 
 import numpy as np
 
@@ -84,7 +86,7 @@ def strain_energy_calculator(new_coords, coords_rest):
 
     import numpy as np
     import sys
-    sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
+    sys.path.insert(0, str(a1_blendshape_path / "database"))
     import importlib
 
     # import dataV22_for_rest_adhoc_after_deform

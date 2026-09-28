@@ -15,18 +15,19 @@ import json
 import maya.OpenMaya as OpenMaya
 import csv
 import datetime
-
+import inspect
+from config import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
 
 import sys
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\example_train")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "example_train"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(b98_sampling_path))
+sys.path.insert(0, str(b98_sampling_path/ "300joints_suite_good_old"))
+sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_ooc_l"))
+sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_ooc_r"))
+sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_frontalis"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b95-debug-use")
+sys.path.insert(0, str(a3_stochastic_relative_path / "b95-debug-use"))
 
 
 
@@ -35,6 +36,22 @@ sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b95-debug-use")
 import joint_position
 import joint_position_first_wave
 import joint_position_third_wave
+import joint_position_oor_four_hundred
+
+oor_joint_modules = [
+    joint_position_first_wave,
+    joint_position,
+    joint_position_third_wave
+    # joint_position_oor_four_hundred
+]
+
+# import joint_position_oor_full
+
+
+# oor_joint_modules = [
+#     joint_position_oor_full
+# ]
+
 import joint_position_ooc_l_base_0
 import joint_position_ooc_l_base_pose11_0
 import joint_position_ooc_l_base_pose11_AU1_0
@@ -97,7 +114,7 @@ ERROR_DISSIPATION_RATE = 1.0 # 0.5  # How much of the error to apply (0.0 to 1.0
 ACCUMULATED_ERROR = None  # Will store the accumulated position error across transitions
 
 # --- DEBUG CONFIGURATION ---
-DEBUG_OUTPUT_DIR = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d4 interactive interface of animation\h96-debug-dissipating-error"
+DEBUG_OUTPUT_DIR = str(a3_stochastic_relative_path / "b99-frame1to4-get-b1to3"/ "d4 interactive interface of animation"/ "h96-debug-dissipating-error")
 DEBUG_ENABLED = True  # Enable detailed debugging and logging
 CURRENT_JAW_LOG_FILE = ""
 DEBUG_DATA = []  # Stores debug information for each transition
@@ -111,22 +128,25 @@ KEYBOARD_SCRIPT_JOBS = []  # Store script job IDs for cleanup
 # Key to Phoneme mapping (using intuitive letters)
 # Press the letter that corresponds to the phoneme sound
 KEYBOARD_PHONEME_MAP = {
-    '0': {'phoneme': 'dataV22_AU0_neutral', 'label': 'Neutral', 'key': '0'},
-    'n': {'phoneme': 'dataV22_phoneme_N', 'label': 'N', 'key': 'n'},
-    'a': {'phoneme': 'dataV22_phoneme_AA', 'label': 'AA', 'key': 'a'},
-    'i': {'phoneme': 'dataV22_phoneme_IY', 'label': 'IY', 'key': 'i'},
-    't': {'phoneme': 'dataV22_phoneme_T', 'label': 'T', 'key': 't'},
-    'e': {'phoneme': 'dataV22_phoneme_EH', 'label': 'EH', 'key': 'e'},
-    'u': {'phoneme': 'dataV22_phoneme_UW', 'label': 'UW', 'key': 'u'},
-    'v': {'phoneme': 'dataV22_phoneme_V', 'label': 'V', 'key': 'v'},
-    'y': {'phoneme': 'dataV22_phoneme_Y', 'label': 'Y', 'key': 'y'},
-    's': {'phoneme': 'dataV22_AU12', 'label': 'Smile', 'key': 's'},
-    'f': {'phoneme': 'dataV22_AU4', 'label': 'Frown', 'key': 'f'},
-    'b': {'phoneme': 'dataV22_AU2', 'label': 'Brow', 'key': 'b'},
-    'm': {'phoneme': 'dataV22_AU25', 'label': 'Mouth', 'key': 'm'},
-    'q': {'phoneme': 'dataV22_AU7', 'label': 'Squint', 'key': 'q'},
-    'c': {'phoneme': 'dataV22_AU6', 'label': 'Cheek', 'key': 'c'},
-    'p': {'phoneme': 'dataV22_AU22', 'label': 'Pucker', 'key': 'p'},
+    '0': {'phoneme': 'dataV22_AU0_neutral', 'label': 'Neutral', 'key': '0', 'octave': 'mid'},
+    'n': {'phoneme': 'dataV22_phoneme_N', 'label': 'N', 'key': 'n', 'octave': 'low'},
+    'a': {'phoneme': 'dataV22_phoneme_AA', 'label': 'AA', 'key': 'a', 'octave': 'low'},
+    'i': {'phoneme': 'dataV22_phoneme_IY', 'label': 'IY', 'key': 'i', 'octave': 'low'},
+    't': {'phoneme': 'dataV22_phoneme_T', 'label': 'T', 'key': 't', 'octave': 'low'},
+    'e': {'phoneme': 'dataV22_phoneme_EH', 'label': 'EH', 'key': 'e', 'octave': 'low'},
+    'u': {'phoneme': 'dataV22_phoneme_UW', 'label': 'UW', 'key': 'u', 'octave': 'low'},
+    'v': {'phoneme': 'dataV22_phoneme_V', 'label': 'V', 'key': 'v', 'octave': 'low'},
+    'y': {'phoneme': 'dataV22_phoneme_Y', 'label': 'Y', 'key': 'y', 'octave': 'low'},
+    's': {'phoneme': 'dataV22_AU12', 'label': 'Smile', 'key': 's', 'octave': 'mid'},
+    'f': {'phoneme': 'dataV22_AU4', 'label': 'Frown', 'key': 'f', 'octave': 'high'},
+    'b': {'phoneme': 'dataV22_AU2', 'label': 'Brow', 'key': 'b', 'octave': 'high'},
+    'm': {'phoneme': 'dataV22_AU25', 'label': 'Mouth', 'key': 'm', 'octave': 'mid'},
+    'q': {'phoneme': 'dataV22_AU7', 'label': 'Squint', 'key': 'q', 'octave': 'high'},
+    'c': {'phoneme': 'dataV22_AU6', 'label': 'Cheek', 'key': 'c', 'octave': 'mid'},
+    'p': {'phoneme': 'dataV22_AU22', 'label': 'Pucker', 'key': 'p', 'octave': 'mid'},
+    '1': {'phoneme': 'chord_dataV22_AU6___dataV22_AU12___dataV22_AU25', 'label': 'Happy', 'key': '1', 'octave': 'mid'},
+    '2': {'phoneme': 'dataV22_AU4', 'label': 'Sad', 'key': '2', 'octave': 'mid'},
+    '3': {'phoneme': 'chord_dataV22_AU1___dataV22_AU2___dataV22_AU25', 'label': 'Surprise', 'key': '3', 'octave': 'mid'},
 }
 
 # Reverse lookup: phoneme to key info
@@ -141,7 +161,7 @@ PHONEME_TO_KEY = {v['phoneme']: v for k, v in KEYBOARD_PHONEME_MAP.items()}
 def load_database():
     """Load the deformation path database and state map from the JSON file"""
     # Use hardcoded base directory path since __file__ is not available in Maya
-    base_dir = r"c:\Users\zpa18\a3-stochastic-V1"
+    base_dir = str(a3_stochastic_relative_path)
     db_path = os.path.join(base_dir, "automation", "deformation_path_db.json")
 
     try:
@@ -159,11 +179,14 @@ DEFORMATION_PATH_DB, STATE_MAP = load_database()
 
 # Base path for saving the combined deformation parameters
 SEQUENCE_DB_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\sequence_combined_deformation_parameters_hub"
+MERGED_DEFORMATION_DB_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\merged_deformation_parameters_hub"
 
 # Global variables for pose configuration (set by parse_sequence_string)
 NEUTRAL_TO_OTHER_POSE_FLAG = 1  # Default to neutral start
 PREVIOUS_POSE_FOLDER = ""  # Will be set if non-neutral start
-TEETH_HACK_ENABLED = False
+TEETH_HACK_ENABLED = True
+teeth_correction_weight = 0.25
+
 FINGER_CLAP_ENABLED = False
 RENDER_AFTER_DEMO_ENABLED = False
 RENDER_AFTER_TYPEIN_ENABLED = False
@@ -183,6 +206,57 @@ SOFT_TISSUE_MESHES = [
     "middleres_DepressorLabiiInferioris_r", "middleres_OrbicularisOculi_l", "middleres_AuricularisSuperior", 
     "middleres_OrbicularisOris", "skin_cloth_copy_v5_pull_back"
 ]
+
+TEETH_TONGUE_MESH_PATTERNS = ['*loTeeth01_geo*', '*tongue01_geo*']
+
+
+def get_teeth_tongue_meshes():
+    """Returns unique base transform names for teeth and tongue meshes, excluding any _RENDER proxies."""
+    meshes = []
+    for pattern in TEETH_TONGUE_MESH_PATTERNS:
+        found = cmds.ls(pattern, type='transform') or cmds.ls(pattern) or []
+        for m in found:
+            if not m.endswith("_RENDER") and not m.endswith("_sagged_snapshot") and not m.endswith("_equil_snapshot"):
+                if m not in meshes:
+                    meshes.append(m)
+    return meshes
+
+
+def ensure_teeth_tongue_render_meshes(at_frame_zero=False):
+    """
+    Creates _RENDER versions of teeth and tongue meshes (e.g. jack01_c_loTeeth01_geo_RENDER,
+    jack01_c_tongue01_geo_RENDER), sets up master blendshapes to follow live Ziva meshes,
+    hides the live Ziva meshes (visibility=0), and shows the _RENDER meshes (visibility=1).
+    """
+    valid_meshes = [m for m in get_teeth_tongue_meshes() if cmds.objExists(m)]
+    needs_creation = any(not cmds.objExists(f"{m}_RENDER") for m in valid_meshes)
+    
+    if needs_creation and at_frame_zero:
+        curr_time = cmds.currentTime(query=True)
+        if curr_time != 0:
+            cmds.currentTime(0, edit=True)
+
+    for target_mesh in valid_meshes:
+        # Extract a clean, short name without pipes (hierarchy) or colons (namespaces)
+        clean_name = target_mesh.split('|')[-1].split(':')[-1]
+        render_mesh = f"{clean_name}_RENDER"
+        bs_name = f"master_bs_{clean_name}"
+        
+        if not cmds.objExists(render_mesh):
+            render_mesh_node = cmds.duplicate(target_mesh, name=render_mesh)[0]
+            
+            # Create master blendshape connecting Live Ziva to Proxy
+            if not cmds.objExists(bs_name):
+                cmds.blendShape([target_mesh], render_mesh_node, name=bs_name, origin='local')
+                cmds.setAttr(f"{bs_name}.{clean_name}", 1.0)
+                
+            print(f"[TEETH/TONGUE RENDER] Created RENDER mesh: {render_mesh_node} for {target_mesh}")
+
+        # Always ensure correct visibility: hide live Ziva mesh, show RENDER mesh
+        if cmds.attributeQuery('visibility', node=target_mesh, exists=True):
+            cmds.setAttr(f"{target_mesh}.visibility", 0)
+        if cmds.attributeQuery('visibility', node=render_mesh, exists=True):
+            cmds.setAttr(f"{render_mesh}.visibility", 1)
 
 
 def normalize_task_key(task_string):
@@ -849,59 +923,74 @@ def visualize_errors(debug_data):
 def load_ideal_target_positions(target_phoneme):
     """
     Load the ideal target landmark positions from precomputed neutral-to-target deformation.
-
-    This loads the "ground truth" positions (B_tilde, C_tilde, etc.) that we would reach
-    if we started from a perfect neutral pose and applied the deformation.
-
-    Args:
-        target_phoneme: The target phoneme (e.g., "dataV22_phoneme_Y", "dataV22_phoneme_UW")
-
-    Returns:
-        Dictionary with flattened ideal positions for each joint group, or None if not found
-        {
-            'x_joint_conca': [...],  # oor landmarks (900 values = 300 landmarks * 3)
-            'x_joint_rotation_conca': [...],  # jaw rotation (3 values)
-            'x_ooc_l_joint_conca': [...],  # ooc_l landmarks (900 values)
-            'x_ooc_r_joint_conca': [...],  # ooc_r landmarks (900 values)
-            'x_frontalis_joint_conca': [...]  # frontalis landmarks (900 values)
-        }
     """
     print(f"\n[FEEDBACK CONTROL] Computing ideal target positions for {target_phoneme}")
 
+    # Compute TRUE neutral positions first since we need them in both cases
+    x_joint_combined = []
+    for mod in oor_joint_modules:
+        x_joint_combined.extend(getattr(mod, "x_joint_position_1"))
+    x_neutral = [item for sublist in x_joint_combined for item in sublist]
+
+    x_joint_first_wave = getattr(joint_position_ooc_l_base_0, "x_joint_position_1")
+    x_joint_second_wave = getattr(joint_position_ooc_l_base_pose11_0, "x_joint_position_1")
+    x_joint_third_wave = getattr(joint_position_ooc_l_base_pose11_AU1_0, "x_joint_position_1")
+    x_joint_fourth_wave = getattr(joint_position_ooc_l_base_pose11_AU1_AU2_0, "x_joint_position_1")
+    x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave + x_joint_fourth_wave
+    x_neutral_ooc_l = [item for sublist in x_joint_combined for item in sublist]
+
+    x_joint_first_wave = getattr(joint_position_ooc_r_base_0, "x_joint_position_1")
+    x_joint_second_wave = getattr(joint_position_ooc_r_base_pose11_0, "x_joint_position_1")
+    x_joint_third_wave = getattr(joint_position_ooc_r_base_pose11_AU1_0, "x_joint_position_1")
+    x_joint_fourth_wave = getattr(joint_position_ooc_r_base_pose11_AU1_AU2_0, "x_joint_position_1")
+    x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave + x_joint_fourth_wave
+    x_neutral_ooc_r = [item for sublist in x_joint_combined for item in sublist]
+
+    x_joint_first_wave = getattr(joint_position_frontalis_base_0, "x_joint_position_1")
+    x_joint_second_wave = getattr(joint_position_frontalis_base_AU1_0, "x_joint_position_1")
+    x_joint_third_wave = getattr(joint_position_frontalis_base_AU1_AU2_0, "x_joint_position_1")
+    x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave
+    x_neutral_frontalis = [item for sublist in x_joint_combined for item in sublist]
+
     if target_phoneme == "dataV22_AU0_neutral":
-        print(f"[FEEDBACK CONTROL] Target is Neutral Pose. Ideal positions are mathematically perfect zeros.")
+        print(f"[FEEDBACK CONTROL] Target is Neutral Pose. Returning true absolute zero positions.")
         return {
-            'x_joint_conca': np.zeros(900).tolist(),
+            'x_joint_conca': x_neutral,
             'x_joint_rotation_conca': [0.0, 0.0, 0.0],
-            'x_ooc_l_joint_conca': np.zeros(900).tolist(),
-            'x_ooc_r_joint_conca': np.zeros(900).tolist(),
-            'x_frontalis_joint_conca': np.zeros(900).tolist()
+            'x_ooc_l_joint_conca': x_neutral_ooc_l,
+            'x_ooc_r_joint_conca': x_neutral_ooc_r,
+            'x_frontalis_joint_conca': x_neutral_frontalis
         }
 
-    # Build the key for looking up the neutral-to-target path
-    neutral_to_target_key = f"dataV22_AU0_neutral_to_{target_phoneme}"
+    if is_combined_expression_pose(target_phoneme):
+        short = target_phoneme.replace('dataV22_', '')
+        checkpoints_file = os.path.join(MERGED_DEFORMATION_DB_PATH, short, "combined_checkpoints.pkl")
+        print(f"[FEEDBACK CONTROL] Target is Merged Pose '{target_phoneme}'. Checking merged path: {checkpoints_file}")
+    else:
+        # Build the key for looking up the neutral-to-target path
+        neutral_to_target_key = f"dataV22_AU0_neutral_to_{target_phoneme}"
 
-    # Try different key formats
-    db_key_map = {normalize_task_key(k): k for k in DEFORMATION_PATH_DB}
-    normalized_key = normalize_task_key(neutral_to_target_key)
-    original_key = db_key_map.get(normalized_key)
-
-    if not original_key:
-        # Try without the extra "to" connector
-        neutral_to_target_key = f"dataV22_AU0_neutral to {target_phoneme}"
+        # Try different key formats
+        db_key_map = {normalize_task_key(k): k for k in DEFORMATION_PATH_DB}
         normalized_key = normalize_task_key(neutral_to_target_key)
         original_key = db_key_map.get(normalized_key)
 
-    if not original_key:
-        print(f"[FEEDBACK CONTROL WARNING] Could not find neutral-to-{target_phoneme} in database")
-        print(f"  Tried keys: {neutral_to_target_key}")
-        return None
+        if not original_key:
+            # Try without the extra "to" connector
+            neutral_to_target_key = f"dataV22_AU0_neutral to {target_phoneme}"
+            normalized_key = normalize_task_key(neutral_to_target_key)
+            original_key = db_key_map.get(normalized_key)
 
-    # Get the path to the precomputed deformation folder
-    deformation_path = DEFORMATION_PATH_DB[original_key]
+        if not original_key:
+            print(f"[FEEDBACK CONTROL WARNING] Could not find neutral-to-{target_phoneme} in database")
+            print(f"  Tried keys: {neutral_to_target_key}")
+            return None
 
-    # Load combined_checkpoints.pkl (contains accumulated deformation parameters)
-    checkpoints_file = os.path.join(deformation_path, "combined_checkpoints.pkl")
+        # Get the path to the precomputed deformation folder
+        deformation_path = DEFORMATION_PATH_DB[original_key]
+
+        # Load combined_checkpoints.pkl (contains accumulated deformation parameters)
+        checkpoints_file = os.path.join(deformation_path, "combined_checkpoints.pkl")
 
     if not os.path.exists(checkpoints_file):
         print(f"[FEEDBACK CONTROL WARNING] combined_checkpoints.pkl not found at {checkpoints_file}")
@@ -917,7 +1006,8 @@ def load_ideal_target_positions(target_phoneme):
         final_checkpoint = checkpoints[-1]
 
         # Expected dimensions
-        n = 300 * 3  # oor landmarks
+        oor_num_joints = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+        n = oor_num_joints * 3  # oor landmarks
         joint_rotate_num = 1
         joint_ooc_l_num = 300
         joint_ooc_r_num = 300
@@ -925,42 +1015,6 @@ def load_ideal_target_positions(target_phoneme):
 
         # Parse the final checkpoint
         delta_b_final = np.array(final_checkpoint)
-
-
-
-        # OOR landmarks (300 landmarks = 900 coordinates)
-        x_joint_first_wave = getattr(joint_position_first_wave, "x_joint_position_1")
-        x_joint_second_wave = getattr(joint_position, "x_joint_position_1")
-        x_joint_third_wave = getattr(joint_position_third_wave, "x_joint_position_1")
-        x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave
-        # Flatten: [[x1,y1,z1], [x2,y2,z2], ...] -> [x1,y1,z1,x2,y2,z2,...]
-        x_neutral = [item for sublist in x_joint_combined for item in sublist]
-
-        # OOC_L landmarks (300 landmarks = 900 coordinates)
-        x_joint_first_wave = getattr(joint_position_ooc_l_base_0, "x_joint_position_1")
-        x_joint_second_wave = getattr(joint_position_ooc_l_base_pose11_0, "x_joint_position_1")
-        x_joint_third_wave = getattr(joint_position_ooc_l_base_pose11_AU1_0, "x_joint_position_1")
-        x_joint_fourth_wave = getattr(joint_position_ooc_l_base_pose11_AU1_AU2_0, "x_joint_position_1")
-        x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave + x_joint_fourth_wave
-        # Flatten
-        x_neutral_ooc_l = [item for sublist in x_joint_combined for item in sublist]
-
-        # OOC_R landmarks (300 landmarks = 900 coordinates)
-        x_joint_first_wave = getattr(joint_position_ooc_r_base_0, "x_joint_position_1")
-        x_joint_second_wave = getattr(joint_position_ooc_r_base_pose11_0, "x_joint_position_1")
-        x_joint_third_wave = getattr(joint_position_ooc_r_base_pose11_AU1_0, "x_joint_position_1")
-        x_joint_fourth_wave = getattr(joint_position_ooc_r_base_pose11_AU1_AU2_0, "x_joint_position_1")
-        x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave + x_joint_fourth_wave
-        # Flatten
-        x_neutral_ooc_r = [item for sublist in x_joint_combined for item in sublist]
-
-        # Frontalis landmarks (300 landmarks = 900 coordinates)
-        x_joint_first_wave = getattr(joint_position_frontalis_base_0, "x_joint_position_1")
-        x_joint_second_wave = getattr(joint_position_frontalis_base_AU1_0, "x_joint_position_1")
-        x_joint_third_wave = getattr(joint_position_frontalis_base_AU1_AU2_0, "x_joint_position_1")
-        x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave
-        # Flatten
-        x_neutral_frontalis = [item for sublist in x_joint_combined for item in sublist]
 
         print(f"[FEEDBACK CONTROL] Loaded TRUE neutral positions from joint_position modules:")
         print(f"  OOR: {len(x_neutral)} coords, OOC_L: {len(x_neutral_ooc_l)} coords")
@@ -1013,7 +1067,7 @@ def initial_joint_position(target_frame=14, is_first_transition=True):
     """
     print(f"--- Getting Initial Joint Positions at frame {target_frame} ---")
     joint_groups_to_query = {
-        'oor': 300, 'ooc_l': 300,
+        'oor': sum(len(mod.x_joint_position_1) for mod in oor_joint_modules), 'ooc_l': 300,
         'ooc_r': 300, 'frontalis': 300
     }
     retrieved_positions = retrieve_landmark_positions(joint_groups_to_query, target_frame, is_first_transition)
@@ -1110,7 +1164,7 @@ def apply_dissipating_error(positions, accumulated_error, dissipation_rate):
 
 
 def beta_function(x_joint_conca, x_joint_rotation_conca, au22_x_joint_conca3, au22_x_joint_rotation_conca3, au22_x_ooc_l_joint_conca3, au22_x_ooc_r_joint_conca3, au22_x_frontalis_joint_conca3, start_frame, keyframe_max):
-    time_temp = str(keyframe_max)
+    time_temp = float(keyframe_max)
     cmds.currentTime(time_temp, edit=True)
 
     x_joint_init_conca = x_joint_conca
@@ -1123,37 +1177,68 @@ def beta_function(x_joint_conca, x_joint_rotation_conca, au22_x_joint_conca3, au
     x_frontalis_joint_ = au22_x_frontalis_joint_conca3
 
     relative_rotation_value = np.array(x_joint_rotation_) - np.array(x_joint_rotation_init_conca)
-    cmds.rotate(relative_rotation_value[0], relative_rotation_value[1], relative_rotation_value[2], 'jaw01', relative=True, ws=True)
+
+    # Check if any component is non-zero
+    if np.any(relative_rotation_value != 0):
+        # print(f"[DEBUG] Jaw rotation detected! relative_rotation_value: {relative_rotation_value}")
+        
+        # Apply relative rotation to jaw01
+        cmds.rotate(
+            relative_rotation_value[0], 
+            relative_rotation_value[1], 
+            relative_rotation_value[2], 
+            'jaw01', 
+            relative=True, 
+            ws=True
+        )
+        
+        # print("passed the test, now quit.")
+        # sys.exit(0)
+    else:
+        # print(f"[DEBUG] No rotation detected for jaw01 (relative_rotation_value: {relative_rotation_value}).")
+        pass
+
+    # cmds.rotate(relative_rotation_value[0], relative_rotation_value[1], relative_rotation_value[2], 'jaw01', relative=True, ws=True)
     cmds.setKeyframe('jaw01', time=time_temp)
 
     if TEETH_HACK_ENABLED:
-        # --- HACK: Lower Teeth & Tongue 50% Extra Rotation ---
+        # --- HACK: Lower Teeth & Tongue 50% Extra Rotation on RENDER Meshes ---
         # Corrects the artifact where OOR plastic deformation pulls the lips too far relative to the rigid teeth/tongue.
-        hack_mesh_patterns = ['*loTeeth01_geo*', '*tongue01_geo*']
+        # We perform the deformation on the _RENDER mesh directly and present it to the user while hiding the live Ziva mesh.
+        ensure_teeth_tongue_render_meshes(at_frame_zero=False)
         
-        for pattern in hack_mesh_patterns:
-            found_meshes = cmds.ls(pattern)
-            for mesh_name in found_meshes:
-                try:
-                    # Temporarily suppress harmless wrap warnings to keep the console clean
-                    cmds.scriptEditorInfo(suppressWarnings=True)
-                    
-                    # We MUST rotate around the jaw's pivot, otherwise the teeth will detach from the jaw hinge!
-                    jaw_pivot = cmds.xform('jaw01', query=True, rotatePivot=True, ws=True)
-                    cmds.rotate(relative_rotation_value[0] * 0.5, 
-                                relative_rotation_value[1] * 0.5, 
-                                relative_rotation_value[2] * 0.5, 
-                                mesh_name, relative=True, ws=True, pivot=jaw_pivot)
-                    cmds.setKeyframe(mesh_name, time=time_temp)
-                    
-                    # Turn warnings back on immediately so we don't miss important ones
-                    cmds.scriptEditorInfo(suppressWarnings=False)
-                    
-                except Exception as e:
-                    print(f"[WARNING] Could not apply rotation hack to {mesh_name}: {e}")
-                    cmds.scriptEditorInfo(suppressWarnings=False)
+        
+        for mesh_name in get_teeth_tongue_meshes():
+            render_mesh = f"{mesh_name}_RENDER"
+            target_to_rotate = render_mesh if cmds.objExists(render_mesh) else mesh_name
+            
+            try:
+                # Temporarily suppress harmless wrap warnings to keep the console clean
+                cmds.scriptEditorInfo(suppressWarnings=True)
+                
+                # We MUST rotate around the jaw's pivot, otherwise the teeth will detach from the jaw hinge!
+                jaw_pivot = cmds.xform('jaw01', query=True, rotatePivot=True, ws=True)
+                cmds.rotate(relative_rotation_value[0] * teeth_correction_weight, 
+                            relative_rotation_value[1] * teeth_correction_weight, 
+                            relative_rotation_value[2] * teeth_correction_weight, 
+                            target_to_rotate, relative=True, ws=True, pivot=jaw_pivot)
+                cmds.setKeyframe(target_to_rotate, time=time_temp)
+                
+                # Ensure the live Ziva mesh is hidden and RENDER mesh is visible
+                if cmds.objExists(render_mesh):
+                    if cmds.attributeQuery('visibility', node=mesh_name, exists=True):
+                        cmds.setAttr(f"{mesh_name}.visibility", 0)
+                    if cmds.attributeQuery('visibility', node=render_mesh, exists=True):
+                        cmds.setAttr(f"{render_mesh}.visibility", 1)
+                
+                # Turn warnings back on immediately so we don't miss important ones
+                cmds.scriptEditorInfo(suppressWarnings=False)
+                
+            except Exception as e:
+                print(f"[WARNING] Could not apply rotation hack to {target_to_rotate}: {e}")
+                cmds.scriptEditorInfo(suppressWarnings=False)
 
-    joint_num = 300
+    joint_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
     for i_temp2 in range(joint_num):
         joint_name = f'oor_{i_temp2 + 1:02d}'
         cmds.move(x_joint_[3*i_temp2], x_joint_[3*i_temp2+1], x_joint_[3*i_temp2+2], joint_name, absolute=True)
@@ -1202,7 +1287,8 @@ def perform_the_deformation(source_path, start_frame_offset=14, continue_from_la
         combined_checkpoints = pickle.load(file)
 
     # Dimensions
-    n = 300 * 3
+    oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+    n = oor_num * 3
     joint_rotate_num = 1
     joint_ooc_l_num = 300
     joint_ooc_r_num = 300
@@ -1272,6 +1358,14 @@ def perform_the_deformation(source_path, start_frame_offset=14, continue_from_la
     for i, delta_b0_conca_np in enumerate(combined_checkpoints):
         frame = start_frame_offset + 1 + i
         delta_b0_conca = np.array(delta_b0_conca_np)
+
+        # if target_phoneme == "dataV22_AU0_neutral" and "AU1_AU2" in source_path and i == 4:
+        #     script_name = __file__ if '__file__' in globals() else "h99-UI-mayascipt-V1.py"
+        #     print(f"🟢 [OK] Reached line {inspect.currentframe().f_lineno} in {os.path.basename(script_name)}")
+        #     print("suspicious values: delta_b0_conca[0:10] =", delta_b0_conca[0:10])
+        #     print("passed the test, now quit.")
+        #     sys.exit(0)
+
 
         # Padding logic...
         if len(delta_b0_conca) < expected_dimension:
@@ -1380,7 +1474,8 @@ def perform_the_deformation(source_path, start_frame_offset=14, continue_from_la
                 current_phoneme = phonemes[phase_idx + 1]
                 print(f"[ACTIVE FEEDBACK] Hit phase boundary for {current_phoneme}. Calculating intermediate correction...")
                 
-                joint_groups = {'oor': 300, 'ooc_l': 300, 'ooc_r': 300, 'frontalis': 300}
+                oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+                joint_groups = {'oor': oor_num, 'ooc_l': 300, 'ooc_r': 300, 'frontalis': 300}
                 actual_positions = retrieve_landmark_positions(joint_groups, frame, is_first_transition=False)
                 actual_flat = {
                     'x_joint_conca': [item for sublist in actual_positions.get('oor', []) for item in sublist],
@@ -1894,7 +1989,8 @@ def run_deformation_processing(phonemes_list, log_paths_list, sequence_folder_na
     print(checkpoint_indices)
 
     # Initialize parameters
-    self_n = 300 * 3
+    oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+    self_n = oor_num * 3
     joint_rotate_num = 1
     correct_dimension = self_n + 3 * joint_rotate_num
 
@@ -2306,6 +2402,380 @@ def run_deformation_processing_to_source(phonemes_list, log_paths_list, source_p
     print("\nDeformation processing to source completed!")
 
 
+# --- 2B. MERGED MULTI-AU DEFORMATION MODULE (FROM j75-V8) ---
+
+def get_total_steps_convergence(log_path, phonemes):
+    """Extracts phase step counts from log files for specific phases"""
+    phase_files = ["log0.txt"]
+    if len(phonemes) >= 3:
+        if len(phonemes) >= 4:
+            phase_files.extend(["log0_phase7.txt", "log0_phase8.txt"])
+    
+    total_steps_convergence = [0]
+
+    for file in phase_files:
+        file_path = os.path.join(log_path, file)
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                content = f.read()
+                match = re.search(r'done at No\. (\d+) step', content)
+                if match:
+                    total_steps_convergence.append(int(match.group(1)))
+        else:
+            print(f"File not found: {file_path}")
+
+    print(f"[{log_path}] total_steps_convergence =", total_steps_convergence)
+    return total_steps_convergence
+
+
+def accumulate_checkpoints(action_lists, checkpoint_indices, self_n, joint_rotate_num, joint_ooc_l_num, joint_ooc_r_num, joint_frontalis_num):
+    """
+    Accumulates actions at specified checkpoint indices.
+    Ensures the state at index 0 is the initial, non-deformed state.
+    """
+    delta_b0_conca = [0] * self_n + [0] * 3 * joint_rotate_num  + [0] * 3 *joint_ooc_l_num  + [0] * 3 * joint_ooc_r_num  + [0] * 3 * joint_frontalis_num
+    checkpoints = []
+    global_index = 0
+    found_indices = set()
+    
+    if 0 in checkpoint_indices:
+        checkpoints.append((0, list(delta_b0_conca)))
+        found_indices.add(0)
+
+    for action_list in action_lists:
+        for action in action_list:
+            global_index += 1
+            if len(action) == len(delta_b0_conca):
+                delta_b0_conca = [delta_b0_conca[i] + action[i] for i in range(len(delta_b0_conca))]
+            elif len(action) == self_n:
+                for i in range(self_n):
+                    delta_b0_conca[i] += action[i]
+            
+            if global_index in checkpoint_indices and global_index not in found_indices:
+                checkpoints.append((global_index, list(delta_b0_conca)))
+                found_indices.add(global_index)
+                
+    checkpoints.sort(key=lambda x: x[0])
+    return [cp[1] for cp in checkpoints]
+
+
+def process_single_deformation(config, num_checkpoints=36, overlap_ratio=0.0):
+    log_path = config["log_path"]
+    phonemes = config["phonemes"]
+
+    total_steps_convergence = get_total_steps_convergence(log_path, phonemes)
+    if not total_steps_convergence or len(total_steps_convergence) < 2:
+        print(f"Error: Could not determine convergence steps for {config['name']} in {log_path}")
+        return None
+
+    phase_boundaries = total_steps_convergence
+    timestamps = [0.0]
+    if len(phonemes) == 2:
+        timestamps.append(1.0)
+    elif len(phonemes) == 3:
+        timestamps.extend([0.3, 1.0])
+    elif len(phonemes) >= 4:
+        timestamps.extend([0.3, 0.6, 1.0])
+    
+    num_phases_available = len(phase_boundaries) - 1
+    timestamps = timestamps[:num_phases_available + 1]
+    if timestamps[-1] != 1.0:
+        timestamps[-1] = 1.0
+
+    phase_durations = []
+    for i in range(len(timestamps) - 1):
+        phase_durations.append(timestamps[i+1] - timestamps[i])
+        
+    total_duration = sum(phase_durations)
+    phase_weights = [d / total_duration for d in phase_durations]
+
+    phase_indices_to_load = list(range(len(phase_boundaries) - 1))
+    
+    # Calculate checkpoints per phase based on duration weights
+    checkpoints_per_phase = []
+    remaining_checkpoints = num_checkpoints
+    for i, weight in enumerate(phase_weights):
+        if i == len(phase_weights) - 1:
+            num_cp = remaining_checkpoints
+        else:
+            num_cp = int(round(num_checkpoints * weight))
+            remaining_checkpoints -= num_cp
+        checkpoints_per_phase.append(max(1, num_cp))
+
+    # Generate checkpoint indices for each phase
+    all_checkpoints = []
+    buffer_ratio = 0.05
+    
+    for i, num_cp in enumerate(checkpoints_per_phase):
+        start_step = phase_boundaries[i]
+        end_step = phase_boundaries[i+1]
+        phase_len = end_step - start_step
+        
+        if i == 0 and num_cp > 0:
+            all_checkpoints.append(0)
+            num_cp -= 1
+            
+        if num_cp <= 0:
+            continue
+            
+        eff_start = start_step + int(phase_len * buffer_ratio)
+        eff_end = end_step - int(phase_len * buffer_ratio)
+        
+        if eff_end <= eff_start:
+            eff_start = start_step
+            eff_end = end_step
+
+        if i > 0 and overlap_ratio > 0:
+            prev_len = phase_boundaries[i] - phase_boundaries[i-1]
+            overlap_steps = int(prev_len * overlap_ratio)
+            eff_start = max(start_step - overlap_steps, phase_boundaries[i-1])
+
+        cp_indices = np.linspace(eff_start, eff_end, num=num_cp, dtype=int)
+        all_checkpoints.extend(cp_indices)
+
+    all_checkpoints = sorted(list(set(all_checkpoints)))
+    while len(all_checkpoints) < num_checkpoints:
+        all_checkpoints.append(all_checkpoints[-1])
+    if len(all_checkpoints) > num_checkpoints:
+        all_checkpoints = all_checkpoints[:num_checkpoints]
+    
+    checkpoints = all_checkpoints
+
+    action_lists = []
+    for i in phase_indices_to_load:
+        phase_num = i + 1
+        file_path = os.path.join(log_path, f"final_epoch_action_list{'_phase' + str(phase_num) if phase_num > 1 else ''}.pkl")
+        try:
+            with open(file_path, "rb") as f:
+                data = pickle.load(f)
+                if isinstance(data, dict):
+                    if 'final_epoch_action_list' in data:
+                        action_lists.append(data['final_epoch_action_list'])
+                    elif 'action_list' in data:
+                        action_lists.append(data['action_list'])
+                    else:
+                        action_lists.append([])
+                elif isinstance(data, list):
+                    action_lists.append(data)
+                else:
+                    action_lists.append([])
+                print(f"Successfully loaded Phase {phase_num} with {len(action_lists[-1])} actions")
+        except Exception as e:
+            print(f"Warning: Could not find/load action list for Phase {phase_num} at {file_path}: {e}")
+            action_lists.append([])
+
+    self_n = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules) * 3
+    joint_rotate_num = 1
+    joint_ooc_l_num = 300
+    joint_ooc_r_num = 300
+    joint_frontalis_num = 300
+
+    accumulated = accumulate_checkpoints(action_lists, checkpoints, self_n, joint_rotate_num, joint_ooc_l_num, joint_ooc_r_num, joint_frontalis_num)
+    return accumulated
+
+
+def merge_multiple_deformations_to_hub(target_poses, num_checkpoints=36, is_return_to_neutral=False):
+    """
+    Merges multiple deformation paths from neutral into a single combined_checkpoints.pkl.
+    Saves the result in MERGED_DEFORMATION_DB_PATH under a subfolder named after the combined poses.
+    Returns the output directory path containing combined_checkpoints.pkl.
+    """
+    targets = [p for p in target_poses if p != "dataV22_AU0_neutral" and p != "Neutral"]
+    if not targets:
+        raise ValueError("No target poses specified for merging.")
+
+    short_names = [t.replace('dataV22_', '').replace('phoneme_', '') for t in targets]
+    subfolder_name = "_".join(short_names)
+    if is_return_to_neutral:
+        subfolder_name += "_to_Neutral"
+    output_dir = os.path.join(MERGED_DEFORMATION_DB_PATH, subfolder_name)
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "combined_checkpoints.pkl")
+
+    if os.path.exists(output_path):
+        if is_return_to_neutral:
+            print(f"[MERGED DEFORMATION] Forcing regeneration for return-to-neutral to clear old buggy cache.")
+        else:
+            try:
+                with open(output_path, "rb") as f:
+                    existing = pickle.load(f)
+                if len(existing) == num_checkpoints:
+                    print(f"[MERGED DEFORMATION] Found existing combined_checkpoints.pkl in {output_dir}")
+                    return output_dir
+                else:
+                    print(f"[MERGED DEFORMATION] Existing file has {len(existing)} frames, need {num_checkpoints}. Regenerating...")
+            except Exception as e:
+                print(f"[MERGED DEFORMATION] Error reading existing file: {e}. Regenerating...")
+
+    all_accumulated_checkpoints = []
+    for t_pose in targets:
+        t_pose_short = t_pose.replace('dataV22_', '')
+        short_name = t_pose_short.replace('phoneme_', '')
+        
+        if is_return_to_neutral:
+            from_name = t_pose_short
+            to_name = "neutral"
+            config_phonemes = [short_name, "Neutral"]
+        else:
+            from_name = "neutral"
+            to_name = t_pose_short
+            config_phonemes = ["Neutral", short_name]
+
+        user_text = f"{from_name} to {to_name}"
+        phonemes, log_paths = parse_sequence_string(user_text)
+        if not log_paths or not log_paths[0]:
+            raise RuntimeError(f"Could not find log path in DEFORMATION_PATH_DB for {from_name} to {to_name}")
+        log_path = log_paths[0]
+        config = {
+            "name": short_name,
+            "log_path": log_path,
+            "phonemes": config_phonemes
+        }
+        accumulated = process_single_deformation(config, num_checkpoints=num_checkpoints)
+        if accumulated:
+            all_accumulated_checkpoints.append(accumulated)
+        else:
+            raise RuntimeError(f"Failed to process checkpoints for {t_pose} from {log_path}")
+
+    first_len = len(all_accumulated_checkpoints[0])
+    if not all(len(x) == first_len for x in all_accumulated_checkpoints):
+        raise RuntimeError("Not all deformation sequences produced the same number of checkpoints.")
+
+    # Inspect Frontalis Debug Output
+    # print("\n--- DEBUGGING: Inspecting Frontalis Deformation ---")
+    # oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+    # frontalis_start_index = (oor_num * 3) + (3 * 1) + (3 * 300) + (3 * 300)
+    # for i, t_name in enumerate(short_names):
+    #     if not all_accumulated_checkpoints[i]:
+    #         continue
+    #     last_vec = all_accumulated_checkpoints[i][-1]
+    #     front_part = last_vec[frontalis_start_index:]
+    #     print(f"\n--- {t_name} Final Checkpoint ---")
+    #     if len(front_part) > 0:
+    #         print(f"  Max frontalis value: {max(front_part):.4f}")
+    #         print(f"  Min frontalis value: {min(front_part):.4f}")
+    #         print(f"  Avg frontalis value: {np.mean(front_part):.4f}")
+
+    # print(f"\nCombining {len(all_accumulated_checkpoints)} deformation(s) with {first_len} checkpoints each.")
+    sum_checkpoints = [v.copy() for v in all_accumulated_checkpoints[0]]
+    for i in range(1, len(all_accumulated_checkpoints)):
+        neutral_idx = -1 if is_return_to_neutral else 0
+        for j in range(first_len):
+            sum_checkpoints[j] = [
+                sum_checkpoints[j][k] + (all_accumulated_checkpoints[i][j][k] - all_accumulated_checkpoints[i][neutral_idx][k])
+                for k in range(len(sum_checkpoints[j]))
+            ]
+
+    # print("\n--- Summed Final Checkpoint ---")
+    # if sum_checkpoints:
+    #     summed_front = sum_checkpoints[-1][frontalis_start_index:]
+    #     if len(summed_front) > 0:
+    #         print(f"  Max summed frontalis value: {max(summed_front):.4f}")
+    #         print(f"  Min summed frontalis value: {min(summed_front):.4f}")
+    #         print(f"  Avg summed frontalis value: {np.mean(summed_front):.4f}")
+
+    with open(output_path, "wb") as f:
+        pickle.dump(sum_checkpoints, f)
+
+    print(f"[MERGED DEFORMATION] Successfully merged {len(targets)} deformations ({' + '.join(short_names)}) into: {output_path}")
+    return output_dir
+
+
+def is_combined_expression_pose(pose_name):
+    """Returns True if pose_name is a combined multi-AU pose like 'dataV22_AU6_AU12_AU25'."""
+    if not pose_name or pose_name == "dataV22_AU0_neutral" or pose_name == "Neutral":
+        return False
+    if pose_name.startswith("chord_"):
+        return True
+    short = pose_name.replace('dataV22_', '')
+    parts = short.split('_')
+    au_parts = [p for p in parts if p.upper().startswith('AU') and p.upper() != 'AU0']
+    return len(au_parts) >= 2
+
+
+def run_merged_transition(targets, start_frame, continue_mode=True, is_first_transition=False, expression_name=None):
+    """
+    Executes a merged transition from Neutral to the combined target AUs in ONE transition.
+    """
+    short_names = [t.replace('dataV22_', '').replace('phoneme_', '') for t in targets]
+    combined_label = " + ".join(short_names)
+    if expression_name:
+        combined_label = f"{expression_name} ({combined_label})"
+
+    print(f"\n{'='*60}")
+    print(f"RUNNING MERGED EXPRESSION TRANSITION: Neutral -> [{combined_label}]")
+    print(f"{'='*60}\n")
+
+    num_checkpoints = 36
+    merged_dir = merge_multiple_deformations_to_hub(targets, num_checkpoints=num_checkpoints, is_return_to_neutral=False)
+
+    final_frame, per_frame_data, final_jaw_rotation = perform_the_deformation(
+        merged_dir, start_frame, continue_from_last=continue_mode, correction_vectors=None, target_phoneme=f"dataV22_{'_'.join(short_names)}"
+    )
+    return final_frame
+
+
+def run_merged_return_to_neutral(combined_pose_name, start_frame, is_first_transition=False):
+    """
+    Executes a merged return transition from a combined pose (e.g. AU6_AU12_AU25) back to Neutral.
+    """
+    if combined_pose_name.startswith("chord_"):
+        targets = combined_pose_name[6:].split("___")
+        short = "chord_return"
+    else:
+        short = combined_pose_name.replace('dataV22_', '')
+        parts = short.split('_')
+        targets = [f"dataV22_{p}" for p in parts if p.upper().startswith('AU') and p.upper() != 'AU0']
+    if not targets:
+        return start_frame
+
+    print(f"\n{'='*60}")
+    print(f"RUNNING MERGED RETURN TRANSITION: [{short}] -> Neutral")
+    print(f"{'='*60}\n")
+
+    num_checkpoints = 36
+    merged_dir = merge_multiple_deformations_to_hub(targets, num_checkpoints=num_checkpoints, is_return_to_neutral=True)
+
+    final_frame, per_frame_data, final_jaw_rotation = perform_the_deformation(
+        merged_dir, start_frame, continue_from_last=True, correction_vectors=None, target_phoneme="dataV22_AU0_neutral"
+    )
+    return final_frame
+
+
+def smart_merged_expression_transition(current_pose, target_list, start_frame, is_first_transition=False, expression_name=None):
+    """
+    Transitions from current_pose to a combined expression (e.g. AU6 + AU12 + AU25) in ONE single transition.
+    If current_pose is not neutral, routes through neutral first.
+    """
+    neutral = "dataV22_AU0_neutral"
+    targets = [p for p in target_list if p != neutral and p != "Neutral"]
+
+    if not targets:
+        return smart_single_transition(current_pose, neutral, start_frame, is_first_transition=is_first_transition), neutral
+    if len(targets) == 1:
+        final_frame = smart_single_transition(current_pose, targets[0], start_frame, is_first_transition=is_first_transition)
+        return final_frame, targets[0]
+
+    short_names = [t.replace('dataV22_', '').replace('phoneme_', '') for t in targets]
+    combined_pose_name = "dataV22_" + "_".join(short_names)
+
+    intermediate_frame = start_frame
+    if current_pose != neutral and current_pose != "Neutral":
+        print(f"[INFO] Routing through Neutral before merged expression: {current_pose} -> Neutral -> {combined_pose_name}")
+        if is_combined_expression_pose(current_pose):
+            intermediate_frame = run_merged_return_to_neutral(current_pose, start_frame, is_first_transition=is_first_transition)
+        else:
+            intermediate_frame = run_single_transition(current_pose, neutral, start_frame, continue_mode=True, is_first_transition=is_first_transition)
+        is_first_transition = False
+
+    final_frame = run_merged_transition(
+        targets, intermediate_frame,
+        continue_mode=True, is_first_transition=is_first_transition,
+        expression_name=expression_name
+    )
+    return final_frame, combined_pose_name
+
+
 # --- 3. MAYA UI AND PIPELINE SCRIPT ---
 
 def run_maya_render():
@@ -2329,13 +2799,13 @@ def run_playblast_script():
         timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         custom_name = f"unnamed_playblast_{timestamp_str}"
 
-    playblast_script = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d2 helper functions\do_playblast.py"
+    playblast_script = str(a3_stochastic_relative_path / "b99-frame1to4-get-b1to3"/ "d2 helper functions"/"do_playblast.py")
     print(f"\n--- Calling Playblast Script ({custom_name}) ---")
     if os.path.exists(playblast_script):
         try:
             import sys
             import importlib
-            script_dir = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d2 helper functions"
+            script_dir = str(a3_stochastic_relative_path / "b99-frame1to4-get-b1to3"/ "d2 helper functions")
             if script_dir not in sys.path:
                 sys.path.insert(0, script_dir)
             import do_playblast
@@ -2472,6 +2942,7 @@ LETTER_TO_PHONEME = {
 # Expression command patterns: maps natural language phrases to AU sequences
 EXPRESSION_COMMANDS = {
     # Single expressions from neutral
+    "neutral":            ["dataV22_AU0_neutral"],
     "smile":              ["dataV22_AU0_neutral", "dataV22_AU12"],
     "open the mouth":     ["dataV22_AU0_neutral", "dataV22_AU25"],
     "open mouth":         ["dataV22_AU0_neutral", "dataV22_AU25"],
@@ -2494,10 +2965,11 @@ EXPRESSION_COMMANDS = {
     "pucker":             ["dataV22_AU0_neutral", "dataV22_AU22"],
     "cheese":             ["dataV22_AU0_neutral", "dataV22_AU6"],
     "sad":                    ["dataV22_AU0_neutral", "dataV22_AU4"],
+    "au12l + au2l":           ["dataV22_AU0_neutral", "dataV22_AU12L", "dataV22_AU2L"],
     # Compound expressions
     "smile and open mouth":   ["dataV22_AU0_neutral", "dataV22_AU12", "dataV22_AU25"],
     "surprise":               ["dataV22_AU0_neutral", "dataV22_AU1", "dataV22_AU2", "dataV22_AU25"],
-    "happy":                  ["dataV22_AU0_neutral", "dataV22_AU6", "dataV22_AU12"],
+    "happy":                  ["dataV22_AU0_neutral", "dataV22_AU6", "dataV22_AU12", "dataV22_AU25"],
 }
 
 # --- DROPDOWN MENU DEFINITIONS ---
@@ -2517,6 +2989,7 @@ PHONEME_DROPDOWN_ITEMS = [
 # FACS (Facial Action Coding System) dropdown items
 FACS_DROPDOWN_ITEMS = [
     ("-- Select FACS Action Unit --", ""),
+    ("Neutral",                      "dataV22_AU0_neutral"),
     ("AU 0  - Neutral",              "dataV22_AU0_neutral"),
     ("AU 1  - Inner Brow Raiser",    "dataV22_AU1"),
     ("AU 2  - Outer Brow Raiser",    "dataV22_AU2"),
@@ -2531,6 +3004,7 @@ FACS_DROPDOWN_ITEMS = [
 # Emotion / Expression dropdown items
 EMOTION_DROPDOWN_ITEMS = [
     ("-- Select Expression --", ""),
+    ("Neutral",                 "neutral"),
     ("Smile",                   "smile"),
     ("Happy",                   "happy"),
     ("Sad",                     "sad"),
@@ -2543,6 +3017,7 @@ EMOTION_DROPDOWN_ITEMS = [
     ("Cheek Raise",            "cheek raise"),
     ("Pucker (WUU)",           "pucker"),
     ("Cheese",                 "cheese"),
+    ("AU12L + AU2L",           "au12l + au2l"),
 ]
 
 
@@ -2776,7 +3251,7 @@ def parse_sequence_string(input_text):
             PREVIOUS_POSE_FOLDER = previous_pose_folder
 
             # Update the d1-adhoc-for-b99.py file
-            d1_b99_file = r"c:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d1-adhoc-for-b99.py"
+            d1_b99_file = str(a3_stochastic_relative_path / "b99-frame1to4-get-b1to3"/ "d1-adhoc-for-b99.py")
             try:
                 with open(d1_b99_file, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -2816,7 +3291,7 @@ def parse_sequence_string(input_text):
         PREVIOUS_POSE_FOLDER = ""
 
         # Update the d1-adhoc-for-b99.py file to set flag to 1
-        d1_b99_file = r"c:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d1-adhoc-for-b99.py"
+        d1_b99_file = str(a3_stochastic_relative_path / "b99-frame1to4-get-b1to3"/ "d1-adhoc-for-b99.py")
         try:
             with open(d1_b99_file, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -3011,7 +3486,8 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
         # Copied strictly from your provided code to ensure continuity:
         ideal_positions = load_ideal_target_positions(phoneme_to)
         if ideal_positions is not None:
-            joint_groups = {'oor': 300, 'ooc_l': 300, 'ooc_r': 300, 'frontalis': 300}
+            oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+            joint_groups = {'oor': oor_num, 'ooc_l': 300, 'ooc_r': 300, 'frontalis': 300}
             actual_positions = retrieve_landmark_positions(joint_groups, final_frame, is_first_transition=False)
             
             actual_flat = {
@@ -3043,13 +3519,15 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
                     overlap_corr_mag_debug = float(np.linalg.norm(correction_offset))
                     print(f"[OVERLAP CORRECTION] Loaded correction offset (magnitude: {overlap_corr_mag_debug:.6f})")
                     
-                    # The correction offset is a flat vector of dimension N (e.g., 3603).
+                    # The correction offset is a flat vector of dimension N.
                     # Split it into the same tissue-group structure as actual_flat.
-                    # Layout: OOR (900) + jaw (3) + OOC_L (900) + OOC_R (900) + Frontalis (900)
+                    # Layout: OOR (oor_num*3) + jaw (3) + OOC_L (900) + OOC_R (900) + Frontalis (900)
+                    oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+                    n_lm_oor = oor_num * 3
                     n_lm = 300 * 3  # 900
                     idx = 0
                     
-                    oor_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
+                    oor_corr = correction_offset[idx:idx + n_lm_oor]; idx += n_lm_oor
                     jaw_corr = correction_offset[idx:idx + 3]; idx += 3
                     ooc_l_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
                     ooc_r_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
@@ -3150,7 +3628,7 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
             
             if ACCUMULATED_ERROR is None:
                 # Initialize with zero errors so subsequent transitions can still function
-                n = 300 * 3
+                n = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules) * 3
                 ACCUMULATED_ERROR = {
                     'x_joint_conca': np.zeros(n),
                     'x_joint_rotation_conca': np.zeros(3),
@@ -3224,6 +3702,39 @@ def run_full_pipeline(*args):
             cmds.warning("Input field is empty!")
             return
 
+        # Check if user_text is an expression command that maps to multiple AUs
+        lower_input = user_text.strip().lower()
+        if lower_input in EXPRESSION_COMMANDS:
+            sequence = EXPRESSION_COMMANDS[lower_input]
+            targets = [t for t in sequence if t != "dataV22_AU0_neutral" and t != "Neutral"]
+            if len(targets) > 1:
+                print(f"\n{'='*60}")
+                print(f"[EXPRESSION COMMAND DETECTED] '{lower_input}' -> {len(targets)} target AUs")
+                print(f"Executing merged multi-AU deformation in ONE single transition...")
+                print(f"{'='*60}\n")
+                
+                # --- AUTOMATE JUMP TO 0 IF STARTING FROM NEUTRAL ---
+                if LAST_ANIMATION_PHONEME == "dataV22_AU0_neutral":
+                    print("[AUTO-RESET] Starting from Neutral. Automatically resetting animation chain and jumping to frame 0 for Ziva init.")
+                    # Note: Assumes reset_animation_chain is defined globally or imported
+                    try:
+                        cmds.currentTime(0, edit=True)
+                    except Exception:
+                        pass
+                    start_frame = 14
+                else:
+                    start_frame = LAST_ANIMATION_END_FRAME
+                
+                final_frame, combined_pose_name = smart_merged_expression_transition(
+                    LAST_ANIMATION_PHONEME, targets, start_frame,
+                    is_first_transition=not CONTINUE_FROM_LAST, expression_name=lower_input
+                )
+                LAST_ANIMATION_END_FRAME = final_frame
+                LAST_ANIMATION_PHONEME = combined_pose_name
+                CONTINUE_FROM_LAST = True
+                print(f"--- Completed expression '{lower_input}' (merged pose: {combined_pose_name}) ---")
+                return
+
         # Parse the phonemes
         phonemes, _ = parse_sequence_string(user_text)
 
@@ -3251,28 +3762,41 @@ def run_full_pipeline(*args):
 
             # --- CREATE PROXY RENDER MESHES IMMEDIATELY ---
             # We create these here so they always exist for playblasts, even if there are no snaps!
-            valid_meshes = [m for m in SOFT_TISSUE_MESHES if cmds.objExists(m)]
+            valid_soft_tissues = [m for m in SOFT_TISSUE_MESHES if cmds.objExists(m)]
+            valid_teeth_tongue = [m for m in get_teeth_tongue_meshes() if cmds.objExists(m)]
+            all_proxy_targets = valid_soft_tissues + valid_teeth_tongue
             
             # Check if we need to create any proxies. If we do, we MUST be at Frame 0 
             # so the duplication captures the pure, natively evaluated Neutral pose.
-            needs_proxy = any(not cmds.objExists(f"{m}_RENDER") for m in valid_meshes)
+            needs_proxy = any(not cmds.objExists(f"{m}_RENDER") for m in all_proxy_targets)
             if needs_proxy:
                 print(f"[INITIALIZATION] Jumping to Frame 0 to safely capture perfect Neutral proxy meshes...")
                 cmds.currentTime(0, edit=True)
                 
-                print(f"[INITIALIZATION] Creating Proxy Render Meshes for {len(valid_meshes)} soft tissues...")
-                for target_mesh in valid_meshes:
+                print(f"[INITIALIZATION] Creating Proxy Render Meshes for {len(all_proxy_targets)} meshes (soft tissues + teeth/tongue)...")
+                for target_mesh in all_proxy_targets:
                     render_mesh = f"{target_mesh}_RENDER"
                     bs_name = f"master_bs_{target_mesh}"
                     if not cmds.objExists(render_mesh):
                         render_mesh_node = cmds.duplicate(target_mesh, name=render_mesh)[0]
                         
-                        cmds.setAttr(f"{target_mesh}.visibility", 0)
-                        cmds.setAttr(f"{render_mesh_node}.visibility", 1)
+                        if cmds.attributeQuery('visibility', node=target_mesh, exists=True):
+                            cmds.setAttr(f"{target_mesh}.visibility", 0)
+                        if cmds.attributeQuery('visibility', node=render_mesh_node, exists=True):
+                            cmds.setAttr(f"{render_mesh_node}.visibility", 1)
                         
                         # Link it to follow the live Ziva mesh 100% by default
-                        cmds.blendShape([target_mesh], render_mesh_node, name=bs_name, origin='local')
-                        cmds.setAttr(f"{bs_name}.{target_mesh}", 1.0)
+                        if not cmds.objExists(bs_name):
+                            cmds.blendShape([target_mesh], render_mesh_node, name=bs_name, origin='local')
+                            cmds.setAttr(f"{bs_name}.{target_mesh}", 1.0)
+            else:
+                for target_mesh in all_proxy_targets:
+                    render_mesh = f"{target_mesh}_RENDER"
+                    if cmds.objExists(render_mesh):
+                        if cmds.attributeQuery('visibility', node=target_mesh, exists=True):
+                            cmds.setAttr(f"{target_mesh}.visibility", 0)
+                        if cmds.attributeQuery('visibility', node=render_mesh, exists=True):
+                            cmds.setAttr(f"{render_mesh}.visibility", 1)
 
             # First transition: Start from frame 14 (or current start frame if continuing)
             start_frame = LAST_ANIMATION_END_FRAME if CONTINUE_FROM_LAST else 14
@@ -3410,7 +3934,7 @@ def run_full_pipeline(*args):
                     plt.grid(True)
                     plt.legend()
                     
-                    debug_dir = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\debug_results"
+                    debug_dir = str(a3_stochastic_relative_path / "b99-frame1to4-get-b1to3"/ "debug_results")
                     os.makedirs(debug_dir, exist_ok=True)
                     
                     timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -3579,11 +4103,12 @@ def update_dissipation_rate(*args):
 
 def reset_animation_chain(*args, **kwargs):
     """Reset animation chaining to start from neutral by deleting animation keys and initializing solvers"""
-    global LAST_ANIMATION_END_FRAME, LAST_ANIMATION_PHONEME, CONTINUE_FROM_LAST, ACCUMULATED_ERROR, DEBUG_DATA
+    global LAST_ANIMATION_END_FRAME, LAST_ANIMATION_PHONEME, CONTINUE_FROM_LAST, ACCUMULATED_ERROR, DEBUG_DATA, KEYBOARD_CURRENT_PHONEME
 
     # Reset global variables
-    LAST_ANIMATION_END_FRAME = 0
+    LAST_ANIMATION_END_FRAME = 14
     LAST_ANIMATION_PHONEME = "dataV22_AU0_neutral"
+    KEYBOARD_CURRENT_PHONEME = "dataV22_AU0_neutral"
     CONTINUE_FROM_LAST = False
     ACCUMULATED_ERROR = None  # Reset feedback control error
     DEBUG_DATA.clear()  # Clear debug data
@@ -3592,8 +4117,8 @@ def reset_animation_chain(*args, **kwargs):
 
     print("[RESET] Running delete_head_keys.py to clean hierarchy...")
     import sys
-    if r"C:\Users\zpa18\a3-stochastic-V1\automation" not in sys.path:
-        sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\automation")
+    if str(a3_stochastic_relative_path / "automation") not in sys.path:
+        sys.path.insert(0, str(a3_stochastic_relative_path / "automation"))
     import delete_head_keys
     import importlib
     importlib.reload(delete_head_keys)
@@ -3603,26 +4128,33 @@ def reset_animation_chain(*args, **kwargs):
     cmds.select(clear=True)
 
     print("[RESET] Cleaning up Ziva solvers and blendshapes...")
-    valid_meshes = [m for m in SOFT_TISSUE_MESHES if cmds.objExists(m)]
-    for mesh in valid_meshes:
+    valid_soft_tissues = [m for m in SOFT_TISSUE_MESHES if cmds.objExists(m)]
+    valid_teeth_tongue = [m for m in get_teeth_tongue_meshes() if cmds.objExists(m)]
+    all_cleanup_meshes = valid_soft_tissues + valid_teeth_tongue
+    for mesh in all_cleanup_meshes:
         bs_name = f"master_bs_{mesh}"
         if cmds.objExists(bs_name):
             cmds.cutKey(bs_name, time=(14.01, 1000000), clear=True)
             if cmds.attributeQuery(mesh, node=bs_name, exists=True):
                 cmds.setAttr(f"{bs_name}.{mesh}", 1.0)
-            
-            # Reset visibility to live Ziva
+
+        render_mesh = f"{mesh}_RENDER"
+        if cmds.objExists(render_mesh):
+            cmds.cutKey(render_mesh, time=(14.01, 1000000), clear=True)
+            bs_render = f"master_bs_{render_mesh}"
+            if cmds.objExists(bs_render):
+                cmds.cutKey(bs_render, time=(14.01, 1000000), clear=True)
+            if cmds.attributeQuery("visibility", node=render_mesh, exists=True):
+                cmds.setAttr(f"{render_mesh}.visibility", 1)
+            if cmds.attributeQuery("visibility", node=mesh, exists=True):
+                cmds.setAttr(f"{mesh}.visibility", 0)
+        else:
             if cmds.attributeQuery("visibility", node=mesh, exists=True):
                 cmds.setAttr(f"{mesh}.visibility", 1)
-            
-            # Try to delete proxy renders/snapshots
-            render_mesh = f"{mesh}_RENDER"
-            if cmds.objExists(render_mesh):
-                cmds.delete(render_mesh)
                 
-            snapshots = cmds.ls(f"{mesh}_sagged_snapshot_*") + cmds.ls(f"{mesh}_equil_snapshot_*")
-            if snapshots:
-                cmds.delete(snapshots)
+        snapshots = cmds.ls(f"{mesh}_sagged_snapshot_*") + cmds.ls(f"{mesh}_equil_snapshot_*")
+        if snapshots:
+            cmds.delete(snapshots)
                 
     solvers = cmds.ls(type='zSolver')
     for solver_shape in solvers:
@@ -3642,9 +4174,9 @@ def reset_animation_chain(*args, **kwargs):
             cmds.cutKey(nucleus, attribute='startFrame', time=(0, 1000000), clear=True)
             cmds.setAttr(f"{nucleus}.startFrame", 1)
             
-    # Adjust timeline minTime/maxTime and jump to frame 0
+    # Adjust timeline minTime/maxTime and jump to frame 14
     cmds.playbackOptions(minTime=0, maxTime=50)
-    cmds.currentTime(0, edit=True)
+    cmds.currentTime(14, edit=True)
     update_status_display()
     
     try:
@@ -3652,11 +4184,11 @@ def reset_animation_chain(*args, **kwargs):
     except NameError:
         pass
 
-    print("[UI] Animation chain reset. Next animation will start from frame 0.")
+    print("[UI] Animation chain reset. Next animation will start from frame 14.")
     
     silent = kwargs.get('silent', False)
     if not silent:
-        cmds.confirmDialog(title='Reset', message='Animation chain reset!\n\nAll animation keys >14 and physics states have been initialized.\nNext animation will start from frame 0.')
+        cmds.confirmDialog(title='Reset', message='Animation chain reset!\n\nAll animation keys >14 and physics states have been initialized.\nNext animation will start from frame 14.')
 
 # --- KEYBOARD MODE FUNCTIONS ---
 
@@ -3695,7 +4227,18 @@ def keyboard_transition_to_phoneme(target_key):
     
     try:
         # Perform the transition
-        start_frame = LAST_ANIMATION_END_FRAME
+        # --- AUTOMATE JUMP TO 0 IF STARTING FROM NEUTRAL ---
+        if KEYBOARD_CURRENT_PHONEME == "dataV22_AU0_neutral":
+            print("[AUTO-RESET] Starting from Neutral. Automatically resetting animation chain and jumping to frame 0 for Ziva init.")
+            reset_animation_chain(silent=True)
+            try:
+                import maya.cmds as cmds
+                cmds.currentTime(0, edit=True)
+            except Exception:
+                pass
+            start_frame = 14
+        else:
+            start_frame = LAST_ANIMATION_END_FRAME
         
         # Run the transition (reusing existing function)
         final_frame = smart_single_transition(
@@ -3755,12 +4298,137 @@ def cleanup_keyboard_hotkeys():
     print("[KEYBOARD] Keyboard mode disabled")
 
 
+import threading
+import maya.utils
+
+CHORD_BUFFER = []
+CHORD_TIMER = None
+CHORD_WINDOW_SEC = 0.4
+
+def process_chord_buffer():
+    global CHORD_TIMER, CHORD_BUFFER, KEYBOARD_CURRENT_PHONEME
+    
+    keys = list(CHORD_BUFFER)
+    CHORD_BUFFER.clear()
+    CHORD_TIMER = None
+    
+    if not keys:
+        return
+        
+    # Extract unique keys in order
+    unique_keys = []
+    for k in keys:
+        if k not in unique_keys:
+            unique_keys.append(k)
+            
+    # Handle neutral clear
+    if '0' in unique_keys:
+        unique_keys = ['0']
+            
+    if len(unique_keys) == 1:
+        # Standard single key
+        def _exec_single():
+            keyboard_transition_to_phoneme(unique_keys[0])
+        maya.utils.executeDeferred(_exec_single)
+        return
+        
+    # Chord logic
+    # Group by octave, pick the last pressed for each octave
+    octave_picks = {}
+    for k in unique_keys:
+        if k in KEYBOARD_PHONEME_MAP:
+            octave = KEYBOARD_PHONEME_MAP[k].get('octave', 'mid')
+            octave_picks[octave] = KEYBOARD_PHONEME_MAP[k]['phoneme']
+            
+    targets = list(octave_picks.values())
+    
+    # Expand any targets that are already chords (e.g. happy=chord_...)
+    expanded_targets = []
+    for t in targets:
+        if t.startswith("chord_"):
+            expanded_targets.extend(t[6:].split("___"))
+        else:
+            expanded_targets.append(t)
+            
+    # De-duplicate expanded targets
+    unique_targets = []
+    for t in expanded_targets:
+        if t not in unique_targets:
+            unique_targets.append(t)
+            
+    if len(unique_targets) == 1:
+        def _exec_single_after_resolve():
+            target_p = unique_targets[0]
+            # Find key for this phoneme
+            k_char = None
+            for key, info in KEYBOARD_PHONEME_MAP.items():
+                if info['phoneme'] == target_p:
+                    k_char = key
+                    break
+            if k_char:
+                keyboard_transition_to_phoneme(k_char)
+        maya.utils.executeDeferred(_exec_single_after_resolve)
+        return
+        
+    # Execute merged transition
+    combined_pose_name = "chord_" + "___".join(unique_targets)
+    
+    def _exec_chord():
+        global LAST_ANIMATION_END_FRAME, LAST_ANIMATION_PHONEME, KEYBOARD_CURRENT_PHONEME
+        current = LAST_ANIMATION_PHONEME
+        if current == combined_pose_name:
+            print("[CHORD] Already at chord pose.")
+            return
+            
+        print(f"\n{'='*50}")
+        print(f"[CHORD DETECTED] {keys} -> Resolved: {list(octave_picks.keys())}")
+        print(f"[CHORD] Targets: {unique_targets}")
+        print(f"{'='*50}")
+        
+        try:
+            start_frame = LAST_ANIMATION_END_FRAME
+            if current == "dataV22_AU0_neutral":
+                print("[AUTO-RESET] Starting from Neutral. Reseting.")
+                reset_animation_chain(silent=True)
+                start_frame = 14
+                try:
+                    import maya.cmds as cmds
+                    cmds.currentTime(0, edit=True)
+                except Exception:
+                    pass
+                    
+            final_frame = smart_single_transition(
+                current, combined_pose_name, start_frame,
+                is_first_transition=False
+            )
+            
+            LAST_ANIMATION_END_FRAME = final_frame
+            LAST_ANIMATION_PHONEME = combined_pose_name
+            KEYBOARD_CURRENT_PHONEME = combined_pose_name
+            
+            # Try to show a combined label
+            label = " + ".join([KEYBOARD_PHONEME_MAP[k]['label'] for k in keys if k in KEYBOARD_PHONEME_MAP])
+            if cmds.text('keyboard_status_text', exists=True):
+                cmds.text('keyboard_status_text', edit=True, 
+                         label=f"Current: [Chord] {label}  |  Frame: {LAST_ANIMATION_END_FRAME}")
+                         
+            if cmds.checkBox('auto_playblast_checkbox', exists=True) and cmds.checkBox('auto_playblast_checkbox', query=True, value=True):
+                run_playblast_script()
+                
+        except Exception as e:
+            print(f"[CHORD ERROR] {e}")
+            import traceback
+            traceback.print_exc()
+            
+    maya.utils.executeDeferred(_exec_chord)
+
+
 def on_keyboard_input_changed(*args):
     """
     Called when the keyboard input field changes.
-    Processes the last character typed and triggers the appropriate transition.
+    Appends typed keys to CHORD_BUFFER and starts/resets a timer to detect chords.
     """
-    global KEYBOARD_CURRENT_PHONEME
+    global KEYBOARD_CURRENT_PHONEME, CHORD_TIMER, CHORD_BUFFER
     
     if not KEYBOARD_MODE_ENABLED:
         return
@@ -3780,7 +4448,11 @@ def on_keyboard_input_changed(*args):
         
         # Check if this key is mapped
         if last_char in KEYBOARD_PHONEME_MAP:
-            keyboard_transition_to_phoneme(last_char)
+            CHORD_BUFFER.append(last_char)
+            if CHORD_TIMER is not None:
+                CHORD_TIMER.cancel()
+            CHORD_TIMER = threading.Timer(CHORD_WINDOW_SEC, process_chord_buffer)
+            CHORD_TIMER.start()
         else:
             print(f"[KEYBOARD] Unknown key: '{last_char}' - Valid keys: {', '.join(KEYBOARD_PHONEME_MAP.keys())}")
             
@@ -3818,8 +4490,12 @@ def update_keyboard_status_display():
     """Update the keyboard status display in the UI"""
     try:
         if cmds.text('keyboard_status_text', exists=True):
-            current_label = PHONEME_TO_KEY.get(KEYBOARD_CURRENT_PHONEME, {}).get('label', 'Unknown')
-            current_key = PHONEME_TO_KEY.get(KEYBOARD_CURRENT_PHONEME, {}).get('key', '?')
+            if KEYBOARD_CURRENT_PHONEME.startswith("chord_"):
+                current_label = "Chord"
+                current_key = "*"
+            else:
+                current_label = PHONEME_TO_KEY.get(KEYBOARD_CURRENT_PHONEME, {}).get('label', 'Unknown')
+                current_key = PHONEME_TO_KEY.get(KEYBOARD_CURRENT_PHONEME, {}).get('key', '?')
             cmds.text('keyboard_status_text', edit=True, 
                      label=f"Current: [{current_key}] {current_label}  |  Frame: {LAST_ANIMATION_END_FRAME}")
     except:
@@ -3832,11 +4508,25 @@ def smart_single_transition(current_pose, target_pose, start_frame, is_first_tra
     Attempts to transition from current to target_pose.
     If the direct path doesn't exist, it falls back to current -> neutral -> target_pose.
     """
+    neutral = "dataV22_AU0_neutral"
+
+    # Handle returning to neutral from a combined expression pose
+    if target_pose == neutral and is_combined_expression_pose(current_pose):
+        return run_merged_return_to_neutral(current_pose, start_frame, is_first_transition=is_first_transition)
+
+    # Handle transitioning from neutral to a combined expression pose
+    if current_pose == neutral and is_combined_expression_pose(target_pose):
+        if target_pose.startswith("chord_"):
+            targets = target_pose[6:].split("___")
+        else:
+            short = target_pose.replace('dataV22_', '')
+            parts = short.split('_')
+            targets = [f"dataV22_{p}" for p in parts if p.upper().startswith('AU') and p.upper() != 'AU0']
+        return run_merged_transition(targets, start_frame, continue_mode=True, is_first_transition=is_first_transition)
+
     task_string = f"{current_pose} to {target_pose}"
     normalized_key = normalize_task_key(task_string)
     db_key_map = {normalize_task_key(k): k for k in DEFORMATION_PATH_DB}
-    
-    neutral = "dataV22_AU0_neutral"
     
     # Check if path exists or if it's already a transition involving neutral
     if normalized_key in db_key_map or current_pose == neutral or target_pose == neutral:
@@ -3850,16 +4540,32 @@ def smart_single_transition(current_pose, target_pose, start_frame, is_first_tra
     print(f"[INFO] Routing through Neutral pose: {c_short} -> Neutral -> {t_short}")
     
     # Step 1: current to neutral
-    intermediate_frame = run_single_transition(
-        current_pose, neutral, start_frame,
-        continue_mode=True, is_first_transition=is_first_transition
-    )
+    if is_combined_expression_pose(current_pose):
+        intermediate_frame = run_merged_return_to_neutral(
+            current_pose, start_frame, is_first_transition=is_first_transition
+        )
+    else:
+        intermediate_frame = run_single_transition(
+            current_pose, neutral, start_frame,
+            continue_mode=True, is_first_transition=is_first_transition
+        )
     
     # Step 2: neutral to target
-    final_frame = run_single_transition(
-        neutral, target_pose, intermediate_frame,
-        continue_mode=True, is_first_transition=False
-    )
+    if is_combined_expression_pose(target_pose):
+        if target_pose.startswith("chord_"):
+            targets = target_pose[6:].split("___")
+        else:
+            short = target_pose.replace('dataV22_', '')
+            parts = short.split('_')
+            targets = [f"dataV22_{p}" for p in parts if p.upper().startswith('AU') and p.upper() != 'AU0']
+        final_frame = run_merged_transition(
+            targets, intermediate_frame, continue_mode=True, is_first_transition=False
+        )
+    else:
+        final_frame = run_single_transition(
+            neutral, target_pose, intermediate_frame,
+            continue_mode=True, is_first_transition=False
+        )
     
     return final_frame
 
@@ -3884,11 +4590,24 @@ def dropdown_immediate_transition(target_phoneme, label_text):
     print(f"{'='*50}")
 
     try:
-        start_frame = LAST_ANIMATION_END_FRAME
+        # --- AUTOMATE JUMP TO 0 IF STARTING FROM NEUTRAL ---
+        if current == "dataV22_AU0_neutral":
+            print("[AUTO-RESET] Starting from Neutral. Automatically resetting animation chain and jumping to frame 0 for Ziva init.")
+            reset_animation_chain(silent=True)
+            try:
+                import maya.cmds as cmds
+                cmds.currentTime(0, edit=True)
+            except Exception:
+                pass
+            start_frame = 14
+        else:
+            start_frame = LAST_ANIMATION_END_FRAME
+
         final_frame = smart_single_transition(
             current, target_phoneme, start_frame,
             is_first_transition=False
         )
+
         LAST_ANIMATION_END_FRAME = final_frame
         LAST_ANIMATION_PHONEME = target_phoneme
         KEYBOARD_CURRENT_PHONEME = target_phoneme
@@ -3903,7 +4622,7 @@ def dropdown_immediate_transition(target_phoneme, label_text):
 
 
 def dropdown_immediate_expression(command_key):
-    """Run a multi-step expression command (e.g. 'raise the brow' = AU1 then AU2)."""
+    """Run an expression command, automatically merging multi-AU expressions into ONE single transition."""
     global LAST_ANIMATION_END_FRAME, LAST_ANIMATION_PHONEME, KEYBOARD_CURRENT_PHONEME
 
     if command_key not in EXPRESSION_COMMANDS:
@@ -3911,37 +4630,71 @@ def dropdown_immediate_expression(command_key):
         return
 
     sequence = EXPRESSION_COMMANDS[command_key]
-    # Skip the neutral prefix if we're already past it -- start from current pose
-    current = LAST_ANIMATION_PHONEME
-    # If the expression starts with neutral and we're already at neutral, skip it
-    targets = list(sequence)
-    if targets and targets[0] == current:
-        targets = targets[1:]
+    targets = [p for p in sequence if p != "dataV22_AU0_neutral" and p != "Neutral"]
     if not targets:
-        print(f"[CLICK] Already at expression '{command_key}'")
-        return
+        if LAST_ANIMATION_PHONEME == "dataV22_AU0_neutral":
+            print(f"[CLICK] Already at expression '{command_key}'")
+            return
+        else:
+            print(f"\n{'='*50}")
+            print(f"[EXPRESSION] '{command_key}' (Returning to Neutral)")
+            print(f"{'='*50}")
+            try:
+                start_frame = LAST_ANIMATION_END_FRAME
+                final_frame = smart_single_transition(
+                    LAST_ANIMATION_PHONEME, "dataV22_AU0_neutral", start_frame,
+                    is_first_transition=False
+                )
+                # Let the return animation play out. 
+                # (final_frame is left exactly as returned by smart_single_transition)
+                LAST_ANIMATION_END_FRAME = final_frame
+                LAST_ANIMATION_PHONEME = "dataV22_AU0_neutral"
+                KEYBOARD_CURRENT_PHONEME = "dataV22_AU0_neutral"
+                update_status_display()
+                print(f"[EXPRESSION] Returned to Neutral (frame 0)")
+                if cmds.checkBox('auto_playblast_checkbox', exists=True) and cmds.checkBox('auto_playblast_checkbox', query=True, value=True):
+                    run_playblast_script()
+            except Exception as e:
+                print(f"[EXPRESSION ERROR] {e}")
+                import traceback
+                traceback.print_exc()
+            return
 
     print(f"\n{'='*50}")
-    print(f"[EXPRESSION] '{command_key}' ({len(targets)} steps)")
+    print(f"[EXPRESSION] '{command_key}' ({len(targets)} target AUs -> Merged in ONE transition)")
     print(f"{'='*50}")
 
     try:
-        for t in targets:
-            t_short = t.replace('dataV22_', '')
-            c_short = LAST_ANIMATION_PHONEME.replace('dataV22_', '')
-            if t == LAST_ANIMATION_PHONEME:
-                continue
-            print(f"  [{c_short} -> {t_short}]")
+        # --- AUTOMATE JUMP TO 0 IF STARTING FROM NEUTRAL ---
+        if LAST_ANIMATION_PHONEME == "dataV22_AU0_neutral":
+            print("[AUTO-RESET] Starting from Neutral. Automatically resetting animation chain and jumping to frame 0 for Ziva init.")
+            reset_animation_chain(silent=True)
+            try:
+                import maya.cmds as cmds
+                cmds.currentTime(0, edit=True)
+            except Exception:
+                pass
+            start_frame = 14
+        else:
             start_frame = LAST_ANIMATION_END_FRAME
+        if len(targets) == 1:
+            target_pose = targets[0]
             final_frame = smart_single_transition(
-                LAST_ANIMATION_PHONEME, t, start_frame,
+                LAST_ANIMATION_PHONEME, target_pose, start_frame,
                 is_first_transition=False
             )
-            LAST_ANIMATION_END_FRAME = final_frame
-            LAST_ANIMATION_PHONEME = t
-            KEYBOARD_CURRENT_PHONEME = t
+            combined_pose_name = target_pose
+        else:
+            final_frame, combined_pose_name = smart_merged_expression_transition(
+                LAST_ANIMATION_PHONEME, targets, start_frame,
+                is_first_transition=False, expression_name=command_key
+            )
+
+        LAST_ANIMATION_END_FRAME = final_frame
+        LAST_ANIMATION_PHONEME = combined_pose_name
+        KEYBOARD_CURRENT_PHONEME = combined_pose_name
         update_status_display()
-        print(f"[EXPRESSION] Done: '{command_key}'")
+        print(f"[EXPRESSION] Done: '{command_key}' -> Pose: '{combined_pose_name}'")
         if cmds.checkBox('auto_playblast_checkbox', exists=True) and cmds.checkBox('auto_playblast_checkbox', query=True, value=True):
             run_playblast_script()
     except Exception as e:
@@ -3987,16 +4740,17 @@ def make_custom_dropdown(button_id, items, callback, bg_color):
 def handle_phoneme_selection(label, internal):
     if internal:
         dropdown_immediate_transition(internal, label)
-
+        focus_viewport()
 
 def handle_facs_selection(label, internal):
     if internal:
         dropdown_immediate_transition(internal, label)
-
+        focus_viewport()
 
 def handle_emotion_selection(label, command_key):
     if command_key:
         dropdown_immediate_expression(command_key)
+        focus_viewport()
 
 def toggle_render_after_demo(*args):
     """Toggle the render-after-demo checkbox"""
@@ -4245,20 +4999,33 @@ def run_not_even_you_demo(*args):
         ]
 
         # --- CREATE PROXY RENDER MESHES IMMEDIATELY ---
-        valid_meshes = [m for m in SOFT_TISSUE_MESHES if cmds.objExists(m)]
-        needs_proxy = any(not cmds.objExists(f"{m}_RENDER") for m in valid_meshes)
+        valid_soft_tissues = [m for m in SOFT_TISSUE_MESHES if cmds.objExists(m)]
+        valid_teeth_tongue = [m for m in get_teeth_tongue_meshes() if cmds.objExists(m)]
+        all_proxy_targets = valid_soft_tissues + valid_teeth_tongue
+        needs_proxy = any(not cmds.objExists(f"{m}_RENDER") for m in all_proxy_targets)
         if needs_proxy:
             print(f"[DEMO] Creating Proxy Render Meshes at Frame 0...")
             cmds.currentTime(0, edit=True)
-            for target_mesh in valid_meshes:
+            for target_mesh in all_proxy_targets:
                 render_mesh = f"{target_mesh}_RENDER"
                 bs_name = f"master_bs_{target_mesh}"
                 if not cmds.objExists(render_mesh):
                     render_mesh_node = cmds.duplicate(target_mesh, name=render_mesh)[0]
-                    cmds.setAttr(f"{target_mesh}.visibility", 0)
-                    cmds.setAttr(f"{render_mesh_node}.visibility", 1)
-                    cmds.blendShape([target_mesh], render_mesh_node, name=bs_name, origin='local')
-                    cmds.setAttr(f"{bs_name}.{target_mesh}", 1.0)
+                    if cmds.attributeQuery('visibility', node=target_mesh, exists=True):
+                        cmds.setAttr(f"{target_mesh}.visibility", 0)
+                    if cmds.attributeQuery('visibility', node=render_mesh_node, exists=True):
+                        cmds.setAttr(f"{render_mesh_node}.visibility", 1)
+                    if not cmds.objExists(bs_name):
+                        cmds.blendShape([target_mesh], render_mesh_node, name=bs_name, origin='local')
+                        cmds.setAttr(f"{bs_name}.{target_mesh}", 1.0)
+        else:
+            for target_mesh in all_proxy_targets:
+                render_mesh = f"{target_mesh}_RENDER"
+                if cmds.objExists(render_mesh):
+                    if cmds.attributeQuery('visibility', node=target_mesh, exists=True):
+                        cmds.setAttr(f"{target_mesh}.visibility", 0)
+                    if cmds.attributeQuery('visibility', node=render_mesh, exists=True):
+                        cmds.setAttr(f"{render_mesh}.visibility", 1)
 
         # Run the deformation directly from the pre-computed checkpoint
         start_frame = 14
@@ -4308,6 +5075,11 @@ def toggle_teeth_hack(*args):
     global TEETH_HACK_ENABLED
     TEETH_HACK_ENABLED = cmds.checkBox('teeth_hack_checkbox', query=True, value=True)
     print(f"[UI] Teeth/Tongue rotation hack enabled: {TEETH_HACK_ENABLED}")
+    if TEETH_HACK_ENABLED:
+        try:
+            ensure_teeth_tongue_render_meshes(at_frame_zero=False)
+        except Exception as e:
+            print(f"[WARNING] Could not initialize teeth/tongue render meshes: {e}")
 
 def toggle_verbose_mode(*args):
     global VERBOSE_MODE
@@ -4325,7 +5097,7 @@ def run_finger_clap_test(*args):
 
     # 2. Add automation directory to system path if missing
     import sys
-    automation_path = r"C:\Users\zpa18\a3-stochastic-V1\automation"
+    automation_path = str(a3_stochastic_relative_path / "automation")
     if automation_path not in sys.path:
         sys.path.insert(0, automation_path)
 
@@ -4460,6 +5232,219 @@ def reset_and_run_pipeline(*args):
     print("[DEV] Running Full Pipeline from Type-In field...")
     run_full_pipeline()
 
+# ==========================================================
+#  CAMERA CONTROLS
+# ==========================================================
+
+def focus_viewport(*args):
+    """Returns focus to the 3D viewport so arrow keys don't navigate UI buttons"""
+    import maya.cmds as cmds
+    panel = cmds.getPanel(withFocus=True)
+    if panel and 'modelPanel' in panel:
+        return
+        
+    for p in cmds.getPanel(type='modelPanel') or []:
+        cam = cmds.modelPanel(p, query=True, camera=True)
+        if cam in ['persp', 'perspShape']:
+            cmds.setFocus(p)
+            return
+            
+    panels = cmds.getPanel(type='modelPanel')
+    if panels:
+        cmds.setFocus(panels[0])
+
+def handle_arrow_hotkey(direction):
+    """Global handler for arrow keys"""
+    import maya.cmds as cmds
+    
+    # 1. Find correct panel
+    panel = cmds.getPanel(withFocus=True)
+    if not panel or 'modelPanel' not in panel:
+        for p in cmds.getPanel(type='modelPanel') or []:
+            cam = cmds.modelPanel(p, query=True, camera=True)
+            if cam in ['persp', 'perspShape']:
+                panel = p
+                break
+        if not panel:
+            panels = cmds.getPanel(type='modelPanel')
+            panel = panels[0] if panels else None
+
+    if not panel:
+        print("[CAMERA ERROR] No model panel found to rotate.")
+        return
+        
+    cam = cmds.modelPanel(panel, query=True, camera=True)
+    
+    # Force focus to this panel
+    cmds.setFocus(panel)
+    
+    # 2. Try to rotate
+    amount = 15
+    
+    # We must operate on the transform node, not the shape node
+    if cmds.objectType(cam) == 'camera':
+        cam = cmds.listRelatives(cam, parent=True)[0]
+        
+    try:
+        # Use exact camera node for orbit
+        if direction == 'up':
+            cmds.orbit(cam, verticalAngle=-amount)
+        elif direction == 'down':
+            cmds.orbit(cam, verticalAngle=amount)
+        elif direction == 'left':
+            cmds.orbit(cam, horizontalAngle=amount)
+        elif direction == 'right':
+            cmds.orbit(cam, horizontalAngle=-amount)
+        cmds.refresh()
+    except Exception as e:
+        print(f"[CAMERA ERROR] Failed to orbit camera '{cam}': {e}")
+
+def setup_camera_hotkeys(*args):
+    """Binds arrow keys to camera tumbling"""
+    import maya.cmds as cmds
+    import time
+    try:
+        # Register handler to __main__ so hotkeys can find it
+        import __main__
+        __main__.handle_arrow_hotkey = handle_arrow_hotkey
+        
+        # We put the print statement directly in the string so we KNOW it fired, even if the function fails!
+        py_up = 'import __main__; __main__.handle_arrow_hotkey("up")'
+        py_dn = 'import __main__; __main__.handle_arrow_hotkey("down")'
+        py_lf = 'import __main__; __main__.handle_arrow_hotkey("left")'
+        py_rt = 'import __main__; __main__.handle_arrow_hotkey("right")'
+        
+        # Use unique names to avoid Maya's runtime command deletion bugs
+        uid = int(time.time())
+        rtc_up = f'camOrbitUpRTC_{uid}'
+        rtc_dn = f'camOrbitDownRTC_{uid}'
+        rtc_lf = f'camOrbitLeftRTC_{uid}'
+        rtc_rt = f'camOrbitRightRTC_{uid}'
+        
+        cmds.runTimeCommand(rtc_up, annotation='Orbit Up', command=py_up, category='Custom', commandLanguage='python')
+        cmds.runTimeCommand(rtc_dn, annotation='Orbit Down', command=py_dn, category='Custom', commandLanguage='python')
+        cmds.runTimeCommand(rtc_lf, annotation='Orbit Left', command=py_lf, category='Custom', commandLanguage='python')
+        cmds.runTimeCommand(rtc_rt, annotation='Orbit Right', command=py_rt, category='Custom', commandLanguage='python')
+        
+        cmds.nameCommand('camOrbitUpCmd', annotation='Orbit Up', command=rtc_up)
+        cmds.nameCommand('camOrbitDownCmd', annotation='Orbit Down', command=rtc_dn)
+        cmds.nameCommand('camOrbitLeftCmd', annotation='Orbit Left', command=rtc_lf)
+        cmds.nameCommand('camOrbitRightCmd', annotation='Orbit Right', command=rtc_rt)
+        
+        cmds.hotkey(keyShortcut='Up', altModifier=True, name='camOrbitUpCmd')
+        cmds.hotkey(keyShortcut='Down', altModifier=True, name='camOrbitDownCmd')
+        cmds.hotkey(keyShortcut='Left', altModifier=True, name='camOrbitLeftCmd')
+        cmds.hotkey(keyShortcut='Right', altModifier=True, name='camOrbitRightCmd')
+        print("[CAMERA] Bound Alt+Arrow keys to camera orbit.")
+    except Exception as e:
+        print(f"[CAMERA SETUP ERROR] {e}")
+
+def cleanup_camera_hotkeys(*args):
+    """Restores default Maya arrow key behaviors"""
+    import maya.cmds as cmds
+    try:
+        cmds.hotkey(keyShortcut='Up', altModifier=True, name='')
+        cmds.hotkey(keyShortcut='Down', altModifier=True, name='')
+        cmds.hotkey(keyShortcut='Left', altModifier=True, name='')
+        cmds.hotkey(keyShortcut='Right', altModifier=True, name='')
+        print("[CAMERA] Restored default Alt+Arrow keys.")
+    except Exception as e:
+        pass
+
+def tumble_camera(direction):
+    """Orbits the active viewport camera around its center of interest"""
+    import maya.cmds as cmds
+    panel = cmds.getPanel(withFocus=True)
+    if not panel or 'modelPanel' not in panel:
+        panels = cmds.getPanel(type='modelPanel')
+        if panels: panel = panels[0]
+        else: return
+        
+    cam = cmds.modelPanel(panel, query=True, camera=True)
+    
+    amount = 15  # degrees
+    if direction == 'up':
+        cmds.orbit(cam, verticalAngle=-amount)
+    elif direction == 'down':
+        cmds.orbit(cam, verticalAngle=amount)
+    elif direction == 'left':
+        cmds.orbit(cam, horizontalAngle=amount)
+    elif direction == 'right':
+        cmds.orbit(cam, horizontalAngle=-amount)
+    cmds.refresh()
+
+def set_camera_preset(preset, *args):
+    """Moves the camera to a predefined preset view"""
+    import maya.cmds as cmds
+    
+    panel = cmds.getPanel(withFocus=True)
+    if not panel or 'modelPanel' not in panel:
+        for p in cmds.getPanel(type='modelPanel') or []:
+            cam = cmds.modelPanel(p, query=True, camera=True)
+            if cam in ['persp', 'perspShape']:
+                panel = p
+                break
+        if not panel:
+            panels = cmds.getPanel(type='modelPanel')
+            panel = panels[0] if panels else None
+            
+    if not panel:
+        print(f"[CAMERA PRESET ERROR] No valid model panel found.")
+        return
+        
+    cam = cmds.modelPanel(panel, query=True, camera=True)
+    
+    # Ensure we operate on the transform node, not the shape node
+    if cmds.objectType(cam) == 'camera':
+        cam = cmds.listRelatives(cam, parent=True)[0]
+    
+    # Identify what to frame. DO NOT select jaw01 (it will frame the inside of the teeth)
+    target = None
+    if cmds.objExists("head_grp"):
+        target = "head_grp"
+    elif cmds.objExists("head_mesh"):
+        target = "head_mesh"
+        
+    if target:
+        cmds.select(target)
+    else:
+        meshes = cmds.ls(type='mesh')
+        if meshes:
+            # Select transforms of meshes
+            transforms = cmds.listRelatives(meshes, parent=True)
+            if transforms:
+                cmds.select(transforms)
+        else:
+            cmds.select(all=True)
+            
+    if preset == 'frame':
+        cmds.viewFit(cam)
+        cmds.select(clear=True)
+        focus_viewport()
+        return
+
+    try:
+        if preset == 'front':
+            cmds.xform(cam, rotation=[0, 180, 0], worldSpace=True)
+        elif preset == 'left_34':
+            cmds.xform(cam, rotation=[0, 135, 0], worldSpace=True)
+        elif preset == 'right_34':
+            cmds.xform(cam, rotation=[0, 225, 0], worldSpace=True)
+        elif preset == 'mouth':
+            cmds.xform(cam, rotation=[0, 180, 0], worldSpace=True)
+            
+        cmds.viewFit(cam)
+        
+        if preset == 'mouth':
+            cmds.dolly(cam, relative=True, distance=-20)
+            cmds.track(cam, up=5)
+            
+    except:
+        pass
+    finally:
+        cmds.select(clear=True)
+        focus_viewport()
+
 def create_automation_ui():
     """
     Builds a polished, artist-friendly UI window inspired by MetaHuman.
@@ -4540,6 +5525,33 @@ def create_automation_ui():
 
     make_custom_dropdown('emotion_btn', EMOTION_DROPDOWN_ITEMS, handle_emotion_selection, bg_dropdown)
 
+    cmds.separator(height=6, style='none')
+
+    # ==========================================================
+    #  CAMERA & VIEW CONTROLS
+    # ==========================================================
+    cmds.text(label='  Camera Controls', align='left', font='boldLabelFont',
+              backgroundColor=bg_header, height=22)
+    cmds.separator(height=2, style='none')
+    cmds.rowLayout(numberOfColumns=5, columnWidth5=(95, 95, 95, 95, 95),
+                   columnAttach=[(1, 'both', 2), (2, 'both', 2), (3, 'both', 2), (4, 'both', 2), (5, 'both', 2)])
+    cmds.button(label='Front', backgroundColor=accent, command=lambda *args: set_camera_preset("front"))
+    cmds.button(label='L 3/4', backgroundColor=accent, command=lambda *args: set_camera_preset("left_34"))
+    cmds.button(label='R 3/4', backgroundColor=accent, command=lambda *args: set_camera_preset("right_34"))
+    cmds.button(label='Mouth', backgroundColor=accent, command=lambda *args: set_camera_preset("mouth"))
+    cmds.button(label='Frame', backgroundColor=btn_reset, command=lambda *args: set_camera_preset("frame"))
+    cmds.setParent('..')
+    
+    cmds.separator(height=2, style='none')
+    cmds.rowLayout(numberOfColumns=4, columnWidth4=(118, 118, 118, 118),
+                   columnAttach=[(1, 'both', 2), (2, 'both', 2), (3, 'both', 2), (4, 'both', 2)])
+    btn_color = [0.25, 0.3, 0.35]
+    cmds.button(label='Orbit UP', backgroundColor=btn_color, command=lambda *args: handle_arrow_hotkey("up"))
+    cmds.button(label='Orbit DOWN', backgroundColor=btn_color, command=lambda *args: handle_arrow_hotkey("down"))
+    cmds.button(label='Orbit LEFT', backgroundColor=btn_color, command=lambda *args: handle_arrow_hotkey("left"))
+    cmds.button(label='Orbit RIGHT', backgroundColor=btn_color, command=lambda *args: handle_arrow_hotkey("right"))
+    cmds.setParent('..')
+    
     cmds.separator(height=6, style='none')
 
     # ==========================================================
@@ -4693,41 +5705,46 @@ def create_automation_ui():
                   value=KEYBOARD_MODE_ENABLED,
                   changeCommand=toggle_keyboard_mode)
 
-    cmds.rowLayout(numberOfColumns=6, columnWidth6=(75, 75, 75, 75, 75, 75),
-                   columnAttach=[(1, 'both', 1), (2, 'both', 1), (3, 'both', 1), (4, 'both', 1), (5, 'both', 1), (6, 'both', 1)])
-    cmds.text(label="[0] Neu", align='center', backgroundColor=accent)
-    cmds.text(label="[n] N", align='center', backgroundColor=accent)
-    cmds.text(label="[a] AA", align='center', backgroundColor=accent)
-    cmds.text(label="[i] IY", align='center', backgroundColor=accent)
-    cmds.text(label="[t] T", align='center', backgroundColor=accent)
-    cmds.text(label="[e] EH", align='center', backgroundColor=accent)
+    bg_high = [0.8, 0.4, 0.4]
+    bg_mid = [0.4, 0.8, 0.4]
+    bg_low = [0.4, 0.4, 0.8]
+
+    cmds.rowLayout(numberOfColumns=3, columnWidth3=(150, 150, 150),
+                   columnAttach=[(1, 'both', 1), (2, 'both', 1), (3, 'both', 1)])
+    cmds.text(label="[f] Frown", align='center', backgroundColor=bg_high)
+    cmds.text(label="[b] Brow", align='center', backgroundColor=bg_high)
+    cmds.text(label="[q] Squint", align='center', backgroundColor=bg_high)
     cmds.setParent('..')
 
-    cmds.rowLayout(numberOfColumns=6, columnWidth6=(75, 75, 75, 75, 75, 75),
-                   columnAttach=[(1, 'both', 1), (2, 'both', 1), (3, 'both', 1), (4, 'both', 1), (5, 'both', 1), (6, 'both', 1)])
-    cmds.text(label="[u] UW", align='center', backgroundColor=accent)
-    cmds.text(label="[v] V", align='center', backgroundColor=accent)
-    cmds.text(label="[y] Y", align='center', backgroundColor=accent)
-    cmds.text(label="[s] Smile", align='center', backgroundColor=btn_reset)
-    cmds.text(label="[f] Frown", align='center', backgroundColor=btn_reset)
-    cmds.text(label="[b] Brow", align='center', backgroundColor=btn_reset)
+    cmds.rowLayout(numberOfColumns=8, columnWidth=[(1,56), (2,56), (3,56), (4,56), (5,56), (6,56), (7,56), (8,56)],
+                   columnAttach=[(1, 'both', 1), (2, 'both', 1), (3, 'both', 1), (4, 'both', 1), (5, 'both', 1), (6, 'both', 1), (7, 'both', 1), (8, 'both', 1)])
+    cmds.text(label="[0] Neu", align='center', backgroundColor=bg_mid)
+    cmds.text(label="[s] Smile", align='center', backgroundColor=bg_mid)
+    cmds.text(label="[m] Mouth", align='center', backgroundColor=bg_mid)
+    cmds.text(label="[c] Cheek", align='center', backgroundColor=bg_mid)
+    cmds.text(label="[p] Pucker", align='center', backgroundColor=bg_mid)
+    cmds.text(label="[1] Happy", align='center', backgroundColor=bg_mid)
+    cmds.text(label="[2] Sad", align='center', backgroundColor=bg_mid)
+    cmds.text(label="[3] Surpr", align='center', backgroundColor=bg_mid)
     cmds.setParent('..')
 
-    cmds.rowLayout(numberOfColumns=6, columnWidth6=(75, 75, 75, 75, 75, 75),
-                   columnAttach=[(1, 'both', 1), (2, 'both', 1), (3, 'both', 1), (4, 'both', 1), (5, 'both', 1), (6, 'both', 1)])
-    cmds.text(label="[m] Mouth", align='center', backgroundColor=btn_reset)
-    cmds.text(label="[q] Squint", align='center', backgroundColor=btn_reset)
-    cmds.text(label="[c] Cheek", align='center', backgroundColor=btn_reset)
-    cmds.text(label="[p] Pucker", align='center', backgroundColor=btn_reset)
-    cmds.text(label="", align='center')
-    cmds.text(label="", align='center')
+    cmds.rowLayout(numberOfColumns=8, columnWidth=[(1,56), (2,56), (3,56), (4,56), (5,56), (6,56), (7,56), (8,56)],
+                   columnAttach=[(1, 'both', 1), (2, 'both', 1), (3, 'both', 1), (4, 'both', 1), (5, 'both', 1), (6, 'both', 1), (7, 'both', 1), (8, 'both', 1)])
+    cmds.text(label="[n] N", align='center', backgroundColor=bg_low)
+    cmds.text(label="[a] AA", align='center', backgroundColor=bg_low)
+    cmds.text(label="[i] IY", align='center', backgroundColor=bg_low)
+    cmds.text(label="[t] T", align='center', backgroundColor=bg_low)
+    cmds.text(label="[e] EH", align='center', backgroundColor=bg_low)
+    cmds.text(label="[u] UW", align='center', backgroundColor=bg_low)
+    cmds.text(label="[v] V", align='center', backgroundColor=bg_low)
+    cmds.text(label="[y] Y", align='center', backgroundColor=bg_low)
     cmds.setParent('..')
 
     cmds.button(label='Precompute All Keyboard Transitions (Fix First-Time Lag)', height=28,
                 backgroundColor=[0.45, 0.75, 0.55], command=precompute_keyboard_transitions)
 
     cmds.textField('keyboard_input_field',
-                   placeholderText='Type: n, a, i, t, e, u, v, y, s, f, b, m, q, c, p, 0',
+                   placeholderText='Type: n, a, i, t, e, u, v, y, s, m, c, p, 1, 2, 3, f, b, q, 0',
                    textChangedCommand=on_keyboard_input_changed,
                    backgroundColor=bg_field, height=26)
 
@@ -4739,6 +5756,10 @@ def create_automation_ui():
     cmds.setParent('..')  # end main columnLayout
     cmds.setParent('..')  # end scrollLayout
     cmds.showWindow(window_id)
+
+    # Setup hotkeys and bind cleanup to window close
+    setup_camera_hotkeys()
+    cmds.scriptJob(uiDeleted=[window_id, cleanup_camera_hotkeys])
 
 
 # --- Run this line in the Maya Script Editor to show the window ---

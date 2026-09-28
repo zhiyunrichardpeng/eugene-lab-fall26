@@ -12,8 +12,10 @@ import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
 from matplotlib.collections import PathCollection
 
+from config import a1_blendshape_path
 
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
+
+sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
 
 import importlib

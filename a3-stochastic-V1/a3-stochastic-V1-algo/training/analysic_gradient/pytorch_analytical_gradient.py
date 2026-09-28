@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import json
 import numpy as np
+import sys
 
 class LinearBlendSkinning(nn.Module):
     def __init__(self, bind_pose_vertices, skin_weights, joint_pivots=None):
@@ -89,17 +90,27 @@ class LinearBlendSkinning(nn.Module):
             return lbs_vertices
         else:
             # 1. Matrix multiplication handles the weighted sum for all vertices and landmarks instantly
+            
+            # print("weights", self.weights)
+            # print("translations", translations)
+            # print("weights.shape", self.weights.shape)
+            # print("translations.shape", translations.shape)
+
+            # print("passed the test, now quit.")
+
+            # sys.exit(0)  # Exit with status code 0
+
             lbs_deformation = torch.matmul(self.weights, translations) # (N, K) @ (K, 3) -> (N, 3)
             lbs_vertices = self.bind_pose + lbs_deformation
 
-        # print("\n" + "="*50)
+        # print(""n" + "="*50)
         # print("🔍 DEBUG [pytorch_analytical_gradient.py - forward]")
         # print(f"  self.bind_pose shape:  {self.bind_pose.shape} (N, 3)")
         # print(f"  self.weights shape:    {self.weights.shape} (N, K)")
         # print(f"  translations shape:    {translations.shape}")
         # print(f"  lbs_vertices shape:    {lbs_vertices.shape} (Expected N, 3)")
         # print(f"  positions shape:       {positions.shape} (Input observation)")
-        # print("="*50 + "\n")
+        # print("="*50 + ""n")
 
         # 2. Compute the true residual from the observation
         # We use .detach() so PyTorch treats this residual as a constant offset, NOT a differentiable variable
@@ -198,7 +209,7 @@ class AnalyticalGradientCalculator:
         normalized_strain_energy = strain_energy / max_strain_energy
         
         # 2. Muscle Work Term
-        F_max_new = 17.0 / 300.0
+        F_max_new = 17.0 / float(self.K)
         v_max_new = 1.0 / ((35.0 / 30.0) / expected_total_steps) * 9.62e-4 * 100.0
         K_new = 0.18
         a_new = 0.12
@@ -248,8 +259,23 @@ class AnalyticalGradientCalculator:
         objective = distance_contribution + strain_contribution + muscle_contribution
 
 
-        # 4. Backward Pass: Automatically compute gradients
+        # 4. Backward Pass: Compute gradients of each component separately to log their contributions
+        distance_contribution.backward(retain_graph=True)
+        self.dist_grad_mag = translations.grad.abs().mean().item() if translations.grad is not None else 0.0
+        translations.grad.zero_()
+        
+        strain_contribution.backward(retain_graph=True)
+        self.strain_grad_mag = translations.grad.abs().mean().item() if translations.grad is not None else 0.0
+        translations.grad.zero_()
+        
+        muscle_contribution.backward(retain_graph=True)
+        self.muscle_grad_mag = translations.grad.abs().mean().item() if translations.grad is not None else 0.0
+        translations.grad.zero_()
+
+
         objective.backward()
+        self.total_grad_mag = translations.grad.abs().mean().item() if translations.grad is not None else 0.0
+        
         
         # 5. Extract and format the gradients
         # The gradients are how much the objective changes if we move the translation.
@@ -264,11 +290,13 @@ class AnalyticalGradientCalculator:
 def run_standalone_experiment():
     print("\n=== Running Standalone Analytical Gradient Experiment (Set B) ===")
     import time
+    import os
+    from config import a3_stochastic_relative_path
     
     # 1. Initialize the calculator with your REAL Maya data
     calc = AnalyticalGradientCalculator(
-        r"C:\Users\zpa18\a3-stochastic-V1\automation\oor_bind_pose.json",
-        r"C:\Users\zpa18\a3-stochastic-V1\automation\oor_skin_weights.json"
+        str(a3_stochastic_relative_path / "automation" / "oor_bind_pose.json"),
+        str(a3_stochastic_relative_path / "automation" / "oor_skin_weights.json")
     )
     
     # 2. Create a challenging target mesh (e.g. moving all landmarks by some known amounts)
@@ -302,7 +330,7 @@ def run_standalone_experiment():
         # Compute loss (Squared Error)
         loss = torch.sum((target_vertices - current_vertices)**2)
         
-        # Backward pass (Calculates the exact analytical gradient for all 300 landmarks instantly)
+        # Backward pass (Calculates the exact analytical gradient for all calc.K landmarks instantly)
         loss.backward()
         
         # Take a step in the direction of the gradient
@@ -319,7 +347,7 @@ def run_standalone_experiment():
     # Check if it actually solved the inverse kinematics problem
     diff = torch.abs(current_translations - true_translations)
     print(f"Mean Error vs True Joint Position: {torch.mean(diff).item():.6f}")
-    print("\nStandalone test successful. The analytical gradient correctly and instantly drives the 300 landmarks to the target mesh!")
+    print(f"\nStandalone test successful. The analytical gradient correctly and instantly drives the {calc.K} landmarks to the target mesh!")
 
 if __name__ == "__main__":
     run_standalone_experiment()

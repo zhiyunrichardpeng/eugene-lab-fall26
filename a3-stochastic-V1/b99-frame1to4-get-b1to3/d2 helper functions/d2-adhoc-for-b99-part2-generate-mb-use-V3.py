@@ -13,15 +13,17 @@ path2_combined_checkpoints = r"\\bbysvm-nfs1.its.sfu.ca/GrUViLab/Data/richardPen
 debug_mode_vsCode = 0
 
 import sys
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\example_train")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\env_gym")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+from config import a3_stochastic_relative_path, a1_blendshape_path, b98_sampling_path
+
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(b98_sampling_path))
+sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_l"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_frontalis"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
 
 
@@ -221,7 +223,7 @@ def initial_joint_position():
     x_joint_fourth_wave = getattr(joint_position_ooc_r_base_pose11_AU1_AU2_0, "x_joint_position_1")
     x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave + x_joint_fourth_wave                    
 
-    # folder_path = r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r"
+    # folder_path = str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"
     # sys.path.insert(0, folder_path)
     # # Call the function and get the combined x_joint_position_1
     # x_joint_combined = combine_x_joint_positions_from_folder(folder_path)
@@ -240,7 +242,7 @@ def initial_joint_position():
     
     x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave
 
-    # folder_path = r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r"
+    # folder_path = str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"
     # sys.path.insert(0, folder_path)
     # # Call the function and get the combined x_joint_position_1
     # x_joint_combined = combine_x_joint_positions_from_folder(folder_path)

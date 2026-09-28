@@ -1,3 +1,5 @@
+# press f5 in antigravity
+
 import cv2
 import glob
 import os
@@ -10,7 +12,7 @@ import math
 # ==========================================
 # Add your base names to this list.
 BASE_NAMES = [
-    "v45_reproduce_notevenyou_seqV1", 
+    "teaser_headshake_full_V14", 
     # "another_sequence_name",
 ]
 
@@ -21,7 +23,8 @@ AO_OPACITY = 0.65
 # 2. PATH DEFINITIONS
 # ==========================================
 # PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\masterLayer\face_closeup"
-PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\masterLayer\fig15_view_sideV2"
+# PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\masterLayer\fig15_view_sideV2"
+PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\masterLayer\muscle_closeup"
 
 AO_DIR = os.path.join(PNG_BASE_PATH, "A0_Pass")
 COLOR_DIR = os.path.join(PNG_BASE_PATH, "beauty")
@@ -35,6 +38,7 @@ OUTPUT_SUBFOLDER = "composited_videos"
 # 3. FFMPEG PARAMETERS
 # ==========================================
 START_FRAME = 15
+END_FRAME = 60
 DESIRED_VIDEO_LENGTH_SECONDS = 5
 VIDEO_CODEC = "libx264"
 PIXEL_FORMAT = "yuv420p"
@@ -53,8 +57,23 @@ def process_sequence(base_name):
     ao_files = sorted(glob.glob(os.path.join(AO_DIR, f"{base_name}*.png")))
     color_files = sorted(glob.glob(os.path.join(COLOR_DIR, f"{base_name}*.png")))
     
+    # Filter by START_FRAME and END_FRAME
+    filtered_color = []
+    filtered_ao = []
+    for c_path, a_path in zip(color_files, ao_files):
+        try:
+            c_num = int(os.path.splitext(c_path)[0][-4:])
+            if START_FRAME <= c_num <= END_FRAME:
+                filtered_color.append(c_path)
+                filtered_ao.append(a_path)
+        except ValueError:
+            continue
+            
+    color_files = filtered_color
+    ao_files = filtered_ao
+    
     if not ao_files or not color_files:
-        print(f"[{base_name}] Skipping: Missing AO or Color files in folders.")
+        print(f"[{base_name}] Skipping: Missing AO or Color files in folders (or out of frame range).")
         return None
         
     frame_count = min(len(color_files), len(ao_files))
@@ -98,8 +117,11 @@ def process_sequence(base_name):
         # Put the new color data back into the final image (Alpha remains untouched)
         blended[:,:,:3] = rgb_blended
         
+        # Extract the original frame number to maintain consistency
+        frame_num = int(os.path.splitext(color_path)[0][-4:])
+        
         # Save output uniformly so FFMPEG can easily parse it
-        out_name = f"{base_name}_{i+START_FRAME:04d}.png"
+        out_name = f"{base_name}_{frame_num:04d}.png"
         cv2.imwrite(os.path.join(seq_output_dir, out_name), (blended * 255).astype(np.uint8))
         
     print(f"[{base_name}] Compositing complete!")
@@ -111,7 +133,7 @@ def generate_ffmpeg_video(base_name, input_dir, total_frames):
     output_folder = os.path.join(MP4_OUTPUT_BASE_PATH, OUTPUT_SUBFOLDER)
     os.makedirs(output_folder, exist_ok=True)
     
-    output_path = os.path.join(output_folder, f"{base_name}_V3_luminance_only.mp4")
+    output_path = os.path.join(output_folder, f"{base_name}_V6.mp4")
     
     # Calculate FPS based on desired video length
     framerate = max(1, math.ceil(total_frames / DESIRED_VIDEO_LENGTH_SECONDS))

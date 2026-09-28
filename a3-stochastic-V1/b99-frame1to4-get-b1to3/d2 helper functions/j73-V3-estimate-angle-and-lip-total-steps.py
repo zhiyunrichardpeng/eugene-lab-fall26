@@ -11,15 +11,17 @@ from os import path
 # from utils.common_utils import set_seed
 
 import sys
+from config import a3_stochastic_relative_path, b98_sampling_path
+
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example_train")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a1-blendshape-guided-animation-pipeline\database")
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo")
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
 
 
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
+sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
 
 import importlib
 

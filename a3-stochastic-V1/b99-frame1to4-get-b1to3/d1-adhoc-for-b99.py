@@ -1,22 +1,24 @@
 import datetime
 import os
 import sys
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a3-stochastic-V1-algo\example_train")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+from config import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
+
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(b98_sampling_path ))
+sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions"/ "joint_position_ooc_l"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions"/ "joint_position_ooc_r"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions"/ "joint_position_frontalis"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b95-debug-use")
+sys.path.insert(0, str(a3_stochastic_relative_path / "b95-debug-use"))
 from generate_debug_output import generate_output
 import maya.standalone
 import maya.cmds as cmds
 import inspect
 
 neutral_to_other_pose_flag = 1
-previous_pose_folder = r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/results/DSAC_V2_m1_vertexMove_Va003/job_260717-171214/260717-171222"
+previous_pose_folder = r"//bbysvm-nfs1.its.sfu.ca/GrUViLab/Data/richardPeng/SFU_PhD_cloud/2-Projects/1-physically based facial animation/3-Experiments/a3-stochastic-V1-backup-and-results/results/job_251205-230610/251205-230619"
 
 # didn't know why this path can't be added in.
 
@@ -400,15 +402,29 @@ class JawRotationConfig:
             },    
 
         }
+
+        # Duplicate 0.9 configuration for 0.8, 0.7, and 0.6 to ensure they use fast testing settings
+        for t in ['0.8', '0.7', '0.6']:
+            if t not in self.configs:
+                self.configs[t] = self.configs['0.9']
     
+    def _resolve_threshold(self, threshold):
+        threshold_key = str(threshold)
+        if threshold_key in self.configs:
+            return threshold_key
+        try:
+            val = float(threshold)
+            closest_key = min(self.configs.keys(), key=lambda k: abs(float(k) - val))
+            print(f"[INFO] Threshold {threshold} not found. Using closest: {closest_key}")
+            return closest_key
+        except Exception:
+            return '0.999'
+
     def get_phase_config(self, threshold, phase):
         """Get configuration for a specific threshold and phase"""
-        threshold_key = str(threshold)
-        if threshold_key not in self.configs:
-            raise ValueError(f"Threshold {threshold} not found in configurations. Available: {list(self.configs.keys())}")
-        
+        threshold_key = self._resolve_threshold(threshold)
         if phase not in self.configs[threshold_key]['phases']:
-            raise ValueError(f"Phase {phase} not found for threshold {threshold}")
+            raise ValueError(f"Phase {phase} not found for threshold {threshold_key}")
             
         return self.configs[threshold_key]['phases'][phase]
 
@@ -422,7 +438,8 @@ class JawRotationConfig:
         Returns:
             self: Returns the instance for method chaining
         """
-        phase_config = self.get_phase_config(threshold, phase)
+        threshold_key = self._resolve_threshold(threshold)
+        phase_config = self.get_phase_config(threshold_key, phase)
         
         # Update all parameters from the phase configuration
         self.expected_total_steps_for_jaw = phase_config['expected_steps']
@@ -439,18 +456,16 @@ class JawRotationConfig:
         self.magnitude = phase_config['magnitude']
         
         # Store additional information
-        self.current_threshold = str(threshold)
+        self.current_threshold = threshold_key
         self.current_phase = phase
-        self.result_folder = self.configs[str(threshold)]['result_folder']
+        self.result_folder = self.configs[threshold_key]['result_folder']
         
         return self
 
 
     def get_all_phases(self, threshold):
         """Return all phases for a threshold in a structured format"""
-        threshold_key = str(threshold)
-        if threshold_key not in self.configs:
-            raise ValueError(f"Threshold {threshold} not found")
+        threshold_key = self._resolve_threshold(threshold)
         
         phases = self.configs[threshold_key]['phases']
         
@@ -532,9 +547,9 @@ importlib.reload(dataV22)
 import dataV22_for_rest_adhoc
 importlib.reload(dataV22_for_rest_adhoc)
 
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_l")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_frontalis")
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_l"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"))
+sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_frontalis"))
 
 import joint_position_ooc_l_base_0
 import joint_position_ooc_l_base_pose11_0
@@ -942,7 +957,7 @@ def main(x_bar):
                 # x_joint_fourth_wave = getattr(joint_position_ooc_r_base_pose11_AU1_AU2_0, "x_joint_position_1")
                 # x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave + x_joint_fourth_wave                    
 
-                # # folder_path = r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r"
+                # # folder_path = str(b98_sampling_path)\joint_positions\joint_position_ooc_r"
                 # # sys.path.insert(0, folder_path)
                 # # # Call the function and get the combined x_joint_position_1
                 # # x_joint_combined = combine_x_joint_positions_from_folder(folder_path)
@@ -961,7 +976,7 @@ def main(x_bar):
                 
                 # x_joint_combined = x_joint_first_wave + x_joint_second_wave + x_joint_third_wave
 
-                # # folder_path = r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\joint_positions\joint_position_ooc_r"
+                # # folder_path = str(b98_sampling_path)\joint_positions\joint_position_ooc_r"
                 # # sys.path.insert(0, folder_path)
                 # # # Call the function and get the combined x_joint_position_1
                 # # x_joint_combined = combine_x_joint_positions_from_folder(folder_path)

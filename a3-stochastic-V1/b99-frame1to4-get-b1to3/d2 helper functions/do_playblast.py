@@ -2,6 +2,7 @@ import maya.cmds as cmds
 import time
 import os
 import subprocess
+from config import a3_stochastic_relative_path
 
 # ==========================================
 # 1. CONFIGURATION
@@ -17,7 +18,7 @@ WIDTH = 256
 HEIGHT = 256
 
 # Video generation script
-VIDEO_SCRIPT = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d2 helper functions\make_playblast_video.py"
+VIDEO_SCRIPT = os.path.join(a3_stochastic_relative_path, "b99-frame1to4-get-b1to3", "d2 helper functions", "make_playblast_video.py")
 
 def main(custom_name=None):
     global BASE_NAME

@@ -1,33 +1,163 @@
-PIPELINE_TASKS = [
-    'dataV22_AU0_neutral to dataV22_phoneme_N'    
+# ==============================================================================
+# RUN MODE CONFIGURATION
+# ==============================================================================
+# By default, use Normal Run. Enable Scheduled Run only for special cases.
+# Enable Test Scheduled Run only during testing periods (1 min delay, 1 min window).
+ENABLE_SCHEDULING = False
+# Supports time-only ("23:00", "8:00") OR full date-time ("2026-09-27 23:00", "2026 Sept 27 23:00", "2026/09/27 23:00")
+scheduled_start_time = "23:00"
+scheduled_stop_time = "8:00"
+TEST_SCHEDULING = False
+
+# Toggle to disable Pre-run Database Cleanup (removing existing DB entries for tasks we are about to run)
+ENABLE_DB_CLEANUP = True
+
+# Toggle to skip specified task states/categories from PIPELINE_TASKS
+ENABLE_TASK_SKIPPING = True
+SKIPPED_STATES = [
+    'dataV22_AU12L',
+    'dataV22_AU6',
+    'dataV22_AU7',
 ]
+
+manual_task = True
+
+if manual_task == True:
+
+    PIPELINE_TASKS = [
+        'dataV22_AU0_neutral to dataV22_phoneme_N',    
+        # 'dataV22_AU0_neutral to dataV22_AU7',  
+        # 'dataV22_AU7 to dataV22_AU0_neutral', 
+        # 'dataV22_AU12L to dataV22_AU1'    
+    ]
+
+
+"""
+Pipeline Transition Matrix Tasks Generator and Task List.
+
+Includes all 19 states (11 Action Units + 8 Phonemes) from the Action Unit table,
+generating a full transition matrix (all pairwise transitions where src != dst).
+"""
+
+# -----------------------------------------------------------------------------
+# 1. State Definitions (19 total states)
+# -----------------------------------------------------------------------------
+
+ACTION_UNITS = [
+    'dataV22_AU0_neutral',     # AU 0: Neutral pose
+    'dataV22_AU6',             # AU 6: Cheek raiser
+    'dataV22_AU12',            # AU 12: Smile
+    'dataV22_AU22',            # AU 22: WUU sound
+    'dataV22_AU12L',           # AU 12L: Left asymmetric smile
+    'dataV22_AU7',             # AU 7: Lid tightener
+    'dataV22_AU25',            # AU 25: Lips part
+    'dataV22_AU4',             # AU 4: Brow lowerer
+    'dataV22_AU1',             # AU 1: Inner brow raiser
+    'dataV22_AU2',             # AU 2: Outer brow raiser
+    'dataV22_AU6_12_25',     # AU 6+12+25ii: Cheese (maximum)
+]
+
+PHONEMES = [
+    'dataV22_phoneme_N',       # Phoneme N: net
+    'dataV22_phoneme_AA',      # Phoneme AA: pot
+    'dataV22_phoneme_T',       # Phoneme T: test
+    'dataV22_phoneme_IY',      # Phoneme IY: beat
+    'dataV22_phoneme_V',       # Phoneme V: vet
+    'dataV22_phoneme_Y',       # Phoneme Y: yet
+    'dataV22_phoneme_UW',      # Phoneme UW: lute
+    'dataV22_phoneme_EH',      # Phoneme EH: bet
+]
+
+ALL_STATES = ACTION_UNITS + PHONEMES
+
+
+# -----------------------------------------------------------------------------
+# 2. Categorized Transition Task Lists
+# -----------------------------------------------------------------------------
+
+# AU to AU transitions (11 x 10 = 110)
+AU_TO_AU_TASKS = [
+    f"{src} to {dst}"
+    for src in ACTION_UNITS
+    for dst in ACTION_UNITS
+    if src != dst
+]
+
+# AU to Phoneme transitions (11 x 8 = 88)
+AU_TO_PHONEME_TASKS = [
+    f"{src} to {dst}"
+    for src in ACTION_UNITS
+    for dst in PHONEMES
+]
+
+# Phoneme to AU transitions (8 x 11 = 88)
+PHONEME_TO_AU_TASKS = [
+    f"{src} to {dst}"
+    for src in PHONEMES
+    for dst in ACTION_UNITS
+]
+
+# Phoneme to Phoneme transitions (8 x 7 = 56)
+PHONEME_TO_PHONEME_TASKS = [
+    f"{src} to {dst}"
+    for src in PHONEMES
+    for dst in PHONEMES
+    if src != dst
+]
+
+
+# -----------------------------------------------------------------------------
+# 3. Full Transition Matrix Tasks (19 x 18 = 342 tasks)
+# -----------------------------------------------------------------------------
+
+if manual_task == False:
+    PIPELINE_TASKS = [
+        f"{src} to {dst}"
+        for src in ALL_STATES
+        for dst in ALL_STATES
+        if src != dst
+    ]
+
+
+
+# --- Optional task skipping ---
+if ENABLE_TASK_SKIPPING and SKIPPED_STATES:
+    _orig_len = len(PIPELINE_TASKS)
+    PIPELINE_TASKS = [
+        _t for _t in PIPELINE_TASKS 
+        if not any(_s in _t for _s in SKIPPED_STATES)
+    ]
+    print(f"[TASK FILTERING] Filtered out {_orig_len - len(PIPELINE_TASKS)} tasks containing skipped states: {SKIPPED_STATES}")
 
 # --- Pre-run cleanup: remove existing DB entries for the tasks we are about to run ---
 # This ensures re-running a single task doesn't get skipped as "already found".
-import json as _json, os as _os, re as _re
-_DB_PATH = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "deformation_path_db.json")
-if _os.path.exists(_DB_PATH):
-    with open(_DB_PATH, 'r') as _f:
-        _db_data = _json.load(_f)
-    _dp = _db_data.get('deformation_paths', _db_data)
-    def _normalize(s):
-        k = str(s).lower().replace('_to_', ' to ')
-        k = _re.sub(r'\s*to\s*', '_to_', k)
-        k = _re.sub(r'\s+', '_', k)
-        return k
-    _keys_to_delete = []
-    for _task in PIPELINE_TASKS:
-        _norm = _normalize(_task)
-        for _k in list(_dp.keys()):
-            if _normalize(_k) == _norm:
-                _keys_to_delete.append(_k)
-    for _k in _keys_to_delete:
-        print(f"[PRE-RUN] Removing existing DB entry: '{_k}' -> {_dp[_k]}")
-        del _dp[_k]
-    if _keys_to_delete:
-        with open(_DB_PATH, 'w') as _f:
-            _json.dump(_db_data, _f, indent=4, sort_keys=True)
-        print(f"[PRE-RUN] Cleaned {len(_keys_to_delete)} entry(ies) from database.")
+if ENABLE_DB_CLEANUP:
+    import json as _json, os as _os, re as _re
+    _DB_PATH = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "deformation_path_db.json")
+    if _os.path.exists(_DB_PATH):
+        with open(_DB_PATH, 'r') as _f:
+            _db_data = _json.load(_f)
+        _dp = _db_data.get('deformation_paths', _db_data)
+        def _normalize(s):
+            k = str(s).lower().replace('_to_', ' to ')
+            k = _re.sub(r'\s*to\s*', '_to_', k)
+            k = _re.sub(r'\s+', '_', k)
+            return k
+        _keys_to_delete = []
+        for _task in PIPELINE_TASKS:
+            _norm = _normalize(_task)
+            for _k in list(_dp.keys()):
+                if _normalize(_k) == _norm:
+                    _keys_to_delete.append(_k)
+        for _k in _keys_to_delete:
+            print(f"[PRE-RUN] Removing existing DB entry: '{_k}' -> {_dp[_k]}")
+            del _dp[_k]
+        if _keys_to_delete:
+            with open(_DB_PATH, 'w') as _f:
+                _json.dump(_db_data, _f, indent=4, sort_keys=True)
+            print(f"[PRE-RUN] Cleaned {len(_keys_to_delete)} entry(ies) from database.")
+else:
+    print("[PRE-RUN] Database cleanup is disabled by ENABLE_DB_CLEANUP toggle.")
 # --- End pre-run cleanup ---
 
 import os
@@ -40,14 +170,115 @@ import glob
 import math
 import pickle
 import numpy as np
+import datetime
+import signal
+from config import a3_stochastic_relative_path
 
 
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1")
+sys.path.insert(0, str(a3_stochastic_relative_path))
 from automation.checkpoint_generator import run_deformation_processing
 
 # ==============================================================================
 # HELPER FUNCTIONS
 # ==============================================================================
+
+def is_time_only(time_str):
+    time_str = str(time_str).strip()
+    for fmt in ["%H:%M", "%H:%M:%S"]:
+        try:
+            datetime.datetime.strptime(time_str, fmt)
+            return True
+        except ValueError:
+            pass
+    return False
+
+def parse_schedule_dt(time_str, current_time, is_stop=False):
+    """
+    Parses time_str which can be:
+    - Full date & time: 'YYYY-MM-DD HH:MM', 'YYYY/MM/DD HH:MM', 'YYYY %b %d %H:%M', 'YYYY %B %d %H:%M', etc.
+    - Time only: 'HH:MM' (daily schedule)
+    Returns a datetime.datetime object representing the target time.
+    """
+    time_str = str(time_str).strip()
+    # Normalize common abbreviations like "Sept " to "Sep " for %b compatibility
+    time_str_norm = time_str.replace("Sept ", "Sep ").replace("sept ", "Sep ")
+    dt_formats = [
+        "%Y-%m-%d %H:%M",
+        "%Y/%m/%d %H:%M",
+        "%Y %b %d %H:%M",
+        "%Y %B %d %H:%M",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y/%m/%d %H:%M:%S",
+        "%Y %b %d %H:%M:%S",
+        "%Y %B %d %H:%M:%S"
+    ]
+    for fmt in dt_formats:
+        try:
+            return datetime.datetime.strptime(time_str_norm, fmt)
+        except ValueError:
+            pass
+            
+    # Try time-only formats
+    for fmt in ["%H:%M", "%H:%M:%S"]:
+        try:
+            t = datetime.datetime.strptime(time_str, fmt).time()
+            target = datetime.datetime.combine(current_time.date(), t)
+            if is_stop:
+                if t < current_time.time():
+                    target += datetime.timedelta(days=1)
+            else:
+                if target < current_time:
+                    target += datetime.timedelta(days=1)
+            return target
+        except ValueError:
+            pass
+            
+    raise ValueError(f"Could not parse schedule time string: '{time_str}'. Please use format 'YYYY-MM-DD HH:MM', 'YYYY Sept 27 23:00', or 'HH:MM'.")
+
+def is_time_in_range(start_str, stop_str, current_time):
+    if is_time_only(start_str) and is_time_only(stop_str):
+        start_time = datetime.datetime.strptime(str(start_str).strip(), "%H:%M").time()
+        stop_time = datetime.datetime.strptime(str(stop_str).strip(), "%H:%M").time()
+        curr = current_time.time()
+        if start_time < stop_time:
+            return start_time <= curr <= stop_time
+        else: # Crosses midnight
+            return curr >= start_time or curr <= stop_time
+    else:
+        start_dt = parse_schedule_dt(start_str, current_time, is_stop=False)
+        stop_dt = parse_schedule_dt(stop_str, current_time, is_stop=True)
+        return start_dt <= current_time <= stop_dt
+
+def wait_until_start(start_str, stop_str):
+    while True:
+        now = datetime.datetime.now()
+        if is_time_in_range(start_str, stop_str, now):
+            return # Already in the window
+        
+        if is_time_only(start_str):
+            start_time = datetime.datetime.strptime(str(start_str).strip(), "%H:%M").time()
+            target = datetime.datetime.combine(now.date(), start_time)
+            if target < now:
+                target += datetime.timedelta(days=1)
+        else:
+            target = parse_schedule_dt(start_str, now, is_stop=False)
+            if target < now and not is_time_in_range(start_str, stop_str, now):
+                print(f"[WARNING] Scheduled start time '{start_str}' is in the past and we are not within the schedule window.")
+                return
+                
+        wait_seconds = (target - now).total_seconds()
+        print(f"Waiting {wait_seconds / 60:.2f} minutes until scheduled start time ({start_str})...")
+        time.sleep(max(1.0, wait_seconds + 5.0))
+
+def get_seconds_until_stop(stop_str, current_time):
+    if is_time_only(stop_str):
+        stop_time = datetime.datetime.strptime(str(stop_str).strip(), "%H:%M").time()
+        target = datetime.datetime.combine(current_time.date(), stop_time)
+        if stop_time < current_time.time():
+            target += datetime.timedelta(days=1)
+    else:
+        target = parse_schedule_dt(stop_str, current_time, is_stop=True)
+    return (target - current_time).total_seconds()
 
 def replace_in_file(file_path, pattern, new_string):
     """
@@ -65,6 +296,59 @@ def replace_in_file(file_path, pattern, new_string):
             print(f"   [INFO] No changes made to file (pattern not found): {file_path}")
     except Exception as e:
         print(f"   [ERROR] Could not modify file {file_path}: {e}")
+
+def apply_test_then_exit_mode(bat_file_path, enabled=True, target_threshold=0.99):
+    """
+    If enabled (test-then-exit mode), modifies threshold percentages in the bat file to target_threshold (e.g. 0.99).
+    If not enabled (normal mode), restores the original parameters:
+      --distance_ooc_l_threshold_percentage 0.1092
+      --distance_ooc_r_threshold_percentage 0.1
+      --distance_frontalis_threshold_percentage 0.1
+      --distance_threshold_percentage 0.11
+      --distance_jaw_threshold_percentage 0.1
+    """
+    if not os.path.exists(bat_file_path):
+        print(f"   [WARNING] Bat file not found at: {bat_file_path}")
+        return
+
+    original_thresholds = {
+        "distance_ooc_l_threshold_percentage": "0.1092",
+        "distance_ooc_r_threshold_percentage": "0.1",
+        "distance_frontalis_threshold_percentage": "0.1",
+        "distance_threshold_percentage": "0.11",
+        "distance_jaw_threshold_percentage": "0.1"
+    }
+
+    try:
+        with open(bat_file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        new_content = content
+        if enabled:
+            val_str = str(target_threshold)
+            for param in original_thresholds:
+                pattern = rf'(--{param}\s+)[\d\.]+'
+                new_content = re.sub(pattern, rf'\g<1>{val_str}', new_content)
+            
+            if new_content != content:
+                with open(bat_file_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"   [TEST MODE] Updated all threshold percentages to {val_str} in: {bat_file_path}")
+            else:
+                print(f"   [TEST MODE] Bat file thresholds already set to {val_str}: {bat_file_path}")
+        else:
+            for param, orig_val in original_thresholds.items():
+                pattern = rf'(--{param}\s+)[\d\.]+'
+                new_content = re.sub(pattern, rf'\g<1>{orig_val}', new_content)
+            
+            if new_content != content:
+                with open(bat_file_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"   [NORMAL MODE] Restored original threshold percentages in: {bat_file_path}")
+            else:
+                print(f"   [NORMAL MODE] Bat file already using original thresholds: {bat_file_path}")
+    except Exception as e:
+        print(f"   [ERROR] Failed to update thresholds in bat file: {e}")
 
 def load_deformation_db(db_path):
     """Loads the deformation path database from a JSON file."""
@@ -218,6 +502,8 @@ def main():
     Main function to run the automation pipeline for a sequence of tasks.
     """
     # === CONFIGURATION PANEL ===
+    TEST_THEN_EXIT_MODE = False  # Enable "test then exit" mode (sets thresholds to 0.99 for fast testing)
+
     PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     DB_PATH = os.path.join(os.path.dirname(__file__), "deformation_path_db.json")
     
@@ -228,6 +514,33 @@ def main():
     
     EXPECTED_STEPS_OVER_30K = False
     TARGET_TISSUE_OBJECT_NAME = "oor"
+
+    # --- New Scheduling and Timeout Config ---
+    TASK_TIMEOUT_SECONDS = 1200  # 20 minutes
+    
+    # Scheduling configuration is now controlled globally at the top of this file
+    if TEST_SCHEDULING:
+        now = datetime.datetime.now()
+        SCHEDULED_START = (now + datetime.timedelta(minutes=1)).strftime("%H:%M")
+        SCHEDULED_STOP = (now + datetime.timedelta(minutes=2)).strftime("%H:%M")
+        TASK_TIMEOUT_SECONDS = 60  # 1 min timeout for testing
+        print(f"[TEST MODE] Scheduled to start at {SCHEDULED_START} and stop at {SCHEDULED_STOP}")
+    else:
+        SCHEDULED_START = scheduled_start_time # "23:00"
+        SCHEDULED_STOP = scheduled_stop_time # "08:00"
+
+    # Set up report file
+    report_filename = f"pipeline_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    # report_filepath = os.path.join(os.path.dirname(__file__), report_filename)
+    report_dir = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\tasks pipeline report"
+    os.makedirs(report_dir, exist_ok=True)
+    report_filepath = os.path.join(report_dir, report_filename)
+        
+    # Initialize report
+    with open(report_filepath, 'w', encoding='utf-8') as rf:
+        rf.write(f"Pipeline Execution Report\nStarted at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        rf.write(f"Schedule: {SCHEDULED_START} to {SCHEDULED_STOP}\n")
+        rf.write("-" * 50 + "\n")
     # === END OF CONFIGURATION ===
 
     print("--- Starting Automation Pipeline ---")
@@ -240,7 +553,26 @@ def main():
     print("--- DEBUG: Normalized DB Key Map ---")
     print(json.dumps(db_key_map, indent=2))
 
+    if ENABLE_SCHEDULING:
+        wait_until_start(SCHEDULED_START, SCHEDULED_STOP)
+
+    batch_start_time = datetime.datetime.now()
+    tasks_succeeded = 0
+    tasks_failed = 0
+    tasks_timed_out = 0
+    total_task_duration = 0
+
     for task_index, task_string in enumerate(PIPELINE_TASKS):
+        task_start_time = datetime.datetime.now()
+        
+        if ENABLE_SCHEDULING:
+            now = datetime.datetime.now()
+            if not is_time_in_range(SCHEDULED_START, SCHEDULED_STOP, now):
+                print(f"[INFO] Current time {now.strftime('%Y-%m-%d %H:%M:%S')} is outside the scheduled window ({SCHEDULED_START} - {SCHEDULED_STOP}). Stopping task execution.")
+                with open(report_filepath, 'a', encoding='utf-8') as rf:
+                    rf.write(f"\n--- Batch stopped at {now.strftime('%Y-%m-%d %H:%M:%S')} due to schedule window closing ---\n")
+                break
+
         print(f"\n\n{'='*20} STARTING TASK {task_index + 1}/{len(PIPELINE_TASKS)}: {task_string} {'='*20}")
 
         normalized_task_key = normalize_task_key(task_string)
@@ -274,7 +606,16 @@ def main():
             original_source_key = db_key_map.get(normalized_source_key)
             
             if not original_source_key:
-                print(f"[ERROR] Cannot perform task. Prerequisite task '{source_task_string}' not found in database. Please run that task first.")
+                error_msg = f"[ERROR] Cannot perform task. Prerequisite task '{source_task_string}' not found in database. Please run that task first."
+                print(error_msg)
+                
+                with open(report_filepath, 'a', encoding='utf-8') as rf:
+                    rf.write(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Task {task_index + 1}: {task_string} -> FAILED (Missing Prerequisite)\n")
+                    rf.write(f"   Error Details: {error_msg}\n")
+                
+                tasks_failed += 1
+                task_finish_time = datetime.datetime.now()
+                total_task_duration += (task_finish_time - task_start_time).total_seconds()
                 continue
             
             GENERATED_RESULTS_PATH = deformation_db[original_source_key]
@@ -305,8 +646,17 @@ def main():
                         run_deformation_processing(phonemes, log_paths, checkpoint_file_path)
                         print("[SUCCESS] Successfully generated 'combined_checkpoints.pkl'.")
                     except Exception as e:
-                        print(f"[ERROR] Failed to generate 'combined_checkpoints.pkl': {e}")
+                        error_msg = f"[ERROR] Failed to generate 'combined_checkpoints.pkl': {e}"
+                        print(error_msg)
                         print("[ERROR] Cannot proceed without combined_checkpoints.pkl. Skipping current task.")
+                        
+                        with open(report_filepath, 'a', encoding='utf-8') as rf:
+                            rf.write(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Task {task_index + 1}: {task_string} -> FAILED (Checkpoint Error)\n")
+                            rf.write(f"   Error Details: {error_msg}\n")
+                        
+                        tasks_failed += 1
+                        task_finish_time = datetime.datetime.now()
+                        total_task_duration += (task_finish_time - task_start_time).total_seconds()
                         continue
                 else:
                     print(f"[INFO] Found 'combined_checkpoints.pkl' in '{GENERATED_RESULTS_PATH}'.")
@@ -326,7 +676,9 @@ def main():
         # Update copy_from to point to the correct dataV22 file based on to_pose
         copy_from_path = f"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/{to_pose}.py"
         replace_in_file(j77_file, r'copy_from\s*=\s*r"[^"]*"', f'copy_from = r"{copy_from_path}"')
-        
+        # copy_from_path = f"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/{from_pose}.py"
+        # replace_in_file(j77_file, r'copy_from\s*=\s*r"[^"]*"', f'copy_from = r"{copy_from_path}"')        
+
         print("Configuring d1-adhoc task...")
         # replace_in_file(d1_b99_file, r'neutral_to_other_pose_flag\s*=\s*.*', f"neutral_to_other_pose_flag = {1 if IS_NEUTRAL_TO_OTHER_POSE else 0}")
         replace_in_file(d1_b99_file, r'neutral_to_other_pose_flag\s*=\s*[01]', f"neutral_to_other_pose_flag = {1 if IS_NEUTRAL_TO_OTHER_POSE else 0}")
@@ -335,10 +687,80 @@ def main():
 
         print("Executing main pipeline batch file...")
         bat_file_path = os.path.join(PROJECT_ROOT, "b99-frame1to4-get-b1to3", "run_d1_b99.bat")
-        # Remove capture_output=True to allow real-time output to console
-        # With check=True, subprocess.run will raise an exception if the batch file fails
-        subprocess.run(bat_file_path, shell=True, check=True, text=True)
-        print("Batch file execution complete.")
+        if not os.path.exists(bat_file_path):
+            bat_file_path = os.path.join(os.path.dirname(__file__), "run_d1_b99.bat")
+
+        # Apply test then exit mode threshold modifications if enabled
+        apply_test_then_exit_mode(bat_file_path, enabled=TEST_THEN_EXIT_MODE, target_threshold=0.9)
+
+        # Dynamically shorten timeout if schedule stop time is approaching
+        dynamic_timeout = TASK_TIMEOUT_SECONDS
+        if ENABLE_SCHEDULING:
+            secs_until_stop = get_seconds_until_stop(SCHEDULED_STOP, datetime.datetime.now())
+            if secs_until_stop < dynamic_timeout:
+                dynamic_timeout = max(1, int(secs_until_stop))
+                print(f"[INFO] Adjusting task timeout to {dynamic_timeout}s to prevent running past the scheduled stop time.")
+
+        try:
+            print(f"Executing main pipeline batch file with timeout {dynamic_timeout}s...")
+            # Use Popen with CREATE_NEW_PROCESS_GROUP to ensure all child processes (Maya) are cleanly killed
+            process = subprocess.Popen(
+                bat_file_path, 
+                shell=True, 
+                text=True, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+            )
+            
+            try:
+                stdout, stderr = process.communicate(timeout=dynamic_timeout)
+                if stdout: print(stdout)
+                
+                if process.returncode == 0:
+                    print("Batch file execution complete.")
+                    task_status = "SUCCESS"
+                    task_error = ""
+                else:
+                    print(f"[ERROR] Task failed with return code {process.returncode}!")
+                    if stdout: print("STDOUT:\n", stdout)
+                    if stderr: print("STDERR:\n", stderr)
+                    task_status = "FAILED"
+                    out_str = (stderr or stdout or "No output available.")
+                    task_error = out_str.strip()[-500:]
+            except subprocess.TimeoutExpired:
+                print(f"[ERROR] Task timed out after {dynamic_timeout} seconds! Force killing process tree with taskkill...")
+                # Hard force stop using Windows taskkill
+                subprocess.run(f"taskkill /F /T /PID {process.pid}", shell=True, capture_output=True)
+                stdout, stderr = process.communicate()  # Collect any remaining output
+                if stdout: print(stdout)
+                task_status = "TIMEOUT"
+                task_error = f"TimeoutExpired after {dynamic_timeout}s"
+        except Exception as e:
+            print(f"[ERROR] Unexpected execution failure: {e}")
+            task_status = "FAILED"
+            task_error = str(e)[-500:]
+
+        task_finish_time = datetime.datetime.now()
+        task_duration = (task_finish_time - task_start_time).total_seconds()
+        total_task_duration += task_duration
+        
+        if task_status == "SUCCESS":
+            tasks_succeeded += 1
+        elif task_status == "TIMEOUT":
+            tasks_timed_out += 1
+        else:
+            tasks_failed += 1
+
+        # Append to report immediately
+        with open(report_filepath, 'a', encoding='utf-8') as rf:
+            rf.write(f"[{task_finish_time.strftime('%H:%M:%S')}] Task {task_index + 1}: {task_string} -> {task_status} (took {task_duration:.2f}s)\n")
+            if task_status != "SUCCESS":
+                rf.write(f"   Error Details: {task_error}\n")
+
+        if task_status != "SUCCESS":
+            # If we failed/timed out, skip to the next task
+            continue
 
         # If we reach here, the batch file succeeded (check=True would have raised exception otherwise)
         # Check for new result folder
@@ -354,6 +776,30 @@ def main():
             print(f"Saved new path to database for task '{task_string}'.")
         else:
             print("[ERROR] Could not find the new result path after execution. Database not updated.")
+
+    batch_finish_time = datetime.datetime.now()
+    batch_duration = (batch_finish_time - batch_start_time).total_seconds()
+    total_processed = tasks_succeeded + tasks_failed + tasks_timed_out
+    avg_duration = (total_task_duration / total_processed) if total_processed > 0 else 0
+
+    summary = f"""
+==================================================
+BATCH EXECUTION SUMMARY
+==================================================
+Finished at: {batch_finish_time.strftime('%Y-%m-%d %H:%M:%S')}
+Total Batch Duration: {batch_duration / 60:.2f} minutes
+
+Tasks Processed: {total_processed}
+  - Succeeded: {tasks_succeeded}
+  - Failed: {tasks_failed}
+  - Timed Out: {tasks_timed_out}
+
+Average Time per Task: {avg_duration:.2f} seconds
+==================================================
+"""
+    print(summary)
+    with open(report_filepath, 'a', encoding='utf-8') as rf:
+        rf.write(summary)
 
     print(f"\n\n{'='*20} ALL PIPELINE TASKS COMPLETE {'='*20}")
 

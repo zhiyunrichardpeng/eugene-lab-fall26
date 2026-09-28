@@ -40,9 +40,10 @@ import datetime
 import csv
 
 import importlib
+from config import a3_stochastic_relative_path
 
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint\300joints_suite_good_old")
+sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
+sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "300joints_suite_good_old"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
 
 import dataV22
@@ -822,6 +823,9 @@ class m1_vertexMove_Va001(gym.Env):
         self.fix_flag_ship = [0] * (self.joint_num + self.joint_rotate_num  + self.joint_ooc_l_num + self.joint_ooc_r_num+ self.joint_frontalis_num)
 
         self.position = self.control_vertices_slice(self.x_bar_j, self.vertex_index)
+        # print("self.vertex_index", self.vertex_index)
+        # print("passed the test, now quit.")
+        # sys.exit(0)  # Exit with status code 0          
         self.position_jaw = self.control_vertices_slice(self.x_jaw_bar_j, self.vertex_jaw_index)
         self.position_ooc_l =  self.control_vertices_slice(self.x_ooc_l_bar_j, self.vertex_ooc_l_index)
         self.position_ooc_r =  self.control_vertices_slice(self.x_ooc_r_bar_j, self.vertex_ooc_r_index)
@@ -2333,7 +2337,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                 import numpy as np
                 # import sys
-                sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
+                sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
                 import importlib
 
                 # import dataV22_after_deform
@@ -2970,14 +2974,14 @@ class m1_vertexMove_Va001(gym.Env):
             current_phase = self.phase_manager.current_phase if hasattr(self, 'phase_manager') else 1
             current_task = self.phase_params.get('task', {}).get(current_phase, "")
             
-            ooc_bypassed = current_task in ["dataV22_AU6 to dataV22_AU7", "dataV22_AU7 to dataV22_AU6"]
+            # ooc_bypassed = current_task in ["dataV22_AU6 to dataV22_AU7", "dataV22_AU7 to dataV22_AU6"]
             
-            ooc_l_condition = True if ooc_bypassed else (distance_ooc_l <= self.distance_ooc_l_min + epsilon_min)
-            ooc_r_condition = True if ooc_bypassed else (distance_ooc_r <= self.distance_ooc_r_min + epsilon_min)
+            # ooc_l_condition = True if ooc_bypassed else (distance_ooc_l <= self.distance_ooc_l_min + epsilon_min)
+            # ooc_r_condition = True if ooc_bypassed else (distance_ooc_r <= self.distance_ooc_r_min + epsilon_min)
 
             # ooc_l_condition and ooc_r_condition and
-            if distance_jaw <= self.distance_jaw_min and distance <= self.distance_min  + epsilon_min and distance_frontalis <= self.distance_frontalis_min  + epsilon_min:
-
+            # if distance_jaw <= self.distance_jaw_min and distance <= self.distance_min  + epsilon_min and distance_frontalis <= self.distance_frontalis_min  + epsilon_min:
+            if distance_jaw <= self.distance_jaw_min and distance <= self.distance_min  + epsilon_min and distance_ooc_l <= self.distance_ooc_l_min  + epsilon_min and distance_ooc_r <= self.distance_ooc_r_min  + epsilon_min and distance_frontalis <= self.distance_frontalis_min  + epsilon_min:
 
                 # def obtain_r_limit_sigmoid_1000_endList():
                 #     adjust_factor_adhoc = 1.0 # 40/55
@@ -3342,7 +3346,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                         import numpy as np
                         # import sys
-                        sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\a1-blendshape-guided-animation-pipeline\database")
+                        sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
                         import importlib
 
                         # import dataV22_after_deform
