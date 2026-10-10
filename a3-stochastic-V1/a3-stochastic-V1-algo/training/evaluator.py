@@ -172,7 +172,7 @@ class Evaluator:
             vertex_index=self.vertex_ooc_l_index
         )
         self.analytical_calculator_ooc_r = AnalyticalGradientCalculator(
-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation", "ooc_r_bind_pose.json"),
+            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_bind_pose.json"),
             skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_skin_weights.json"),
             vertex_index=self.vertex_ooc_r_index
         )
