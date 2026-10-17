@@ -10,7 +10,7 @@ def calculate_rotation_parameters():
     import sys
     from os import path
     import importlib
-    from config import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path
+    from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path
 
     # --- Task Setup (Kept as is) ---
     # this_task = 'dataV22_AU0_neutral to dataV22_phoneme_N'

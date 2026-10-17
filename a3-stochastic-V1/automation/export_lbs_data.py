@@ -3,6 +3,7 @@ import maya.mel as mel
 import json
 import os
 import time
+from paths import a3_stochastic_relative_path
 
 def generate_landmark_names(prefix, count=300):
     names = []
@@ -107,7 +108,7 @@ def export_all_lbs_data():
     Exports the bind pose, skin weights, and joint pivots for multiple meshes.
     Run this script inside Maya's Script Editor when the character is in its Neutral/Bind Pose.
     """
-    output_dir = r"C:\Users\zpa18\a3-stochastic-V1\automation"
+    output_dir = str(a3_stochastic_relative_path / "automation")
     
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)

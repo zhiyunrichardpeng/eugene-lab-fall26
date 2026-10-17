@@ -11,7 +11,7 @@ from os import path
 # from utils.common_utils import set_seed
 
 import sys
-from config import a3_stochastic_relative_path, b98_sampling_path
+from paths import a3_stochastic_relative_path, b98_sampling_path
 
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example_train")

@@ -41,10 +41,10 @@ The debug output will be written to:
 import os
 import numpy as np
 import datetime
-
+from paths import b99_frame1to4_path
 
 class DebugOOCLimits:
-    def __init__(self, output_dir=r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\debug_results"):
+    def __init__(self, output_dir=str(b99_frame1to4_path / "debug_results")):
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
         timestamp = datetime.datetime.now().strftime("%y%m%d-%H%M%S")

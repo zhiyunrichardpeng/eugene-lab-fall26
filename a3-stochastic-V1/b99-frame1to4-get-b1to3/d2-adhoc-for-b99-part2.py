@@ -18,7 +18,7 @@ debug_mode_vsCode = 0
 
 import sys
 import os
-from config import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
+from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "example_train"))

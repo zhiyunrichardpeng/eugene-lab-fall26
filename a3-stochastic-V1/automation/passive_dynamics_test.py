@@ -9,7 +9,7 @@ import maya.api.OpenMaya as om
 import csv
 import os
 import math
-from config import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path
 
 try:
     import matplotlib.pyplot as plt

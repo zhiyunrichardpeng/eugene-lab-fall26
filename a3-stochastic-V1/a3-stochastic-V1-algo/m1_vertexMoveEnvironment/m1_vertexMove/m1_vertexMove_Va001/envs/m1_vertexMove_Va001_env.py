@@ -40,7 +40,7 @@ import datetime
 import csv
 
 import importlib
-from config import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
 sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "300joints_suite_good_old"))

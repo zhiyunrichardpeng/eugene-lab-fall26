@@ -10,7 +10,7 @@ def calculate_rotation_parameters():
     import sys
     from os import path
     import importlib
-    from config import a3_stochastic_relative_path
+    from paths import a3_stochastic_relative_path
 
     empirical_factor = 9.95657316385
     # empirical_factor = 85/48.52657980700467 # 9.95657316385

@@ -19,6 +19,7 @@ import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import os
+from paths import a3_stochastic_relative_path
 
 # ── SIGGRAPH TOG style ──────────────────────────────────────────────
 matplotlib.rcParams['font.family'] = 'serif'
@@ -28,7 +29,7 @@ matplotlib.rcParams['font.size'] = 11
 
 # ── Paths ───────────────────────────────────────────────────────────
 csv_path = r"\\bbysvm-nfs1.its.sfu.ca\GrUViLab\Data\richardPeng\keyLabCloud\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003_25-7-18\job_250623-144458\250623-144522\objective_terms_data_diff_phase6.csv"
-output_dir = r"C:\Users\zpa18\a3-stochastic-V1\visualization"
+output_dir = str(a3_stochastic_relative_path / "visualization")
 os.makedirs(output_dir, exist_ok=True)
 
 # ── Load data ───────────────────────────────────────────────────────
