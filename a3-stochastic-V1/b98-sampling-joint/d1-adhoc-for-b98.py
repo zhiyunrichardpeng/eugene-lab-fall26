@@ -1,7 +1,7 @@
 import datetime
 import os
 import sys
-from config import b98_sampling_path, a1_blendshape_path
+from paths import b98_sampling_path, a1_blendshape_path
 sys.path.insert(0, str(b98_sampling_path))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 

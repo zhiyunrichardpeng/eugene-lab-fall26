@@ -172,7 +172,7 @@ import pickle
 import numpy as np
 import datetime
 import signal
-from config import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path
 
 
 sys.path.insert(0, str(a3_stochastic_relative_path))

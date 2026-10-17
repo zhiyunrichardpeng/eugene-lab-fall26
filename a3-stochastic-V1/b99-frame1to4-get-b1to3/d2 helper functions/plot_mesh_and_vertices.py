@@ -1,6 +1,7 @@
 import os
 import datetime
 import numpy as np
+from paths import b99_frame1to4_path
 
 # Try to import Maya commands
 try:
@@ -28,7 +29,7 @@ PLOT_SKIN = True
 SKIN_MESH = "skin_cloth_copy_v5_pull_back" 
 SKIN_VERTICES = [11109]
 
-OUTPUT_DIR = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d4 interactive interface of animation\force_observation_results"
+OUTPUT_DIR = str(b99_frame1to4_path / "d4 interactive interface of animation" / "force_observation_results")
 FRAME_TO_PLOT = 0
 
 # --- DATA EXTRACTION ---

@@ -1,7 +1,8 @@
 import json
 import os
+from paths import a3_stochastic_relative_path
 
-db_path = r"C:\Users\zpa18\a3-stochastic-V1\automation\deformation_path_db.json"
+db_path = str(a3_stochastic_relative_path / "automation" / "deformation_path_db.json")
 
 with open(db_path, "r") as f:
     data = json.load(f)

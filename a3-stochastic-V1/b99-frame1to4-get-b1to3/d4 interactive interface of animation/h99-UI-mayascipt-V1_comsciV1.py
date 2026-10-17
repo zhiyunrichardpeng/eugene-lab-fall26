@@ -20,7 +20,7 @@ import datetime
 
 
 import sys
-from config import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
+from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path, b99_frame1to4_path
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
@@ -30,7 +30,7 @@ sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_o
 sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_frontalis"))
 sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b95-debug-use")
+sys.path.insert(0, str(a3_stochastic_relative_path / "b95-debug-use"))
 
 
 
@@ -101,7 +101,7 @@ ERROR_DISSIPATION_RATE = 1.0 # 0.5  # How much of the error to apply (0.0 to 1.0
 ACCUMULATED_ERROR = None  # Will store the accumulated position error across transitions
 
 # --- DEBUG CONFIGURATION ---
-DEBUG_OUTPUT_DIR = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d4 interactive interface of animation\h96-debug-dissipating-error"
+DEBUG_OUTPUT_DIR = str(b99_frame1to4_path / "d4 interactive interface of animation" / "h96-debug-dissipating-error")
 DEBUG_ENABLED = True  # Enable detailed debugging and logging
 DEBUG_DATA = []  # Stores debug information for each transition
 
@@ -144,7 +144,7 @@ PHONEME_TO_KEY = {v['phoneme']: v for k, v in KEYBOARD_PHONEME_MAP.items()}
 def load_database():
     """Load the deformation path database and state map from the JSON file"""
     # Use hardcoded base directory path since __file__ is not available in Maya
-    base_dir = r"c:\Users\zpa18\a3-stochastic-V1"
+    base_dir = str(a3_stochastic_relative_path)
     db_path = os.path.join(base_dir, "automation", "deformation_path_db.json")
 
     try:
@@ -2210,13 +2210,13 @@ def run_maya_render():
 
 
 def run_playblast_script():
-    playblast_script = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d2 helper functions\do_playblast.py"
+    playblast_script = str(b99_frame1to4_path / "d2 helper functions" / "do_playblast.py")
     print(f"\n--- Calling Playblast Script ---")
     if os.path.exists(playblast_script):
         try:
             import sys
             import importlib
-            script_dir = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d2 helper functions"
+            script_dir = str(b99_frame1to4_path / "d2 helper functions")
             if script_dir not in sys.path:
                 sys.path.insert(0, script_dir)
             import do_playblast
@@ -2657,7 +2657,7 @@ def parse_sequence_string(input_text):
             PREVIOUS_POSE_FOLDER = previous_pose_folder
 
             # Update the d1-adhoc-for-b99.py file
-            d1_b99_file = r"c:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d1-adhoc-for-b99.py"
+            d1_b99_file = str(b99_frame1to4_path / "d1-adhoc-for-b99.py")
             try:
                 with open(d1_b99_file, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -2697,7 +2697,7 @@ def parse_sequence_string(input_text):
         PREVIOUS_POSE_FOLDER = ""
 
         # Update the d1-adhoc-for-b99.py file to set flag to 1
-        d1_b99_file = r"c:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d1-adhoc-for-b99.py"
+        d1_b99_file = str(b99_frame1to4_path / "d1-adhoc-for-b99.py")
         try:
             with open(d1_b99_file, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -3548,7 +3548,7 @@ def generate_ziva_debug_plot():
             plt.grid(True)
             plt.legend()
             
-            debug_dir = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\debug_results"
+            debug_dir = str(b99_frame1to4_path / "debug_results")
             os.makedirs(debug_dir, exist_ok=True)
             
             timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")

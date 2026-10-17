@@ -16,6 +16,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.collections import LineCollection
+from paths import b99_frame1to4_path
 
 # --- CONFIGURATION ---
 # Define the meshes and vertices to observe
@@ -38,7 +39,7 @@ JAW_PIVOT_MAYA = np.array([0.0, 8.0, -2.0])
 
 # Simulation parameters
 DT = 1.0 / 24.0  # Assuming 24 FPS
-OUTPUT_DIR = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d4 interactive interface of animation\force_observation_results"
+OUTPUT_DIR = str(b99_frame1to4_path / "d4 interactive interface of animation" / "force_observation_results")
 
 
 # --- MAYA DATA EXTRACTION ---

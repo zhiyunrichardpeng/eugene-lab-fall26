@@ -4,7 +4,7 @@ import os
 import math
 import pickle
 import json
-from config import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path
 
 overlap_ratio = 0.4
 

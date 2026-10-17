@@ -6,7 +6,7 @@ import math
 import os
 
 from os import path
-from config import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path
 
 from utils.initialization import create_env
 from utils.common_utils import set_seed

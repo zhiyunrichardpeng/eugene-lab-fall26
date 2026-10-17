@@ -2,7 +2,7 @@ import maya.cmds as cmds
 import time
 import os
 import subprocess
-from config import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path
 
 # ==========================================
 # 1. CONFIGURATION
