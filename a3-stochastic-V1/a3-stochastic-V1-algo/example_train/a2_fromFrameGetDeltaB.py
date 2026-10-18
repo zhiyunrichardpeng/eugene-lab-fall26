@@ -22,7 +22,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
     import argparse
     import os
-    from config import a3_stochastic_relative_path
+    from paths import a3_stochastic_relative_path
     #import numpy as np
 
     import sys

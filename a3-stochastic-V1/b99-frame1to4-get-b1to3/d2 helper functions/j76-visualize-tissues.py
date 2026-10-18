@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
 from matplotlib.collections import PathCollection
 
-from config import a1_blendshape_path
+from paths import a1_blendshape_path
 
 
 sys.path.insert(0, str(a1_blendshape_path / "database"))

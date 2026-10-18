@@ -291,7 +291,7 @@ def run_standalone_experiment():
     print("\n=== Running Standalone Analytical Gradient Experiment (Set B) ===")
     import time
     import os
-    from config import a3_stochastic_relative_path
+    from paths import a3_stochastic_relative_path
     
     # 1. Initialize the calculator with your REAL Maya data
     calc = AnalyticalGradientCalculator(

@@ -4,7 +4,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 
-csv_path = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d4 interactive interface of animation\h96-debug-dissipating-error\debug_errors_20260430_173610.csv"
+from paths import b99_frame1to4_path
+csv_path = str(b99_frame1to4_path / "d4 interactive interface of animation" / "h96-debug-dissipating-error" / "debug_errors_20260430_173610.csv")
 output_dir = os.path.dirname(csv_path)
 
 # SIGGRAPH style

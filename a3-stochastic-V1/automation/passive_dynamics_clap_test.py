@@ -17,7 +17,7 @@ import time
 import datetime
 import re
 import sys
-from config import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path
 
 try:
     import matplotlib.pyplot as plt

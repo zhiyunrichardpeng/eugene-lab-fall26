@@ -2,6 +2,7 @@ import maya.cmds as cmds
 import matplotlib.pyplot as plt
 import os
 import math
+from paths import b99_frame1to4_path
 
 def debug_blendshape_morph(snap_frame=374, buffer_frames=15, target_mesh="middleres_OrbicularisOris", vertex_idx=0):
     """
@@ -47,7 +48,7 @@ def debug_blendshape_morph(snap_frame=374, buffer_frames=15, target_mesh="middle
     plt.legend()
     
     # Save the plot
-    debug_dir = r"C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\debug_results"
+    debug_dir = str(b99_frame1to4_path / "debug_results")
     if not os.path.exists(debug_dir):
         os.makedirs(debug_dir)
         
