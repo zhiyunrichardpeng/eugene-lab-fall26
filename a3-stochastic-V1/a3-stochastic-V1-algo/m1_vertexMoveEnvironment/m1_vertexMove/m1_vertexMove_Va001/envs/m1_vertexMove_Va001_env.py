@@ -40,7 +40,7 @@ import datetime
 import csv
 
 import importlib
-from paths import a3_stochastic_relative_path
+from config import a3_stochastic_relative_path
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
 sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "300joints_suite_good_old"))
@@ -768,7 +768,7 @@ class m1_vertexMove_Va001(gym.Env):
         options: Optional[dict] = None, 
     ):
         super().reset(seed=seed)
-        
+        self._readback_cache = {}
         self.start_time = time.time()  # Record the start time
         
         self.point1_list = []
@@ -940,7 +940,6 @@ class m1_vertexMove_Va001(gym.Env):
     def step(self, **kwargs): # action_previous
 
         # new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
-
 
 
 
@@ -1836,6 +1835,7 @@ class m1_vertexMove_Va001(gym.Env):
 
         relative_rotation_value = base_action_prime[3*self.joint_num : 3*self.joint_num + 3*self.joint_rotate_num]
 
+
         # rotate. 
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
             for i in range(0,self.joint_rotate_num):  #3-3,18-3
@@ -1897,11 +1897,9 @@ class m1_vertexMove_Va001(gym.Env):
 
         # translate
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
+            _moved = np.any(np.asarray(self.x_joint, dtype=float).reshape(-1, 3) != np.asarray(x_joint_, dtype=float).reshape(-1, 3), axis=1)
             for i in range(self.joint_num):
-                flag_temp1 = np.array_equal(self.x_joint[3 * i], x_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_joint[3 * i + 1], x_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_joint[3 * i + 2], x_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
+                if _moved[i]:
                     # Determine the joint name based on the index i
                     if i + 1 <= 9:
                         joint_name = f'oor_0{i + 1}'  # Leading zero for single-digit numbers
@@ -2081,11 +2079,9 @@ class m1_vertexMove_Va001(gym.Env):
             # print("before_deform_coords_ooc_l", before_deform_coords_ooc_l)
             
             # Perform the deformation (your existing code)
+            _moved = np.any(np.asarray(self.x_ooc_l_joint, dtype=float).reshape(-1, 3) != np.asarray(x_ooc_l_joint_, dtype=float).reshape(-1, 3), axis=1)
             for i in range(self.joint_ooc_l_num):
-                flag_temp1 = np.array_equal(self.x_ooc_l_joint[3 * i], x_ooc_l_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_ooc_l_joint[3 * i + 1], x_ooc_l_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_ooc_l_joint[3 * i + 2], x_ooc_l_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
+                if _moved[i]:
                     if i + 1 <= 9:
                         joint_name = f'ooc_l_0{i + 1}'
                     elif i + 1 <= 99:
@@ -2192,11 +2188,9 @@ class m1_vertexMove_Va001(gym.Env):
 
         # translate ooc l
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
+            _moved = np.any(np.asarray(self.x_ooc_r_joint, dtype=float).reshape(-1, 3) != np.asarray(x_ooc_r_joint_, dtype=float).reshape(-1, 3), axis=1)
             for i in range(self.joint_ooc_r_num):
-                flag_temp1 = np.array_equal(self.x_ooc_r_joint[3 * i], x_ooc_r_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_ooc_r_joint[3 * i + 1], x_ooc_r_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_ooc_r_joint[3 * i + 2], x_ooc_r_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
+                if _moved[i]:
                     # Determine the joint name based on the index i
                     if i + 1 <= 9:
                         joint_name = f'ooc_r_0{i + 1}'  # Leading zero for single-digit numbers
@@ -2218,11 +2212,9 @@ class m1_vertexMove_Va001(gym.Env):
 
         # translate frontalis
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
+            _moved = np.any(np.asarray(self.x_frontalis_joint, dtype=float).reshape(-1, 3) != np.asarray(x_frontalis_joint_, dtype=float).reshape(-1, 3), axis=1)
             for i in range(self.joint_frontalis_num):
-                flag_temp1 = np.array_equal(self.x_frontalis_joint[3 * i], x_frontalis_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_frontalis_joint[3 * i + 1], x_frontalis_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_frontalis_joint[3 * i + 2], x_frontalis_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
+                if _moved[i]:
                     # Determine the joint name based on the index i
                     if i + 1 <= 9:
                         joint_name = f'frontalis_0{i + 1}'  # Leading zero for single-digit numbers
@@ -2259,16 +2251,16 @@ class m1_vertexMove_Va001(gym.Env):
         #     method = 'euclidean'
         #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(self.target_jaw_state, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_adhoc, self.vertex_jaw_index))
         #     print("m1 line 1801, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
-
+       
 
         new_coords = self.returnCoordinates("middleres_OrbicularisOris", self.vertex_index)
         
         new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
-        new_coords_ooc_r = self.returnCoordinates("middleres_OrbicularisOculi_r", self.vertex_ooc_r_index)
-        new_coords_ooc_l = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
-        new_coords_frontalis = self.returnCoordinates("middleres_Frontalis", self.vertex_frontalis_index)
+        new_coords_ooc_r = self._read_if_moved("middleres_OrbicularisOculi_r", x_ooc_r_joint_, self.vertex_ooc_r_index)
+        new_coords_ooc_l = self._read_if_moved("middleres_OrbicularisOculi_l", x_ooc_l_joint_, self.vertex_ooc_l_index)
+        new_coords_frontalis = self._read_if_moved("middleres_Frontalis", x_frontalis_joint_, self.vertex_frontalis_index)
         # bypass these three since we don't handle them in this task.
-
+      
 
         # new_coords_temp1 = self.returnCoordinates("middleres_OrbicularisOris")
 
@@ -4271,6 +4263,18 @@ class m1_vertexMove_Va001(gym.Env):
         distance_ship_vertices = np.sqrt(squared_diff_vertices)
 
         return distance_ship_vertices.tolist()
+  
+
+    def _read_if_moved(self, object_name, joints_now, vertex_indices):
+        # Reuse the last readback of this mesh if its joints are exactly where they were then.
+        cache = self.__dict__.setdefault("_readback_cache", {})
+        joints_now = np.array(joints_now, dtype=float)
+        last = cache.get(object_name)
+        if last is not None and np.array_equal(last[0], joints_now):
+            return last[1].copy()
+        coords = self.returnCoordinates(object_name, vertex_indices)
+        cache[object_name] = (joints_now, np.array(coords))
+        return coords
 
     def returnCoordinates(self, object_name, vertex_indices=None):
         # Select the object

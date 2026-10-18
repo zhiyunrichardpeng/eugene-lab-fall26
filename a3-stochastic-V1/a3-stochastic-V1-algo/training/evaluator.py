@@ -811,7 +811,7 @@ class Evaluator:
             self.action_iteration_count += 1
 
             # Only plot every 100 iterations
-            if self.action_iteration_count % 10 == 0:
+            if self.action_iteration_count % 100 == 0:
                 # Plot gradients
                 object_names = ["oor", "ooc_l","ooc_r", "frontalis"]  # "oor", ooc_l
                 for obj_name in object_names:
