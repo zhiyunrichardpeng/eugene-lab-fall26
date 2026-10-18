@@ -1,16 +1,17 @@
 import os
 import pickle
 import numpy as np
+from paths import results_path
 
 def main():
     # --- CONFIGURATION ---
     checkpoint_files_to_merge = [
-        r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458-copy\250623-144522\combined_checkpoints.pkl",  # Speech "not even you" (older format, length 903)
-        r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_251110-124621\251110-124637\combined_checkpoints.pkl",      # Expression "sadness" (newer format, length 3603)
+       str(results_path / "job_250623-144458-copy/250623-144522/combined_checkpoints.pkl"),  # Speech "not even you" (older format, length 903)
+       str(results_path / "job_251110-124621/251110-124637/combined_checkpoints.pkl"),      # Expression "sadness" (newer format, length 3603)
     ]
 
     # --- Define Output Path ---
-    base_output_dir = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\merged_deformation_parameters_hub"
+    base_output_dir =str(results_path / "merged_deformation_parameters_hub")
     
     folder_names = [os.path.basename(os.path.dirname(p)) for p in checkpoint_files_to_merge]
     subfolder_name = "merged_padded_" + "_".join(folder_names)

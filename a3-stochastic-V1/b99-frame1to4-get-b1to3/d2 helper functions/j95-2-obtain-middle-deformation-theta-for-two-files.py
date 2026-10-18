@@ -1,12 +1,13 @@
 import numpy as np
 import pickle
+from paths import results_path
 
 only_run_phase1_flag = 0  # Set this to 1 to only run phase 1
 
-path1 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250620-191133\250620-191151"
+path1 =str(results_path / "job_250620-191133/250620-191151")
 
 if only_run_phase1_flag == 0:
-    path2 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250620-191133\250620-191151"
+    path2 =str(results_path / "job_250620-191133/250620-191151")
     # path3 = same
 
 # Load final_epoch_action_list_1 and optionally final_epoch_action_list_2 from pickle files
@@ -87,7 +88,7 @@ else:
 combined_checkpoints = checkpoints_1
 
 # # Path to the pickle file
-path3 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250620-191133\250620-191151"
+path3 =str(results_path / "job_250620-191133/250620-191151")
 
 # Save the combined checkpoints to a pickle file
 with open(path3 + "/combined_checkpoints.pkl", "wb") as file:

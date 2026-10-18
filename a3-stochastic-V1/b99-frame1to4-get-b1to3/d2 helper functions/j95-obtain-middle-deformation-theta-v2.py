@@ -1,8 +1,9 @@
 import numpy as np
 import pickle
+from paths import results_path
 
-path1 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250528-200118\250528-200133"
-# path2 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-105216\240904-105217"
+path1 =str(results_path / "job_250528-200118/250528-200133")
+# path2 =str(results_path / "job_240904-105216/240904-105217")
 
 # Load final_epoch_action_list_1 and final_epoch_action_list_2 from pickle files
 with open(path1 + "\deltaB_temp_final_epoch_action_list.pkl", "rb") as file1:  # , open(path2 + "\deltaB_temp_final_epoch_action_list.pkl", "rb") as file2
@@ -59,7 +60,7 @@ print("len of combined_checkpoints", len(combined_checkpoints))
 import pickle
 
 # Path to the pickle file
-path1 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250528-200118\250528-200133"
+path1 =str(results_path / "job_250528-200118/250528-200133")
 
 try:
     # Load the combined checkpoints from the pickle file

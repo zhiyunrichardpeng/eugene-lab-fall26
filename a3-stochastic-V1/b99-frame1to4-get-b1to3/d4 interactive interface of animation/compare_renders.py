@@ -17,11 +17,12 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from datetime import datetime
 import csv
+from paths import results_path
 
 # ============================================================
 # CONFIGURATION - CHANGE THESE PATHS
 # ============================================================
-BASE_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\muscle_closeup\beauty"
+BASE_DIR =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/muscle_closeup/beauty")
 
 # Set A path pattern (e.g., your 10% overlap results)
 # The "{f_idx:04d}" part will be replaced by the frame number like 0000, 0001, etc.
@@ -39,7 +40,7 @@ FRAME_END = 194  # inclusive
 DIFF_AMPLIFICATION = 10  # multiplier for difference heatmap visibility
 
 # Where to save the comparison results
-OUTPUT_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\comparison_results"
+OUTPUT_DIR =str(results_path / "maya_render_output_hub/comparison_results")
 
 # ============================================================
 # METRICS FUNCTIONS

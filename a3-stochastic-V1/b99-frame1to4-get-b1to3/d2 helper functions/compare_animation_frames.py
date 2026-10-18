@@ -21,11 +21,12 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import csv
 from datetime import datetime
+from paths import results_path
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
-BASE_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\muscle_closeup\beauty"
+BASE_DIR =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/muscle_closeup/beauty")
 
 # 10% overlap
 SET_A_PATTERN = os.path.join(BASE_DIR, "t48_for_fig1_arnold_1_{:04d}.png")
@@ -39,7 +40,7 @@ FRAME_START = 0
 FRAME_END = 194  # inclusive
 DIFF_AMPLIFICATION = 10  # multiplier for difference heatmap visibility
 
-OUTPUT_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\comparison_10pct_vs_40pct"
+OUTPUT_DIR =str(results_path / "maya_render_output_hub/comparison_10pct_vs_40pct")
 
 # ============================================================
 # METRICS

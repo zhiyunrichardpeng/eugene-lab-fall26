@@ -489,7 +489,7 @@ def c96_finalized_datav21generating(keyframe_num):
 
 
 
-    # save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+    # save_folder =str(results_path / "240423-150653 log files")
 
     # i_func = 3
     # with open(save_folder + "/log" + str(i_func) + ".txt", 'a') as f:
@@ -498,7 +498,7 @@ def c96_finalized_datav21generating(keyframe_num):
     #         f.write(f"{item}, ")
 
 
-    # save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+    # save_folder =str(results_path / "240423-150653 log files")
 
     # i_func = 3
     # with open(save_folder + "/log" + str(i_func) + ".txt", 'a') as f:
@@ -514,7 +514,7 @@ def c96_finalized_datav21generating(keyframe_num):
 
 
 
-    save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+    save_folder =str(results_path / "240423-150653 log files")
 
 
 

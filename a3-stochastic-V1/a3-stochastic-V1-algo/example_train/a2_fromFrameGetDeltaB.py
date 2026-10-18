@@ -470,7 +470,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
             
 
             # Save the plot to a file
-            output_folder = r"C:", "keyLabLocal_D", "a3-stochastic-V1-backup-and-results", "backup", "d83 initiate rest to AU12 smile"
+            output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\d83 initiate rest to AU12 smile"
             output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
             plt.savefig(output_file, dpi=300, bbox_inches='tight')
             plt.close()     
@@ -1270,17 +1270,17 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
         # toc = time.time()
         # with open(args['save_folder'] + "/log" + str(i_func) +".txt", 'a') as f:
-        #     print("", "n ----- Computation time = " + str(  round(   (toc - tic)/60 ,1)    ) + "m", file = f) 
+        #     print("\n ----- Computation time = " + str(  round(   (toc - tic)/60 ,1)    ) + "m", file = f) 
         def log_computation_time():
             toc = time.time()  # End time using time.time()
             elapsed_minutes = round((toc - tic) / 60, 1)
             with open(args['save_folder'] + "/log" + str(i_func) + ".txt", 'a') as f:
-                print("", "n ----- Computation time = " + str(elapsed_minutes) + "m", file=f)
+                print("\n ----- Computation time = " + str(elapsed_minutes) + "m", file=f)
 
         log_computation_time()
 
         with open(args['save_folder'] + "/log" + str(i_func) + ".txt", 'a') as f:
-            print("", "n vertex_index = ", vertex_index, file=f)
+            print("\n vertex_index = ", vertex_index, file=f)
 
 
         ################################################

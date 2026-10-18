@@ -20,7 +20,7 @@ do
     fi
 
     echo "mv \"$src\" \"$dest\""
-    mv "$src" "$dest"
+    # mv "$src" "$dest"
 done < "$input"
 
 echo "Done"

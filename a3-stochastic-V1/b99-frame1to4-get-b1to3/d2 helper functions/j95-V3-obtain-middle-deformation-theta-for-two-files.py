@@ -1,9 +1,10 @@
 import numpy as np
 import pickle
 import os
+from paths import results_path
 
 # Configuration
-base_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458\250623-144522"
+base_path =str(results_path / "job_250623-144458/250623-144522")
 only_run_phase1_flag = 0  # Set to 1 to only run phase 1
 
 # Initialize parameters

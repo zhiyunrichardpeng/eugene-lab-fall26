@@ -1,6 +1,7 @@
 import os
 import subprocess
 import glob
+from paths import results_path
 
 # ==========================================
 # 1. MAIN CONFIGURATION
@@ -10,10 +11,10 @@ BASE_NAME = "unnamed_playblast_20260806_003949"
 
 # TODO: Update this path to where your playblast PNG files are actually saved!
 # For example: r"C:\Users\zpa18\Documents\maya\projects\default\images"
-INPUT_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\playblust_results" 
+INPUT_DIR =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/playblust_results") 
 
 # Where to save the final MP4 video
-OUTPUT_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\composited_videos"
+OUTPUT_DIR =str(results_path / "maya_render_output_hub/composited_videos")
 
 # ==========================================
 # 2. FFMPEG PARAMETERS

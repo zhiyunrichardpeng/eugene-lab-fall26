@@ -2397,7 +2397,7 @@ class m1_vertexMove_Va001(gym.Env):
                     
 
                 #     # debug the "F = np.column_stack((E1_deformed, E2_def" dimonsion error
-                #     # log_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\log_debug25-2-20.txt"
+                #     # log_path =str(results_path / "240423-150653 log files/log_debug25-2-20.txt")
 
 
                 #     # new_coords_for_energy = new_coords

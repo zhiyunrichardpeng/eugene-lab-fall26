@@ -9,7 +9,7 @@ import pickle
 # import os
 
 log_path = r"\\bbysvm-nfs1.its.sfu.ca\GrUViLab\Data\richardPeng\SFU_PhD_cloud\2-Projects\1-physically based facial animation\3-Experiments\a3-stochastic-V1-backup-and-results\results\sequence_combined_deformation_parameters_hub\seq2_0-AU2L-0-AU2R-0_V2"
-log_path_output = log_path # r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250923-153850\250923-153909"
+log_path_output = log_path #str(results_path / "job_250923-153850/250923-153909")
 
 base_path = log_path
 
@@ -301,7 +301,7 @@ checkpoints_old = checkpoints
 
 
 # Configuration
-# base_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458\250623-144522"
+# base_path =str(results_path / "job_250623-144458/250623-144522")
 only_run_phase1_flag = 0  # Set to 1 to only run phase 1
 
 # Initialize parameters

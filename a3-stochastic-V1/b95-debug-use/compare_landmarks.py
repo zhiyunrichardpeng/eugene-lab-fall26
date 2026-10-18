@@ -5,11 +5,11 @@ import numpy as np
 
 def compare_landmark_files():
     # Define file paths
-    file1_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\AU2_right_as_rest_pose\mb_file_offline\a99_debug_landmark_locations.csv"
-    # file2_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\joint_file_ooc_r\a99_debug_landmark_locations.csv"
-    file2_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\AU2_right_as_rest_pose\mb_file_offline_from_d1\a99_debug_landmark_locations_from_d1.csv"
+    file1_path =str(results_path / "240423-150653 log files/AU2_right_as_rest_pose/mb_file_offline/a99_debug_landmark_locations.csv")
+    # file2_path =str(results_path / "240423-150653 log files/joint_file_ooc_r/a99_debug_landmark_locations.csv")
+    file2_path =str(results_path / "240423-150653 log files/AU2_right_as_rest_pose/mb_file_offline_from_d1/a99_debug_landmark_locations_from_d1.csv")
     
-    output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\comparison\mb_file_offlineAU2R_VS_joint_plus_deformation_from_d1"
+    output_folder =str(results_path / "240423-150653 log files/comparison/mb_file_offlineAU2R_VS_joint_plus_deformation_from_d1")
 
     # Create output folder if it doesn't exist
     os.makedirs(output_folder, exist_ok=True)

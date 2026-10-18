@@ -4,7 +4,7 @@ import os
 import math
 import pickle
 import json
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path, results_path
 
 overlap_ratio = 0.4
 
@@ -18,7 +18,7 @@ log_paths = [
 
 
 # 1. Separate the folder name
-base_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\sequence_combined_deformation_parameters_hub"
+base_path =str(results_path / "sequence_combined_deformation_parameters_hub")
 folder_name = "0-V-AA"
 
 # 2. Create the full path
@@ -31,7 +31,7 @@ if not os.path.exists(log_path_output):
 else:
     print(f"Directory already exists: {log_path_output}")
 
-# log_path_output = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\sequence_combined_deformation_parameters_hub\seq2_0-AU2L-0-AU2R-0"
+# log_path_output =str(results_path / "sequence_combined_deformation_parameters_hub/seq2_0-AU2L-0-AU2R-0")
 
 def get_total_steps_from_separate_logs():
     """Extracts step counts from 3 separate log files"""

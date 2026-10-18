@@ -2,7 +2,7 @@ import maya.cmds as cmds
 import time
 import os
 import subprocess
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path, results_path
 
 # ==========================================
 # 1. CONFIGURATION
@@ -11,7 +11,7 @@ from paths import a3_stochastic_relative_path
 BASE_NAME = "v40_try_fix_numerical_drift_V2"
 
 # Output directory for the PNG images
-INPUT_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\playblust_results"
+INPUT_DIR =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/playblust_results")
 
 # Resolution
 WIDTH = 256

@@ -10,7 +10,7 @@ import re
 import os
 import math
 import pickle
-
+from paths import results_path
 
 def run_deformation_processing(phonemes_list, log_paths_list, sequence_folder_name):
     """
@@ -32,7 +32,7 @@ def run_deformation_processing(phonemes_list, log_paths_list, sequence_folder_na
     log_paths = log_paths_list
 
     # 1. Separate the folder name
-    base_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\sequence_combined_deformation_parameters_hub"
+    base_path =str(results_path / "sequence_combined_deformation_parameters_hub")
     # (THIS IS NOW AN ARGUMENT)
     folder_name = sequence_folder_name
 

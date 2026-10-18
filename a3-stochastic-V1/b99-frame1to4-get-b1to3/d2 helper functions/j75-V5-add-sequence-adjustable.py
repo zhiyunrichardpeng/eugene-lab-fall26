@@ -6,16 +6,17 @@ import math
 
 # import numpy as np
 import pickle
+from paths import results_path
 # import os
-log_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458\250623-144522"
-log_path_output = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458_experiment\job_250623-144458_experimentV5"
+log_path =str(results_path / "job_250623-144458/250623-144522")
+log_path_output =str(results_path / "job_250623-144458_experiment/job_250623-144458_experimentV5")
 
 overlap_ratio = 0
 
 
 # def get_total_steps_convergence():
 #     """Extracts phase step counts from log files (non-accumulated values)"""
-#     log_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458\250623-144522"
+#     log_path =str(results_path / "job_250623-144458/250623-144522")
 #     phase_files = [
 #         "log0.txt",
 #         # "log0_phase2.txt",
@@ -33,7 +34,7 @@ phonemes = ["Neutral", "N", "Y", "UW"]
 
 def get_total_steps_convergence(phonemes):
     """Extracts phase step counts from log files for specific phases"""
-    log_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458\250623-144522"
+    log_path =str(results_path / "job_250623-144458/250623-144522")
     
     # Map phoneme transitions to phase files
     phase_files = ["log0.txt"]  # Always include Phase 1
@@ -288,7 +289,7 @@ checkpoints_old = checkpoints
 
 
 # Configuration
-base_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458\250623-144522"
+base_path =str(results_path / "job_250623-144458/250623-144522")
 only_run_phase1_flag = 0  # Set to 1 to only run phase 1
 
 # Initialize parameters

@@ -31,7 +31,7 @@ class MayaDebug:
         self.app = QApplication(sys.argv)
         self.maya_file_to_open = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\experiment_files\g10-10 rest pose 1200 landmarks v9.mb"
         self.opened_file = None
-        self.save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+        self.save_folder =str(results_path / "240423-150653 log files")
 
         # Making the script self-contained
         self.cmds = cmds
