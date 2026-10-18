@@ -3225,6 +3225,36 @@ def parse_sequence_string(input_text):
                 path = DEFORMATION_PATH_DB[original_key]
                 print(f"Found path via normalized lookup: '{normalized_key}' -> '{original_key}'")
 
+        # Fallback: try common aliases (Neutral <-> dataV22_AU0_neutral, with/without dataV22_ prefix)
+        if path is None:
+            def get_aliases(state):
+                aliases = [state]
+                if state in ["dataV22_AU0_neutral", "AU0_neutral", "AU0", "neutral"]:
+                    aliases.extend(["Neutral", "neutral", "dataV22_AU0_neutral"])
+                if state.startswith("dataV22_"):
+                    aliases.append(state.replace("dataV22_", ""))
+                else:
+                    aliases.append(f"dataV22_{state}")
+                return list(dict.fromkeys(aliases))
+
+            for a in get_aliases(state_a):
+                for b in get_aliases(state_b):
+                    for cand in [f"{a}_to_{b}", f"{a} to {b}"]:
+                        cand_path = DEFORMATION_PATH_DB.get(cand)
+                        if cand_path is None:
+                            norm_cand = normalize_task_key(cand)
+                            orig = db_key_map.get(norm_cand)
+                            if orig:
+                                cand_path = DEFORMATION_PATH_DB[orig]
+                        if cand_path:
+                            path = cand_path
+                            print(f"Found path via alias fallback '{cand}' -> '{path}'")
+                            break
+                    if path:
+                        break
+                if path:
+                    break
+
         if path is None:
             # Handle missing path
             raise ValueError(
