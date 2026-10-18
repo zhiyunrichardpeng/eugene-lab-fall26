@@ -172,6 +172,13 @@ import pickle
 import numpy as np
 import datetime
 import signal
+from pathlib import Path
+
+# Ensure repository root is on sys.path so 'paths' can be imported anywhere
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from paths import a3_stochastic_relative_path
 
 
