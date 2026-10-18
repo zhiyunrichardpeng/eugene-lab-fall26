@@ -69,7 +69,7 @@ def run_playblast():
     start_time = time.time()
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     BASE_NAME = f"passive_dynamics_clap_{timestamp}"
-    PLAYBLAST_DIR = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\playblust_results"
+    PLAYBLAST_DIR =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/playblust_results")
     
     if not os.path.exists(PLAYBLAST_DIR):
         os.makedirs(PLAYBLAST_DIR)

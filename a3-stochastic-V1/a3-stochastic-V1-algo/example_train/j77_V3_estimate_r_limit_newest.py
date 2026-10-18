@@ -11,6 +11,20 @@ def calculate_rotation_parameters():
     from os import path
     import importlib
     from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path
+    empirical_factor = 9.95657316385
+    # empirical_factor = 85/48.52657980700467 # 9.95657316385
+    # empirical_factor_ooc_l = 40/29.123996797586287
+    # empirical_factor_ooc_r = empirical_factor_ooc_l
+    # empirical_factor_frontalis =  80/54.54203132151744
+
+    empirical_factor_ooc_l = 9.95657316385
+    empirical_factor_ooc_r = 9.95657316385
+    empirical_factor_frontalis =  9.95657316385
+
+    # 9.95657316385, this is not including the waiting other tissues
+    # 11.5400677097 this is including the waiting other tissues
+    # 12.7718032411 this is including the waiting other tissues
+
 
     # --- Task Setup (Kept as is) ---
     # this_task = 'dataV22_AU0_neutral to dataV22_phoneme_N'
@@ -97,9 +111,8 @@ def calculate_rotation_parameters():
     import dataV22_AU7
     importlib.reload(dataV22_AU7)    
 
-
-
-
+    import dataV22_AU12L
+    importlib.reload(dataV22_AU12L)
 
 
     import joint_position_ooc_l_base_0
@@ -281,7 +294,7 @@ def calculate_rotation_parameters():
             )
             
             # Calculate estimated steps
-            estimated_completion_steps = math.floor(43.0073594825 * initial_distance)
+            estimated_completion_steps = math.floor(empirical_factor * initial_distance)
             
             # Return full pose data for later use
             x_bar_pose1 = target_state_temp1
@@ -419,7 +432,7 @@ def calculate_rotation_parameters():
         """Visualize the velocity profile and cumulative movement"""
         plt.figure(figsize=(12, 6))
         steps = np.arange(len(time_points))
-        save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+        save_folder =str(results_path / "240423-150653 log files")
 
         # Velocity profile
         plt.subplot(1, 2, 1)
@@ -470,8 +483,8 @@ def calculate_rotation_parameters():
         # Initial bounds search, adjust based on expected magnitude (rotation vs translation)
         if region_name == 'Jaw Rotation':
             # Rotation is in degrees, likely a smaller magnitude
-            up_limit = 0.1 
-            down_limit = 0.0000001
+            up_limit = 1000 
+            down_limit = 0.001
         else:
             # Translation is in world units, may need a wider/higher bound
             # Initial guess: translation limits are often smaller than rotation velocity in this context
@@ -505,7 +518,7 @@ def calculate_rotation_parameters():
     # 0. t_limit. for oor
     # heuristic value
     # expected_total_steps = 5200  # 6000
-    translation_anatomy_limit = 0.014  # 35/30/(expected_total_steps/300)*0.208
+    translation_anatomy_limit = 0.014 # 35/30/(estimated_steps/300)*0.208# 0.014  # 35/30/(expected_total_steps/300)*0.208
     t_limit = translation_anatomy_limit
     print(f"Recommended t_limit: {t_limit:.8e}")
     # --- Smart Synchronization Preparation ---
@@ -514,16 +527,15 @@ def calculate_rotation_parameters():
     
     estimated_completion_steps_ooc_l = 0
     if target_ooc_l_translation is not None:
-        estimated_completion_steps_ooc_l = math.floor(43.0073594825 * target_ooc_l_translation)
+        estimated_completion_steps_ooc_l = math.floor(empirical_factor_ooc_l * target_ooc_l_translation)
         
     estimated_completion_steps_ooc_r = 0
     if target_ooc_r_translation is not None:
-        estimated_completion_steps_ooc_r = math.floor(43.0073594825 * target_ooc_r_translation)
+        estimated_completion_steps_ooc_r = math.floor(empirical_factor_ooc_r * target_ooc_r_translation)
         
     estimated_completion_steps_frontalis = 0
     if target_frontalis_translation is not None:
-        estimated_completion_steps_frontalis = math.floor(43.0073594825 * target_frontalis_translation)
-        
+        estimated_completion_steps_frontalis = math.floor(empirical_factor_frontalis * target_frontalis_translation)
     all_steps = [estimated_steps, estimated_completion_steps_ooc_l, estimated_completion_steps_ooc_r, estimated_completion_steps_frontalis]
     sync_target_steps = max(all_steps)
     if sync_target_steps < 1:
@@ -541,32 +553,62 @@ def calculate_rotation_parameters():
         r_limit = find_optimal_parameters(sync_target_steps, target_rotation_deg, 'Jaw Rotation')
     print(f"Recommended r_limit: {r_limit:.8e}")
 
+    # --- Sync ooc_l, ooc_r, frontalis with oor ---
+    # To sync the completion steps perfectly to OOR (520 steps), 
+    # we scale the limits down proportionally to how fast they were previously finishing.
+    # Speed is proportional to the limit, so: New_Limit = Old_Limit * (Old_Steps / Target_Steps)
+    # Using t_limit (0.014) as the base `gradient_magnitude_setup` ensures clean proportionality.
+    
+    gradient_magnitude_setup = t_limit
+    
+    if estimated_steps <= 1e-3:
+        if estimated_completion_steps_ooc_r != 0:
+            target_steps_temp = estimated_completion_steps_ooc_r
+        elif estimated_completion_steps_ooc_l != 0:
+            target_steps_temp = estimated_completion_steps_ooc_l
+        else:
+            target_steps_temp = 365
+    else:
+        target_steps_temp = estimated_steps
+
     # 2. OOC_L Translation (ooc_l_limit)
     ooc_l_limit = 0.0
+    # Old effective multiplier was ~0.0205. Target steps = 520, Old steps = 230.
+    # Tuning factor = (0.0205 / 0.014) * (230 / 520) = 0.648
+    gradient_magnitude = gradient_magnitude_setup * 0.648
     if target_ooc_l_translation is not None and target_ooc_l_translation > 1e-6:
-        print(f"\nOptimizing OOC_L Translation...")
-        ooc_l_limit = find_optimal_parameters(sync_target_steps, target_ooc_l_translation, 'OOC_L Translation')
+        print(f"\nCalculating OOC_L Translation Limit...")
+        correction_ooc_l_limit = gradient_magnitude * estimated_completion_steps_ooc_l / target_steps_temp
+        ooc_l_limit = correction_ooc_l_limit
     print(f"Recommended ooc_l_limit: {ooc_l_limit:.8e}")
 
     # 3. OOC_R Translation (ooc_r_limit)
     ooc_r_limit = 0.0
+    # Old effective multiplier was ~0.0223. Target steps = 520, Old steps = 180.
+    # Tuning factor = (0.0223 / 0.014) * (180 / 520) = 0.551
+    gradient_magnitude = gradient_magnitude_setup * 0.551
     if target_ooc_r_translation is not None and target_ooc_r_translation > 1e-6:
-        print(f"\nOptimizing OOC_R Translation...")
-        ooc_r_limit = find_optimal_parameters(sync_target_steps, target_ooc_r_translation, 'OOC_R Translation')
+        print(f"\nCalculating OOC_R Translation Limit...")
+        correction_ooc_r_limit = gradient_magnitude * estimated_completion_steps_ooc_r / target_steps_temp
+        ooc_r_limit = correction_ooc_r_limit
     print(f"Recommended ooc_r_limit: {ooc_r_limit:.8e}")
 
     # 4. Frontalis Translation (frontalis_limit)
     frontalis_limit = 0.0
+    # Old effective multiplier was ~0.01616. Target steps = 520, Old steps = 400.
+    # Tuning factor = (0.01616 / 0.014) * (400 / 520) = 0.887
+    gradient_magnitude = gradient_magnitude_setup * 0.887
     if target_frontalis_translation is not None and target_frontalis_translation > 1e-6:
-        print(f"\nOptimizing Frontalis Translation...")
-        frontalis_limit = find_optimal_parameters(sync_target_steps, target_frontalis_translation, 'Frontalis Translation')
+        print(f"\nCalculating Frontalis Translation Limit...")
+        correction_frontalis_limit = gradient_magnitude * estimated_completion_steps_frontalis / target_steps_temp       
+        frontalis_limit = correction_frontalis_limit
     print(f"Recommended frontalis_limit: {frontalis_limit:.8e}")
 
     # Update global estimated_steps to the synchronized max so downstream processes and logging use it
     estimated_steps = sync_target_steps
 
     # --- Log Results to File ---
-    log_dir = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\debug nonsync"
+    log_dir =str(results_path / "240423-150653 log files/debug nonsync")
     os.makedirs(log_dir, exist_ok=True)
 
     import datetime

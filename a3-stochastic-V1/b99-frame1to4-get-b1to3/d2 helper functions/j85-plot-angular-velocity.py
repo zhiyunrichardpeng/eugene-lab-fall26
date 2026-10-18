@@ -1,9 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from paths import results_path
 
 # Read the CSV file
-filename = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250516-154657\250516-154711\adhoc.txt"
+filename =str(results_path / "job_250516-154657/250516-154711/adhoc.txt")
 df = pd.read_csv(filename)
 
 # Clean data - replace empty strings or invalid values with NaN and drop them

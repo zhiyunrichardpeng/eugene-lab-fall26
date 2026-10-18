@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and profiler
+*.prof
+.pytest_cache/
+
+# Maya and Ziva temporary logs
+*.log
+ziva-maya-log*
+
+# Generated simulation results (keep directory structure via .gitkeep)
+results/**/job_*
+results/**/*.mb
+results/**/*.pkl
+!results/**/.gitkeep

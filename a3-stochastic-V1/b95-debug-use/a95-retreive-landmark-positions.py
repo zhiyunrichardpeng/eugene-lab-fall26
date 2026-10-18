@@ -21,7 +21,7 @@ class MayaDebug:
         self.app = QApplication(sys.argv)
         self.maya_file_to_open = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\different pose as rest pose\AU2_right as rest pose_V2.mb"
         self.opened_file = None
-        # self.save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\AU2_right_as_rest_pose\mb_file_offline"
+        # self.save_folder =str(results_path / "240423-150653 log files/AU2_right_as_rest_pose/mb_file_offline")
         # os.makedirs(self.save_folder, exist_ok=True)
 
         # Making the script self-contained

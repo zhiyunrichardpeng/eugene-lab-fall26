@@ -7,13 +7,13 @@
 
 # run locally offline: 
 # "C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe" "C:\Users\zpa18\keyLabLocal\b99-frame1to4-get-b1to3\d2-adhoc-for-b99-part2.py"
+from paths import *
 
-path2_combined_checkpoints = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_251028-122724\251028-122739"
+path2_combined_checkpoints =str(results_path / "job_251028-122724/251028-122739")
 
 debug_mode_vsCode = 0
 
 import sys
-from paths import a3_stochastic_relative_path, a1_blendshape_path, b98_sampling_path
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
@@ -134,7 +134,7 @@ run_set_keyframes = 1
 run_calculate_distance = 0
 
 # mayaFilePath = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\f97 use base and au12 and au22 joints binded and ziva muscle activation good.mb"
-saveMayaTo = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+saveMayaTo =str(results_path / "240423-150653 log files")
 save_folder = saveMayaTo
 keyframe_num = 2 # 50  # 100
 keyframe_translation_num = 2
@@ -268,7 +268,7 @@ def initial_joint_position():
     # to update the joint position to the AA pose, as the starting pose.
     def update_joint_position_to_AA_pose():
         # from neutral to N
-        deltaBList_temp_file_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250923-153850\250923-153909"
+        deltaBList_temp_file_folder =str(results_path / "job_250923-153850/250923-153909")
         with open(deltaBList_temp_file_folder + "/deltaB_temp.pkl", 'rb') as f:
             data_t = pickle.load(f)
             delta_b0_conca = data_t['delta_b0_conca']
@@ -293,7 +293,7 @@ def initial_joint_position():
         x_joint_rotation_ = x_joint_rotation_init + delta_b0_conca[n : n + 3*joint_rotate_num]
 
         # from N to AA
-        previous_pose_folder_2 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250429-210906\250429-210922"
+        previous_pose_folder_2 =str(results_path / "job_250429-210906/250429-210922")
         multiple_previous_folder = 0
         if multiple_previous_folder == 1:
             deltaBList_temp_file_folder = previous_pose_folder_2
@@ -464,15 +464,15 @@ diff = next_coords_rest - current_coords_target
 ## new added end1
 
 # for au12
-deltaBList_temp_file_folder_first = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-093213\240904-093228"
+deltaBList_temp_file_folder_first =str(results_path / "job_240904-093213/240904-093228")
 
 # for au22
-deltaBList_temp_file_folder_second = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-105216\240904-105217"
+deltaBList_temp_file_folder_second =str(results_path / "job_240904-105216/240904-105217")
 
 # for phoneme T
-# deltaBList_temp_file_folder_3 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_241209-143126\241209-143141"
+# deltaBList_temp_file_folder_3 =str(results_path / "job_241209-143126/241209-143141")
 
-save_joint_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-093213\240904-093228"
+save_joint_path =str(results_path / "job_240904-093213/240904-093228")
 
 
 

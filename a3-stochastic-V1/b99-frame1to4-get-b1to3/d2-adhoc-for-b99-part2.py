@@ -8,7 +8,7 @@
 # run locally offline: 
 # "C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe" "C:\Users\zpa18\keyLabLocal\b99-frame1to4-get-b1to3\d2-adhoc-for-b99-part2.py"
 
-# path2_combined_checkpoints = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\merged_deformation_parameters_hub\merged_padded_250623-144522_251110-124637"
+# path2_combined_checkpoints =str(results_path / "merged_deformation_parameters_hub/merged_padded_250623-144522_251110-124637")
 path2_combined_checkpoints = r"\\bbysvm-nfs1.its.sfu.ca\GrUViLab\Data\richardPeng\keyLabCloud\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003_25-7-18\job_250623-144458_experiment\job_250623-144458_40pct"
 previous_pose_folder = r"\\bbysvm-nfs1.its.sfu.ca\GrUViLab\Data\richardPeng\SFU_PhD_cloud\2-Projects\1-physically based facial animation\3-Experiments\a3-stochastic-V1-backup-and-results\results\job_251128-140733\251128-140743"
 neutral_to_other_pose_flag = 1
@@ -223,7 +223,7 @@ run_set_keyframes = 1
 run_calculate_distance = 0
 
 # mayaFilePath = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\f97 use base and au12 and au22 joints binded and ziva muscle activation good.mb"
-saveMayaTo = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+saveMayaTo =str(results_path / "240423-150653 log files")
 save_folder = saveMayaTo
 keyframe_num = 2 # 50  # 100
 keyframe_translation_num = 2
@@ -308,7 +308,7 @@ def initial_joint_position():
     # This is the new logic from d1
     
     if 1 == 1:
-        # previous_pose_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_251028-122724\251028-122739"
+        # previous_pose_folder =str(results_path / "job_251028-122724/251028-122739")
         with open(previous_pose_folder + "/deltaB_temp.pkl", 'rb') as f:
             data_t = pickle.load(f)
 
@@ -487,15 +487,15 @@ diff = next_coords_rest - current_coords_target
 ## new added end1
 
 # for au12
-deltaBList_temp_file_folder_first = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-093213\240904-093228"
+deltaBList_temp_file_folder_first =str(results_path / "job_240904-093213/240904-093228")
 
 # for au22
-deltaBList_temp_file_folder_second = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-105216\240904-105217"
+deltaBList_temp_file_folder_second =str(results_path / "job_240904-105216/240904-105217")
 
 # for phoneme T
-# deltaBList_temp_file_folder_3 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_241209-143126\241209-143141"
+# deltaBList_temp_file_folder_3 =str(results_path / "job_241209-143126/241209-143141")
 
-save_joint_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-093213\240904-093228"
+save_joint_path =str(results_path / "job_240904-093213/240904-093228")
 
 
 

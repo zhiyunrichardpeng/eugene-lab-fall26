@@ -63,6 +63,8 @@ import argparse
 import pickle
 import math
 import importlib
+from paths import results_path
+
 
 
 
@@ -82,7 +84,7 @@ run_set_keyframes = 1
 run_calculate_distance = 0
 
 # mayaFilePath = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\f97 use base and au12 and au22 joints binded and ziva muscle activation good.mb"
-saveMayaTo = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+saveMayaTo =str(results_path / "240423-150653 log files")
 save_folder = saveMayaTo
 keyframe_num = 2 # 50  # 100
 keyframe_translation_num = 2
@@ -210,15 +212,15 @@ diff = next_coords_rest - current_coords_target
 ## new added end1
 
 # for au12
-deltaBList_temp_file_folder_first = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-093213\240904-093228"
+deltaBList_temp_file_folder_first =str(results_path / "job_240904-093213/240904-093228")
 
 # for au22
-deltaBList_temp_file_folder_second = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-105216\240904-105217"
+deltaBList_temp_file_folder_second =str(results_path / "job_240904-105216/240904-105217")
 
 # for phoneme T
-# deltaBList_temp_file_folder_3 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_241209-143126\241209-143141"
+# deltaBList_temp_file_folder_3 =str(results_path / "job_241209-143126/241209-143141")
 
-save_joint_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-093213\240904-093228"
+save_joint_path =str(results_path / "job_240904-093213/240904-093228")
 
 
 # def load_joint_data(save_joint_path):

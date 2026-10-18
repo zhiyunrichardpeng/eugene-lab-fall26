@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
 from matplotlib.collections import PathCollection
 
-from paths import a1_blendshape_path
+from paths import a1_blendshape_path, results_path
 
 
 sys.path.insert(0, str(a1_blendshape_path / "database"))
@@ -97,7 +97,7 @@ if visualize_organ == 1:
     x_bar_conca = x_bar_conca_collected
     coords_rest = x_bar_conca
 
-    previous_pose_folder_2 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250502-204611\250502-204627"
+    previous_pose_folder_2 =str(results_path / "job_250502-204611/250502-204627")
     try:
         # Try to open and read data from the first file
         with open(previous_pose_folder_2 + "/deltaB_temp.pkl", 'rb') as f:

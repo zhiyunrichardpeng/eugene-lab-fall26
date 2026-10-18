@@ -238,7 +238,7 @@ class JawRotationConfig:
                         'task': 'Y to UW'
                     }
                 },
-                'result_folder': r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250611-105222\250611-105237"
+                'result_folder':str(results_path / "job_250611-105222/250611-105237")
             },
 
             '0.99': {
@@ -271,7 +271,7 @@ class JawRotationConfig:
                         'frontalis_translation_limit': 0.0001,  # Add missing key
                     }
                 },
-                'result_folder': r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250611-132640\250611-132654"
+                'result_folder':str(results_path / "job_250611-132640/250611-132654")
             },            
 
             '0.9': {
@@ -784,7 +784,7 @@ def main(x_bar):
                 # neutral to N
                 
                 # path_2 not used here.
-                previous_pose_folder_2 = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250429-210906\250429-210922"
+                previous_pose_folder_2 =str(results_path / "job_250429-210906/250429-210922")
 
                 if this_task in contract_to_neutral_task:
                     AA_to_rest_flag = 1
@@ -1089,7 +1089,7 @@ def main(x_bar):
                 x_ooc_l_joint_ = x_ooc_l_joint
                 x_ooc_r_joint_ = x_ooc_r_joint
 
-                # debug_save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\AU2_right_as_rest_pose\mb_file_offline_from_d1"
+                # debug_save_folder =str(results_path / "240423-150653 log files/AU2_right_as_rest_pose/mb_file_offline_from_d1")
                 # generate_output(x_ooc_r_joint_, debug_save_folder)
                 # print("Debug output generation complete. Exiting.")
                 # sys.exit(0)
@@ -1173,7 +1173,7 @@ p = pstats.Stats('output.prof')
 
 import datetime
 
-saveFolder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\computingTime_analysis"
+saveFolder =str(results_path / "240423-150653 log files/computingTime_analysis")
 filename = saveFolder + r"\computingTime_analysis_file"+str("_")+ datetime.datetime.now().strftime("%y%m%d-%H%M%S") #  +".mv"
 os.makedirs(saveFolder, exist_ok=True)
 

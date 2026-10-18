@@ -1,12 +1,12 @@
 import numpy as np
 import pickle
 import re
-
+from paths import results_path
 # file_path = r"C:\path\to\log0_final_list.txt"
 # file_path_pick = r"C:\path\to\deltaB_temp_final_epoch_action_list.pkl"
 
-file_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250528-200118\250528-200133\log0_final_list.txt"
-file_path_pick = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250528-200118\250528-200133\deltaB_temp_final_epoch_action_list.pkl"
+file_path =str(results_path / "job_250528-200118/250528-200133/log0_final_list.txt")
+file_path_pick =str(results_path / "job_250528-200118/250528-200133/deltaB_temp_final_epoch_action_list.pkl")
 
 
 def parse_large_array_file(file_path):

@@ -6,6 +6,7 @@ import os
 import numpy as np
 import subprocess
 import math
+from paths import results_path
 
 # ==========================================
 # 1. MAIN CONFIGURATION
@@ -22,16 +23,16 @@ AO_OPACITY = 0.65
 # ==========================================
 # 2. PATH DEFINITIONS
 # ==========================================
-# PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\masterLayer\face_closeup"
-# PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\masterLayer\fig15_view_sideV2"
-PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\masterLayer\muscle_closeup"
+# PNG_BASE_PATH =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/face_closeup")
+# PNG_BASE_PATH =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/fig15_view_sideV2")
+PNG_BASE_PATH =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/muscle_closeup")
 
 AO_DIR = os.path.join(PNG_BASE_PATH, "A0_Pass")
 COLOR_DIR = os.path.join(PNG_BASE_PATH, "beauty")
 OUTPUT_DIR = os.path.join(PNG_BASE_PATH, "composited_output")
 
 # FFMPEG Video Output Path
-MP4_OUTPUT_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub"
+MP4_OUTPUT_BASE_PATH =str(results_path / "maya_render_output_hub")
 OUTPUT_SUBFOLDER = "composited_videos"
 
 # ==========================================

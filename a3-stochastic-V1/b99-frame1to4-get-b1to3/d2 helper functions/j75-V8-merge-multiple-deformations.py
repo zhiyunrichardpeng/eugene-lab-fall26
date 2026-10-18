@@ -3,6 +3,7 @@ import re
 import os
 import math
 import pickle
+from paths import results_path
 
 def get_total_steps_convergence(log_path, phonemes):
     """Extracts phase step counts from log files for specific phases"""
@@ -186,19 +187,19 @@ def main():
     deformation_configs = [
         {
             "name": "AU1",
-            "log_path": r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_251112-114911\251112-114930", 
+            "log_path":str(results_path / "job_251112-114911/251112-114930"), 
             # Placeholder for AU1
             "phonemes": ["Neutral", "AU1"],
         },
         {
             "name": "AU2",
-            "log_path": r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_251113-113629\251113-113645", 
+            "log_path":str(results_path / "job_251113-113629/251113-113645"), 
             # This is the path for AU2
             "phonemes": ["Neutral", "AU2"],
         },
         {
             "name": "AU25",
-            "log_path": r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_251120-135844\251120-135852",
+            "log_path":str(results_path / "job_251120-135844/251120-135852"),
             "phonemes": ["Neutral", "AU25"],
         },
     ]
@@ -207,7 +208,7 @@ def main():
     output_filename = "combined_checkpoints.pkl"
     
     # --- Define Output Path ---
-    base_output_dir = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\merged_deformation_parameters_hub"
+    base_output_dir =str(results_path / "merged_deformation_parameters_hub")
     subfolder_name = "_".join(config["name"] for config in deformation_configs)
     output_dir = os.path.join(base_output_dir, subfolder_name)
     os.makedirs(output_dir, exist_ok=True)

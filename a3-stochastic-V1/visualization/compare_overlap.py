@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import os
 import math
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path, results_path
 
 def create_comparison_video():
-    seq1_dir = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\muscle_closeup\beauty"
-    seq2_dir = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub\muscle_closeup\beauty"
+    seq1_dir =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/muscle_closeup/beauty")
+    seq2_dir =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/muscle_closeup/beauty")
     
     seq1_prefix = "u54_test_V2_1_"
     seq2_prefix = "u55_test_V2_1_"

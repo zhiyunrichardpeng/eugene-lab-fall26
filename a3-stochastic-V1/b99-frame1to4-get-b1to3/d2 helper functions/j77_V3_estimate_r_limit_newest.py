@@ -10,8 +10,7 @@ def calculate_rotation_parameters():
     import sys
     from os import path
     import importlib
-    from paths import a3_stochastic_relative_path
-
+    from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path
     empirical_factor = 9.95657316385
     # empirical_factor = 85/48.52657980700467 # 9.95657316385
     # empirical_factor_ooc_l = 40/29.123996797586287
@@ -39,7 +38,7 @@ def calculate_rotation_parameters():
     # Copy file from source to destination (Kept as is)
     # copy_from = r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/dataV22_phoneme_N.py"
     copy_from = r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/dataV22_phoneme_N.py"
-    copy_to = str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"/ "dataV22.py")
+    copy_to = str(a1_blendshape_path / "database"/ "dataV22.py")
     shutil.copy(copy_from, copy_to)
 
     # maya_file_to_open = r"C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb"
@@ -49,10 +48,10 @@ def calculate_rotation_parameters():
     sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1")
     sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example_train")
     sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
-    sys.path.insert(0, r"C:\Users\zpa18\a1-blendshape-guided-animation-pipeline\database")
+    sys.path.insert(0, str(a1_blendshape_path / "database"))
     sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
     sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"/ "300joints_suite_good_old"))
+    sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
 
     # Module imports (Kept as is)
     import joint_position
@@ -114,8 +113,6 @@ def calculate_rotation_parameters():
 
     import dataV22_AU12L
     importlib.reload(dataV22_AU12L)    
-
-
 
 
     import joint_position_ooc_l_base_0
@@ -297,7 +294,6 @@ def calculate_rotation_parameters():
             )
             
             # Calculate estimated steps
-            
             estimated_completion_steps = math.floor(empirical_factor * initial_distance)
             
             # Return full pose data for later use
@@ -436,7 +432,7 @@ def calculate_rotation_parameters():
         """Visualize the velocity profile and cumulative movement"""
         plt.figure(figsize=(12, 6))
         steps = np.arange(len(time_points))
-        save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+        save_folder =str(results_path / "240423-150653 log files")
 
         # Velocity profile
         plt.subplot(1, 2, 1)
@@ -613,7 +609,7 @@ def calculate_rotation_parameters():
     estimated_steps = sync_target_steps
 
     # --- Log Results to File ---
-    log_dir = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\debug nonsync"
+    log_dir =str(results_path / "240423-150653 log files/debug nonsync")
     os.makedirs(log_dir, exist_ok=True)
 
     import datetime

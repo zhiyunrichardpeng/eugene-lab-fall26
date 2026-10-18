@@ -103,7 +103,7 @@ def plot_target_state(target_state, object_name):
     ax.set_title('Target State Visualization')
 
     # Save the plot to a file
-    output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+    output_folder =str(results_path / "240423-150653 log files")
     output_file = os.path.join(output_folder, f'3d_mesh_plot_{object_name}.png')
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()

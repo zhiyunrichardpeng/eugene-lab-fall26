@@ -1,5 +1,5 @@
 import os
-
+from paths import results_path
 # --- MAIN CONFIGURATION ---
 
 # 1. Add your base names to this list.
@@ -16,8 +16,8 @@ BASE_NAMES = [
 OUTPUT_SUBFOLDER = "o59-25-10-8" 
 
 # 3. Define the base paths (you probably won't need to change these).
-PNG_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub\temp_rendered_png_hub"
-MP4_OUTPUT_BASE_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\maya_render_output_hub"
+PNG_BASE_PATH =str(results_path / "maya_render_output_hub/temp_rendered_png_hub")
+MP4_OUTPUT_BASE_PATH =str(results_path / "maya_render_output_hub")
 
 # 4. Name of the batch file to be created.
 BATCH_FILENAME = "run_all.bat"

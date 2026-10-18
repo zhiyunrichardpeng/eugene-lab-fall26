@@ -10,7 +10,7 @@
 debug_mode_vsCode = 0
 
 import sys
-from paths import a3_stochastic_relative_path, a1_blendshape_path, b98_sampling_path
+from paths import *
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
@@ -71,7 +71,7 @@ run_set_keyframes = 1
 run_calculate_distance = 0
 
 # mayaFilePath = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\f97 use base and au12 and au22 joints binded and ziva muscle activation good.mb"
-saveMayaTo = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files"
+saveMayaTo =str(results_path / "240423-150653 log files")
 save_folder = saveMayaTo
 keyframe_num = 2 # 50  # 100
 keyframe_translation_num = 2
@@ -199,12 +199,12 @@ diff = next_coords_rest - current_coords_target
 ## new added end1
 
 # for phoneme N
-deltaBList_temp_file_folder_first = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_241209-091306\241209-091322"
+deltaBList_temp_file_folder_first =str(results_path / "job_241209-091306/241209-091322")
 
 # for phoneme AA
-deltaBList_temp_file_folder_second = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_241209-130715\241209-130731"
+deltaBList_temp_file_folder_second =str(results_path / "job_241209-130715/241209-130731")
 
-save_joint_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_240904-093213\240904-093228"
+save_joint_path =str(results_path / "job_240904-093213/240904-093228")
 
 
 

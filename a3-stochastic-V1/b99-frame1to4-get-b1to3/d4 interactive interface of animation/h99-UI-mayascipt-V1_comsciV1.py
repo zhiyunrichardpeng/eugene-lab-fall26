@@ -161,7 +161,7 @@ def load_database():
 DEFORMATION_PATH_DB, STATE_MAP = load_database()
 
 # Base path for saving the combined deformation parameters
-SEQUENCE_DB_PATH = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\sequence_combined_deformation_parameters_hub"
+SEQUENCE_DB_PATH =str(results_path / "sequence_combined_deformation_parameters_hub")
 
 # Global variables for pose configuration (set by parse_sequence_string)
 NEUTRAL_TO_OTHER_POSE_FLAG = 1  # Default to neutral start
@@ -3227,7 +3227,7 @@ def run_full_pipeline(*args):
             log_paths = parse_sequence_string(user_text)[1]
 
             # --- Conditional Processing ---
-            # base_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\sequence_combined_deformation_parameters_hub"
+            # base_path =str(results_path / "sequence_combined_deformation_parameters_hub")
             base_path = r"\\bbysvm-nfs1.its.sfu.ca\GrUViLab\Data\richardPeng\SFU_PhD_cloud\2-Projects\1-physically based facial animation\3-Experiments\a3-stochastic-V1-backup-and-results\results\sequence_combined_deformation_parameters_hub"
             checkpoint_file_path = os.path.join(base_path, sequence_folder_name, f"combined_checkpoints_base{base_frames_global}.pkl")
 
