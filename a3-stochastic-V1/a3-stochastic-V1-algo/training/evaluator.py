@@ -6,17 +6,17 @@ import math
 import os
 
 from os import path
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path, backup_path, a1_blendshape_path
 
 from utils.initialization import create_env
 from utils.common_utils import set_seed
 
 import sys
-sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1")
-sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example_train")
-sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
-sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "training"/ "analysic_gradient"))
 
 import importlib

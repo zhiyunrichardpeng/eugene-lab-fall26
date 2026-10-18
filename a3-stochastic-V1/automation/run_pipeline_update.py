@@ -179,7 +179,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path, backup_path, results_path
 
 
 sys.path.insert(0, str(a3_stochastic_relative_path))
@@ -681,7 +681,7 @@ def main():
         replace_in_file(j77_file, r'to_pose\s*=\s*".*?"', f'to_pose = "{to_pose}"')
 
         # Update copy_from to point to the correct dataV22 file based on to_pose
-        copy_from_path = f"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/{to_pose}.py"
+        copy_from_path = (backup_path / "b31 dataV22 backup hub" / f"{to_pose}.py").as_posix()
         replace_in_file(j77_file, r'copy_from\s*=\s*r"[^"]*"', f'copy_from = r"{copy_from_path}"')
         # copy_from_path = f"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/{from_pose}.py"
         # replace_in_file(j77_file, r'copy_from\s*=\s*r"[^"]*"', f'copy_from = r"{copy_from_path}"')        

@@ -10,7 +10,7 @@ def calculate_rotation_parameters():
     import sys
     from os import path
     import importlib
-    from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path
+    from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path, backup_path
     empirical_factor = 9.95657316385
     # empirical_factor = 85/48.52657980700467 # 9.95657316385
     # empirical_factor_ooc_l = 40/29.123996797586287
@@ -35,22 +35,20 @@ def calculate_rotation_parameters():
     from_pose = "dataV22_AU0_neutral"
     to_pose = "dataV22_phoneme_N"    
 
-    # Copy file from source to destination (Kept as is)
-    # copy_from = r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/dataV22_phoneme_N.py"
-    copy_from = r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/backup/b31 dataV22 backup hub/dataV22_phoneme_N.py"
+    # Copy file from source to destination
+    copy_from = str(backup_path / "b31 dataV22 backup hub" / f"{to_pose}.py")
     copy_to = str(a1_blendshape_path / "database"/ "dataV22.py")
     shutil.copy(copy_from, copy_to)
 
     # maya_file_to_open = r"C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb"
     maya_file_to_open = r"C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb"
 
-    # --- System Paths and Module Imports (Kept as is) ---
-    sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1")
-    sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example_train")
-    sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
-    sys.path.insert(0, str(a1_blendshape_path / "database"))
-    sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+    # --- System Paths and Module Imports ---
     sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
+    sys.path.insert(0, str(a1_blendshape_path / "database"))
+    sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
     sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
 
     # Module imports (Kept as is)

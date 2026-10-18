@@ -14,11 +14,16 @@ import numpy as np
 import json
 import maya.OpenMaya as OpenMaya
 import csv
-import datetime
-import inspect
-from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
-
+from pathlib import Path
 import sys
+
+# Ensure repository root is on sys.path so 'paths' can be imported
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path, backup_path, results_path
+
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "example_train"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(b98_sampling_path))
@@ -26,7 +31,7 @@ sys.path.insert(0, str(b98_sampling_path/ "300joints_suite_good_old"))
 sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_ooc_l"))
 sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_ooc_r"))
 sys.path.insert(0, str(b98_sampling_path/ "joint_positions"/ "joint_position_frontalis"))
-sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "b95-debug-use"))
 
 

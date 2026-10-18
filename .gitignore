@@ -16,3 +16,4 @@ results/**/job_*
 results/**/*.mb
 results/**/*.pkl
 !results/**/.gitkeep
+debug_results/

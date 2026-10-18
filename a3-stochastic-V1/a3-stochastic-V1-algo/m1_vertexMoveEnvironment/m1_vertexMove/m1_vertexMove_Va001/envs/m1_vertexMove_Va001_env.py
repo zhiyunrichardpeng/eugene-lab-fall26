@@ -40,11 +40,11 @@ import datetime
 import csv
 
 import importlib
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path, backup_path
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
 sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "300joints_suite_good_old"))
-sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
 import dataV22
 importlib.reload(dataV22)
