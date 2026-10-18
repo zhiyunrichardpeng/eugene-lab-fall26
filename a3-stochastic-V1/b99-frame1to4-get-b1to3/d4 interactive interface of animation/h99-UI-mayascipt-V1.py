@@ -18,8 +18,11 @@ from pathlib import Path
 import sys
 
 # Ensure repository root is on sys.path so 'paths' can be imported
-REPO_ROOT = Path(__file__).resolve().parents[3]
-if str(REPO_ROOT) not in sys.path:
+try:
+    REPO_ROOT = Path(__file__).resolve().parents[3]
+except NameError:
+    REPO_ROOT = None
+if REPO_ROOT is not None and str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path, backup_path, results_path
