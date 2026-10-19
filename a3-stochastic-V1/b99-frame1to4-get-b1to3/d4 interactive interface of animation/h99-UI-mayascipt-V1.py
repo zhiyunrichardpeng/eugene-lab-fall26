@@ -3141,6 +3141,8 @@ def parse_sequence_string(input_text):
     If a phoneme is not in our inventory, a warning is printed but the
     animation continues by skipping to the next available phoneme.
     """
+    global DEFORMATION_PATH_DB, STATE_MAP
+    DEFORMATION_PATH_DB, STATE_MAP = load_database()
     print(f"Parsing user input: '{input_text}'")
     
     # Detect input mode
