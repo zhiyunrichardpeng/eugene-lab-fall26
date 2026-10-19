@@ -18,11 +18,8 @@ from pathlib import Path
 import sys
 
 # Ensure repository root is on sys.path so 'paths' can be imported
-try:
-    REPO_ROOT = Path(__file__).resolve().parents[3]
-except NameError:
-    REPO_ROOT = None
-if REPO_ROOT is not None and str(REPO_ROOT) not in sys.path:
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path, backup_path, results_path
@@ -3141,8 +3138,6 @@ def parse_sequence_string(input_text):
     If a phoneme is not in our inventory, a warning is printed but the
     animation continues by skipping to the next available phoneme.
     """
-    global DEFORMATION_PATH_DB, STATE_MAP
-    DEFORMATION_PATH_DB, STATE_MAP = load_database()
     print(f"Parsing user input: '{input_text}'")
     
     # Detect input mode
