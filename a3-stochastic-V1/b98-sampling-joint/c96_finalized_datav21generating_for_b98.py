@@ -3,12 +3,13 @@ def c96_finalized_datav21generating(keyframe_num):
     import maya.cmds as cmds
     import maya.OpenMaya as OpenMaya
     import os
+    from paths import backup_path, results_path
     debug_mode_vsCode = 1   # 1 is running in vs code.  0 is in maya.
     # keyframe_num = 10
     keframe_max = 50
     start_frame = 14  # at frame 15, the gravity effect starts to converge.
     
-    save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub"
+    save_folder = str(backup_path / "b31 dataV22 backup hub")
     # mayaFilePath = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\e5-start-from-0-adhocV2.mb"
     write_to = "\dataV22_AU7.py"
 

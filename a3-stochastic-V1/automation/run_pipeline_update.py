@@ -539,7 +539,7 @@ def main():
     # Set up report file
     report_filename = f"pipeline_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     # report_filepath = os.path.join(os.path.dirname(__file__), report_filename)
-    report_dir =str(results_path / "240423-150653 log files/tasks pipeline report")
+    report_dir =str(results_path / "240423-150653 log files"/ "tasks pipeline report")
     os.makedirs(report_dir, exist_ok=True)
     report_filepath = os.path.join(report_dir, report_filename)
         

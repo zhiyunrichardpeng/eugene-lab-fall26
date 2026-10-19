@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from paths import backup_path
 
 # Constants
 self = lambda: None  # Dummy self object
@@ -129,7 +130,7 @@ plt.legend(fontsize=12)
 object_name = "jaw"
 
 # Save the plot to a file
-output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\d46"
+output_folder = str(backup_path / "d46")
 output_file = os.path.join(output_folder, f'ideal_velocity_{object_name}_no_cut_off.png')
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 plt.close()        

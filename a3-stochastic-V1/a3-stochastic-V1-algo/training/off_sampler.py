@@ -18,6 +18,7 @@ from utils.distance_calculator import MeshDistanceCalculator
 import importlib
 from utils.shared_data import SharedData
 from utils.landmark_influence_weights import LandmarkInfluenceWeights, create_landmark_influence_weights
+from paths import results_path
 
 class OffSampler:
     def __init__(self, index=0, **kwargs):
@@ -140,20 +141,20 @@ class OffSampler:
             # take action using behavior policy
 
             # # self.obs print
-            # with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\debug_printV1.txt", 'w') as f:
+            # with open(str(results_path / "\240423-150653 log files\debug_printV1.txt", 'w') as f:
             #     print("self.obs in sampler: \n \n", self.obs, file = f)              
 
             # batch_obs = torch.from_numpy(
             #     np.expand_dims(self.obs, axis=0).astype("float32")
             # )
-            # with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\debug_printV1.txt", 'a') as f:
+            # with open(str(results_path / "\240423-150653 log files\debug_printV1.txt", 'a') as f:
             #     print("batch_obs in sampler: \n \n", batch_obs, file = f)        
 
             # Adjust numpy print options to display the full array
             np.set_printoptions(threshold=np.inf)
 
             # Print self.obs
-            with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\debug_printV1.txt", 'w') as f:
+            with open(str(results_path / "240423-150653 log files" / "debug_printV1.txt"), 'w') as f:
                 print("self.obs in sampler: \n \n", self.obs[0:10], file=f)
                 print("self.obs size: \n \n", self.obs.shape, file=f)
 
@@ -165,7 +166,7 @@ class OffSampler:
             torch.set_printoptions(threshold=np.inf)
 
             # Print batch_obs
-            with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\debug_printV1.txt", 'a') as f:
+            with open(str(results_path / "240423-150653 log files" / "debug_printV1.txt"), 'a') as f:
                 # print("batch_obs in sampler: \n \n", batch_obs[0:10], file=f)
                 print("batch_obs size: \n \n", batch_obs.size(), file=f)
 

@@ -12,11 +12,11 @@ import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
 from matplotlib.collections import PathCollection
 
-from paths import a1_blendshape_path, results_path
+from paths import a1_blendshape_path, results_path, backup_path
 
 
 sys.path.insert(0, str(a1_blendshape_path / "database"))
-sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
 import importlib
 
@@ -149,7 +149,7 @@ if visualize_organ == 1:
         
 
         # Save the plot to a file
-        output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e68 backed to e71 no speed up and visualize debug"
+        output_folder = str(backup_path / "e68 backed to e71 no speed up and visualize debug")
         output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         plt.close()        

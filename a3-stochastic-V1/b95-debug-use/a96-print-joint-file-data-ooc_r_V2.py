@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QLabel
-from paths import b98_sampling_path
+from paths import b98_sampling_path, results_path
 
 # Add paths to import joint position data
 sys.path.insert(0, str(b98_sampling_path / "joint_positions" / "joint_position_ooc_r"))

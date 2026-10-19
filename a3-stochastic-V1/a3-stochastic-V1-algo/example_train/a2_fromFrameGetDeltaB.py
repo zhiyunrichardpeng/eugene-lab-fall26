@@ -22,7 +22,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
     import argparse
     import os
-    from paths import a3_stochastic_relative_path
+    from paths import a3_stochastic_relative_path, backup_path
     #import numpy as np
 
     import sys
@@ -470,7 +470,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
             
 
             # Save the plot to a file
-            output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\d83 initiate rest to AU12 smile"
+            output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
             output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
             plt.savefig(output_file, dpi=300, bbox_inches='tight')
             plt.close()     

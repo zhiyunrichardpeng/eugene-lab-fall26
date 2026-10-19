@@ -1,7 +1,7 @@
 import datetime
 import os
 import sys
-from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path, backup_path, results_path
+from paths import *
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
@@ -900,7 +900,7 @@ def main(x_bar):
                     
 
                     # Save the plot to a file
-                    output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\d83 initiate rest to AU12 smile"
+                    output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
                     output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
                     plt.savefig(output_file, dpi=300, bbox_inches='tight')
                     plt.close()     
@@ -1156,10 +1156,10 @@ def main(x_bar):
                 # with open(save_folder + "/deltaBList_temp.pkl", 'wb') as f:
                 #     pickle.dump({'deltaBList': deltaBList}, f)       
 
-            # with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\log.txt", 'w') as f:
+            #  / "\240423-150653 log files\log.txt", 'w') as f:
             #     print("deltaBList: \n \n", deltaBList, file = f)  
 
-            # with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files" + "/deltaBList_temp.pkl", 'wb') as f:
+            #  / "\240423-150653 log files" + "/deltaBList_temp.pkl", 'wb') as f:
             #     pickle.dump({'deltaBList': deltaBList}, f)
 
 
