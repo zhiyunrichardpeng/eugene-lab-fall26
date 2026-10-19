@@ -10,7 +10,7 @@ def calculate_rotation_parameters():
     import sys
     from os import path
     import importlib
-    from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path, backup_path
+    from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path, backup_path, results_path
     empirical_factor = 9.95657316385
     # empirical_factor = 85/48.52657980700467 # 9.95657316385
     # empirical_factor_ooc_l = 40/29.123996797586287
@@ -606,7 +606,7 @@ def calculate_rotation_parameters():
     estimated_steps = sync_target_steps
 
     # --- Log Results to File ---
-    log_dir =str(results_path / "240423-150653 log files/debug nonsync")
+    log_dir =str(results_path / "240423-150653 log files" / "debug nonsync")
     os.makedirs(log_dir, exist_ok=True)
 
     import datetime

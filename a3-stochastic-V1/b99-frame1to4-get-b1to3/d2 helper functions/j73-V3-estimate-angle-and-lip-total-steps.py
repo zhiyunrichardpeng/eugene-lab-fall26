@@ -11,13 +11,13 @@ from os import path
 # from utils.common_utils import set_seed
 
 import sys
-from paths import a3_stochastic_relative_path, b98_sampling_path
+from paths import a3_stochastic_relative_path, b98_sampling_path, backup_path
 
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\example_train")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a2-DSAC-T-for-pipelineV1\env_gym")
 sys.path.insert(0, r"C:\Users\zpa18\keyLabLocal\a1-blendshape-guided-animation-pipeline\database")
-sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
 
 

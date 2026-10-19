@@ -2,10 +2,11 @@ import os
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+from paths import results_path
 
 def compare_landmark_files():
     # Define file paths
-    file1_path =str(results_path / "240423-150653 log files/AU2_right_as_rest_pose/mb_file_offline/a99_debug_landmark_locations.csv")
+    file1_path =str(results_path / "240423-150653 log files" / "AU2_right_as_rest_pose" /" mb_file_offline" / "a99_debug_landmark_locations.csv")
     # file2_path =str(results_path / "240423-150653 log files/joint_file_ooc_r/a99_debug_landmark_locations.csv")
     file2_path =str(results_path / "240423-150653 log files/AU2_right_as_rest_pose/mb_file_offline_from_d1/a99_debug_landmark_locations_from_d1.csv")
     

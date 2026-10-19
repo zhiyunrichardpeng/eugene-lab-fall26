@@ -18,7 +18,7 @@ debug_mode_vsCode = 0
 
 import sys
 import os
-from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path
+from paths import *
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "example_train"))
@@ -29,7 +29,7 @@ sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/ "joint_position_ooc_l"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/ "joint_position_ooc_r"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/ "joint_position_frontalis"))
-sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
 
 import numpy as np
@@ -626,7 +626,7 @@ def measureDistanceInMayaFile(data_module, keframe_max):
 
     
     # # debug target state
-    # with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files" + "/s_next_target_debugV1.pkl", 'wb') as f:
+    # with open(str(results_path / "\240423-150653 log files" + "/s_next_target_debugV1.pkl", 'wb') as f:
     #     pickle.dump({'target_state': target_state, 's_next': s_next}, f)
 
 
@@ -663,7 +663,7 @@ def calculate_distance(data_module, keframe_max):
 
     # with open(self.save_folder+ "/log" + str(self.i_func) +".txt", 'a') as f:
     #     print("\n \n distance_in_MayaFile: ", distance_in_MayaFile, "\n \n", file = f) 
-    with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\log_v2.txt", 'a') as f:
+    with open(str(results_path / "240423-150653 log files" / "log_v2.txt"), 'a') as f:
         print("\n \n distance_in_MayaFile: ", distance_in_MayaFile, "\n \n", file = f)  
 
 
@@ -771,7 +771,7 @@ def beta_function(x_joint_conca, x_joint_rotation_conca, au22_x_joint_conca3, au
             # x_joint_rotation_ = np.array(x_joint_rotation_init_conca) + delta_b0_conca[n : n + 3*joint_rotate_num]
             # x_joint_rotation_ = np.array(x_joint_rotation_init_conca)
                     
-            # with open(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\240423-150653 log files\log_v2.txt", 'a') as f:
+            # with open(str(results_path / "\240423-150653 log files\log_v2.txt", 'a') as f:
             #     print(" \n shape of x_joint_", len(x_joint_),  "\n x_joint_ =  \n", x_joint_, file = f)  
             #     print(" \n shape of x_joint_init_conca", len(x_joint_init_conca)," \n x_joint_init_conca =  \n", x_joint_init_conca, file = f)  
             #     print(" \n x_joint_ - np.array(x_joint_init_conca)", np.array(x_joint_) - np.array(x_joint_init_conca), "\n", file = f)  

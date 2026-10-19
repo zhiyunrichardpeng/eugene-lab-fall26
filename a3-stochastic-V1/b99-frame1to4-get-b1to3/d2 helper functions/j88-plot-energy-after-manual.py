@@ -11,6 +11,7 @@ import csv
 import os
 
 from os import path
+from paths import backup_path
 
 def plot_energy_vs_time_plot(save_folder, self_time_for_energy_log, self_strain_energy):
     # Set up the plot with a professional style
@@ -52,7 +53,7 @@ def plot_energy_vs_time_plot(save_folder, self_time_for_energy_log, self_strain_
         writer.writerows(zip(self_time_for_energy_log, self_strain_energy))  # Write data rows
 
 
-save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e46 adjustable overlap"
+save_folder = str(backup_path / "e46 adjustable overlap")
 
 scaling_factor = 9.26 * 10**-7 * 10**3
 scaled_self_strain_energy = [t * scaling_factor for t in self_strain_energy]

@@ -17,7 +17,7 @@ import time
 import datetime
 import re
 import sys
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_relative_path, results_path
 
 try:
     import matplotlib.pyplot as plt
@@ -69,7 +69,7 @@ def run_playblast():
     start_time = time.time()
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     BASE_NAME = f"passive_dynamics_clap_{timestamp}"
-    PLAYBLAST_DIR =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/playblust_results")
+    PLAYBLAST_DIR =str(results_path / "maya_render_output_hub" / "temp_rendered_png_hub" / "playblust_results")
     
     if not os.path.exists(PLAYBLAST_DIR):
         os.makedirs(PLAYBLAST_DIR)

@@ -12,6 +12,7 @@ import csv
 import os
 
 from os import path
+from paths import backup_path
 
 def plot_distance_vs_time_plot(save_folder, self_time_for_energy_log, self_strain_energy):
     # Set up the plot with a professional style
@@ -53,7 +54,7 @@ def plot_distance_vs_time_plot(save_folder, self_time_for_energy_log, self_strai
         writer.writerows(zip(self_time_for_energy_log, self_strain_energy))  # Write data rows
 
 
-save_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e46 adjustable overlap"
+save_folder = str(backup_path / "e46 adjustable overlap")
 
 # 1 Maya unit=0.0962 cm
 scaling_factor = 0.0962

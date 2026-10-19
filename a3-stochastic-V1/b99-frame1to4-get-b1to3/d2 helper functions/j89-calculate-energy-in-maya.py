@@ -16,7 +16,7 @@ self_strain_energy = []
 
 
 import sys
-from paths import a3_stochastic_relative_path, a1_blendshape_path, b98_sampling_path
+from paths import *
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
@@ -294,7 +294,7 @@ for i_frame in range(14, 50):  # range(14, 50) includes 14 to 49
         
 
         # Save the plot to a file
-        output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e46 adjustable overlap"
+        output_folder = str(backup_path / "e46 adjustable overlap")
         output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         plt.close()        

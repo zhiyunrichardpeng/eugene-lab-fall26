@@ -1,11 +1,11 @@
 import datetime
 import os
 import sys
-from paths import b98_sampling_path, a1_blendshape_path
+from paths import b98_sampling_path, a1_blendshape_path, backup_path, results_path
 sys.path.insert(0, str(b98_sampling_path))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 
-sys.path.insert(0, r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\b31 dataV22 backup hub")
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
 
 
