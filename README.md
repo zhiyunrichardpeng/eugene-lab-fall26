@@ -4,7 +4,7 @@
 When you clone this repository to your local machine, the codebase uses relative path resolution so you can run scripts directly without hardcoding user folders or machine-specific directories:
 
 ```bash
-git clone https://github.com/viktorz05/eugene-lab-fall26.git
+git clone https://github.com/zhiyunrichardpeng/eugene-lab-fall26.git
 cd eugene-lab-fall26
 ```
 
