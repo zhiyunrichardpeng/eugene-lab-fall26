@@ -4,7 +4,7 @@ import json
 import os
 import torch
 import warnings
-
+from paths import a3_stochastic_relative_path
 from .common_utils import change_type, seed_everything
 
 
@@ -66,7 +66,7 @@ def init_args(env, job_time_stamp, **args):
     if args["save_folder"] is None:
         # dir_path = os.path.dirname(__file__)
         # dir_path = os.path.dirname(dir_path)
-        dir_path = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results"
+        dir_path = str(a3_stochastic_relative_path)
         args["save_folder"] = os.path.join(
             dir_path + "/results/",
             args['algorithm'] +str("_")+ args['env_id'],
