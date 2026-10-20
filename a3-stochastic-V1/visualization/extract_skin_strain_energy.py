@@ -31,6 +31,7 @@ import maya.OpenMaya as OpenMaya
 import os
 import csv
 import numpy as np
+from paths import a3_stochastic_relative_path
 
 # ===================== CONFIGURATION =====================
 MESH_NAME = "skin_cloth_copy_v5_pull_back"
@@ -43,7 +44,7 @@ END_FRAME = 50        # Last frame to evaluate
 K_TISSUE = 10000          # Stiffness of soft tissues (N/m)
 SCALING_FACTOR = 9.62e-4  # Maya unit → metres conversion
 
-OUTPUT_DIR = r"C:/Users/zpa18/a3-stochastic-V1/visualization"
+OUTPUT_DIR = str(a3_stochastic_relative_path / "visualization")
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "skin_strain_energy_data.csv")
 # =========================================================
 

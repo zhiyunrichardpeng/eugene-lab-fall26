@@ -9,6 +9,7 @@ a1_blendshape_path = a3_stochastic_relative_path / "a1-blendshape-guided-animati
 
 results_path = ROOT / "results" / "DSAC_V2_m1_vertexMove_Va003"
 backup_path = ROOT / "backup"
+skin_muscle_reg_model = ROOT / "skin-muscle-registration-model"
 
 print(f"======== Important paths ========")
 print(f"Repo root path: {ROOT}")

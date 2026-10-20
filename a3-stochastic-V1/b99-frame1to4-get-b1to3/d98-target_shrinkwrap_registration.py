@@ -32,6 +32,7 @@ import math
 import time
 import os
 import json
+from paths import skin_muscle_reg_model
 
 try:
     import matplotlib
@@ -476,7 +477,7 @@ def smooth_sdf_cache(sdf_cache, neighbors, passes=3, strength=0.5):
 # VERTEX PRESET LOADING
 # =============================================================================
 
-VERTEX_PRESETS_FOLDER = r"C:\keyLabLocal_D\skin-muscle-registration-model\vertex_presets"
+VERTEX_PRESETS_FOLDER = str(skin_muscle_reg_model / "vertex_presets")
 
 def load_vertex_preset(preset_name):
     filepath = os.path.join(VERTEX_PRESETS_FOLDER, f"{preset_name}.json")
@@ -1463,7 +1464,7 @@ def log_metrics(iteration, elapsed, metrics):
 def save_metrics_to_file(filename=None):
     """Save metrics to CSV file for external plotting."""
     if filename is None:
-        filename = r"c:\keyLabLocal_D\skin-muscle-registration-model\simulation_metrics.csv"
+        filename = str(skin_muscle_reg_model / "simulation_metrics.csv")
     
     with open(filename, 'w') as f:
         # Header
@@ -1560,7 +1561,7 @@ def plot_metrics():
     plt.tight_layout()
     
     # Save figure
-    fig_path = r"c:\keyLabLocal_D\skin-muscle-registration-model\simulation_plot.png"
+    fig_path = str(skin_muscle_reg_model / "simulation_plot.png")
     plt.savefig(fig_path, dpi=150)
     print(f"Plot saved to: {fig_path}")
     
@@ -1700,7 +1701,7 @@ def run_shrinkwrap(num_iterations=None, refresh_interval=100, params=None):
             
             # Check FILE-BASED STOP: create a file called "STOP" to halt
             stop_file = os.path.join(os.path.dirname(__file__) if '__file__' in dir() else
-                          r"C:\keyLabLocal_D\skin-muscle-registration-model", "STOP")
+                         str(skin_muscle_reg_model), "STOP")
             if os.path.exists(stop_file):
                 try:
                     os.remove(stop_file)
@@ -2579,7 +2580,7 @@ def feather_weight_map(rings=6):
 # FILE-BASED SDF VISUALIZATION (saves PNG plots)
 # =============================================================================
 
-PLOT_FOLDER = r"C:\keyLabLocal_D\skin-muscle-registration-model\plot"
+PLOT_FOLDER = str(skin_muscle_reg_model / "plot")
 
 def plot_sdf_cross_section(plane='YZ', slice_pos=0.0, grid_size=200, 
                             extent=None, save_name=None):

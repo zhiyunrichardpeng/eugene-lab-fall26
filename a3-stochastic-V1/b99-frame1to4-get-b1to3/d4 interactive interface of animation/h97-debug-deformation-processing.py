@@ -654,7 +654,7 @@ if __name__ == "__main__":
     # Example configuration - modify these for your specific case
     phonemes_list = ["phoneme V", "phoneme IY"]
     log_paths_list = [
-        r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/results/DSAC_V2_m1_vertexMove_Va003/job_251207-034523/251207-034531",
+        str(results_path / "job_251207-034523" / "251207-034531"),
         # r"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/results/DSAC_V2_m1_vertexMove_Va003/job_ANOTHER_PATH/TIMESTAMP"
     ]
     sequence_folder_name = "debug_sequence_test"

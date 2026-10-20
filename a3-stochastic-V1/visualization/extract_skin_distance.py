@@ -27,6 +27,7 @@ import maya.cmds as cmds
 import maya.OpenMaya as OpenMaya
 import os
 import csv
+from paths import a3_stochastic_relative_path
 
 # ===================== CONFIGURATION =====================
 MESH_NAME = "skin_cloth_copy_v5_pull_back"
@@ -35,7 +36,7 @@ OBS_START_FRAME = 15  # We only *record* from this frame onward
 TARGET_FRAME = 50     # The target pose frame
 END_FRAME = 50        # Last frame to evaluate
 
-OUTPUT_DIR = r"C:/Users/zpa18/a3-stochastic-V1/visualization"
+OUTPUT_DIR = str(a3_stochastic_relative_path / "visualization")
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "skin_distance_data.csv")
 # =========================================================
 
