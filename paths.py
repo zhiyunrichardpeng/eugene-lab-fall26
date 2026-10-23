@@ -7,7 +7,7 @@ b98_sampling_path = a3_stochastic_relative_path / "b98-sampling-joint"
 b99_frame1to4_path = a3_stochastic_relative_path / "b99-frame1to4-get-b1to3"
 a1_blendshape_path = a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"
 
-results_path = ROOT / "results" / "DSAC_V2_m1_vertexMove_Va003"
+results_path = ROOT / "results"
 backup_path = ROOT / "backup"
 skin_muscle_reg_model = ROOT / "skin-muscle-registration-model"
 

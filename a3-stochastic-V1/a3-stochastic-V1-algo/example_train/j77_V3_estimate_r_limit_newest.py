@@ -27,13 +27,13 @@ def calculate_rotation_parameters():
 
 
     # --- Task Setup (Kept as is) ---
-    # this_task = 'dataV22_AU0_neutral to dataV22_phoneme_N'
-    this_task = 'dataV22_AU0_neutral to dataV22_phoneme_N'
+    # this_task = 'dataV22_AU0_neutral to dataV22_AU12'
+    this_task = 'dataV22_AU0_neutral to dataV22_AU12'
     # from_pose = "dataV22_AU0_neutral"
-    # to_pose = "dataV22_phoneme_N"    
+    # to_pose = "dataV22_AU12"    
 
     from_pose = "dataV22_AU0_neutral"
-    to_pose = "dataV22_phoneme_N"    
+    to_pose = "dataV22_AU12"    
 
     # Copy file from source to destination
     copy_from = str(backup_path / "b31 dataV22 backup hub" / f"{to_pose}.py")
