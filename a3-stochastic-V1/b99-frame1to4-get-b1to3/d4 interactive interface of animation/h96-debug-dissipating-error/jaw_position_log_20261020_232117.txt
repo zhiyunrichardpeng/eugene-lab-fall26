@@ -1,0 +1,127 @@
+
+[TRANSITION neutral -> phoneme_V (Frame 36)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 54.52675090572637, -90.0]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 82)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 47.72372582685727, -90.0]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 104)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 54.52675090572644, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 150)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.0, 47.72372582685735, -90.0]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 172)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000006, 54.52675090572652, -90.00000000000003]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 218)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 47.72372582685744, -90.00000000000003]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 240)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.0, 54.52675090572662, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 286)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000004, 47.72372582685753, -90.00000000000003]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 308)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.0, 54.52675090572671, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 354)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 47.72372582685761, -90.0]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 376)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.0, 54.52675090572679, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 422)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.0, 47.7237258268577, -89.99999999999999]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 444)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.0, 54.52675090572688, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 490)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 47.72372582685779, -90.0]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 512)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 54.52675090572697, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 558)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 47.72372582685788, -90.0]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 580)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.0, 54.52675090572706, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 626)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 47.723725826857965, -90.0]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> phoneme_V (Frame 648)]
+  Math State (Neural Net): [1.6388660074020198, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 54.52675090572714, -90.0]
+  Correction Vector Applied: [0.7544134 0.        0.       ]
+
+[TRANSITION phoneme_V -> phoneme_AA (Frame 694)]
+  Math State (Neural Net): [-5.164159071467112, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 47.72372582685806, -90.0]
+  Correction Vector Applied: [-0.15175297  0.          0.        ]
+
+[TRANSITION phoneme_AA -> AU0_neutral (Frame 730)]
+  Math State (Neural Net): [0.0, 0.0, 0.0]
+  Physics State (Maya UI): [-90.00000000000003, 52.887884898324295, -90.0]
+  Correction Vector Applied: [0.80299925 0.         0.        ]
+--- Jaw Rotation & Position Log ---
+Sequence: Neutral to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to phoneme_V to phoneme_AA to Neutral
+At frame 0: Rotation [-90.00000000000003, 52.887884898324295, -90.0]
+At frame 730 (after neutral pose is done): 
+  jaw01 Rotation: [-90.00000000000003, 52.887884898324295, -90.0]
+  jaw01 Position: [0.0, -56.81242528514842, 126.520387100099]
+
+Sampled Jaw Mesh Vertices at frame 730:
+  middleres_JawBase1.vtx[0]: [30.658422260452067, -117.7132287979126, 58.031457824707026]
+  middleres_JawBase1.vtx[1]: [43.173150139022624, -145.61578437805179, 56.55359745025633]
+  middleres_JawBase1.vtx[2]: [50.69549621598796, -135.45699069976808, 82.8587505340576]
+  middleres_JawBase1.vtx[3]: [40.9694619752653, -104.11947278976442, 80.98422832489014]
+  middleres_JawBase1.vtx[4]: [24.8215038301237, -130.54782329559328, 36.030983848571765]
+  middleres_Jaw.vtx[0]: [30.658422260452067, -117.7132287979126, 58.031457824707026]
+  middleres_Jaw.vtx[1]: [43.173150139022624, -145.61578437805179, 56.55359745025633]
+  middleres_Jaw.vtx[2]: [50.69549621598796, -135.45699069976808, 82.8587505340576]
+  middleres_Jaw.vtx[3]: [40.9694619752653, -104.11947278976442, 80.98422832489014]
+  middleres_Jaw.vtx[4]: [24.8215038301237, -130.54782329559328, 36.030983848571765]
+  middleres_JawBase.vtx[0]: [30.658422260452067, -117.7132287979126, 58.031457824707026]
+  middleres_JawBase.vtx[1]: [43.173150139022624, -145.61578437805179, 56.55359745025633]
+  middleres_JawBase.vtx[2]: [50.69549621598796, -135.45699069976808, 82.8587505340576]
+  middleres_JawBase.vtx[3]: [40.9694619752653, -104.11947278976442, 80.98422832489014]
+  middleres_JawBase.vtx[4]: [24.8215038301237, -130.54782329559328, 36.030983848571765]

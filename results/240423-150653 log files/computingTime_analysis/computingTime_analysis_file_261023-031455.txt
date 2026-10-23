@@ -1,0 +1,70 @@
+Fri Oct 23 03:14:55 2026    output.prof
+
+         42019409 function calls (41229749 primitive calls) in 92.913 seconds
+
+   Ordered by: cumulative time
+   List reduced from 11892 to 60 due to restriction <60>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   3436/1    0.170    0.000   93.736   93.736 {built-in method builtins.exec}
+        1    0.007    0.007   93.727   93.727 c:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\b99-frame1to4-get-b1to3\d1-adhoc-for-b99.py:762(main)
+        1    0.021    0.021   80.097   80.097 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\example_train\a2_fromFrameGetDeltaB.py:1(a2_fromFrameGetDeltaB)
+        1    0.003    0.003   64.828   64.828 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\trainer.py:118(train)
+        1    0.003    0.003   64.826   64.826 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\trainer.py:78(step)
+        1    0.095    0.095   64.823   64.823 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\evaluator.py:335(run_evaluation)
+      530    1.097    0.002   42.595    0.080 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\m1_vertexMoveEnvironment\m1_vertexMove\m1_vertexMove_Va001\envs\m1_vertexMove_Va001_env.py:940(step)
+       89    0.001    0.000   36.516    0.410 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\pyplot.py:1223(savefig)
+       89    0.053    0.001   28.856    0.324 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\figure.py:3239(savefig)
+       89    0.005    0.000   28.802    0.324 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\backend_bases.py:2063(print_figure)
+      267    0.000    0.000   21.272    0.080 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\artist.py:93(draw_wrapper)
+40836/267    0.101    0.000   21.272    0.080 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\artist.py:54(draw_wrapper)
+      267    0.005    0.000   21.270    0.080 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\figure.py:3142(draw)
+  567/267    0.010    0.000   20.964    0.079 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\image.py:114(_draw_list_compositing_images)
+      178    0.001    0.000   20.711    0.116 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\backend_bases.py:2054(<lambda>)
+      178    0.000    0.000   20.710    0.116 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\backends\backend_agg.py:449(print_png)
+      178    0.050    0.000   20.709    0.116 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\backends\backend_agg.py:439(_print_pil)
+      300    0.006    0.000   19.135    0.064 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\axes\_base.py:3072(draw)
+       11   15.047    1.368   17.596    1.600 {built-in method maya.cmds.file}
+      267    0.004    0.000   16.304    0.061 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\backends\backend_agg.py:380(draw)
+        6    0.002    0.000   13.526    2.254 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\m1_vertexMoveEnvironment\m1_vertexMove\m1_vertexMove_Va001\envs\m1_vertexMove_Va001_env.py:4328(plot_distances_portal)
+        6    0.005    0.001   13.517    2.253 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\m1_vertexMoveEnvironment\m1_vertexMove\m1_vertexMove_Va001\envs\m1_vertexMove_Va001_env.py:4441(plot_distances)
+       89    0.003    0.000   12.013    0.135 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\image.py:1550(imsave)
+       89    0.002    0.000   12.005    0.135 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\PIL\Image.py:2481(save)
+       89    0.003    0.000   11.631    0.131 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\PIL\PngImagePlugin.py:1250(_save)
+       89    0.001    0.000   11.623    0.131 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\PIL\ImageFile.py:528(_save)
+       89    0.003    0.000   11.621    0.131 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\PIL\ImageFile.py:556(_encode_tile)
+      276   11.470    0.042   11.470    0.042 {method 'encode' of 'ImagingEncoder' objects}
+        1    0.002    0.002   10.572   10.572 c:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\b99-frame1to4-get-b1to3\d1-adhoc-for-b99.py:593(retrieve_landmark_positions)
+ 2036/200    0.008    0.000   10.220    0.051 <frozen importlib._bootstrap_external>:844(exec_module)
+ 2064/193    0.008    0.000   10.192    0.053 <frozen importlib._bootstrap>:659(_load_unlocked)
+ 2677/203    0.002    0.000   10.182    0.050 <frozen importlib._bootstrap>:220(_call_with_frames_removed)
+  2056/36    0.014    0.000   10.157    0.282 <frozen importlib._bootstrap>:1002(_find_and_load)
+  2053/35    0.007    0.000   10.156    0.290 <frozen importlib._bootstrap>:967(_find_and_load_unlocked)
+       33    0.003    0.000    9.659    0.293 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\mpl_toolkits\mplot3d\axes3d.py:408(draw)
+       31    0.001    0.000    9.488    0.306 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\m1_vertexMoveEnvironment\m1_vertexMove\m1_vertexMove_Va001\envs\m1_vertexMove_Va001_env.py:4559(plot_distance_vs_time_plot)
+6603/4731    0.010    0.000    8.879    0.002 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\artist.py:31(draw_wrapper)
+       20    0.013    0.001    8.852    0.443 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\evaluator.py:3209(plot_gradients_over_iterations)
+      534    0.011    0.000    8.459    0.016 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\axis.py:1415(draw)
+       89    0.000    0.000    7.659    0.086 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\backend_bases.py:1890(draw_idle)
+        2    0.017    0.009    7.598    3.799 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\gym\envs\registration.py:546(make)
+     4617    0.024    0.000    7.354    0.002 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\mpl_toolkits\mplot3d\art3d.py:672(draw)
+     4623    0.011    0.000    7.093    0.002 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\collections.py:1002(draw)
+   159000    7.065    0.000    7.065    0.000 {built-in method maya.cmds.move}
+     4740    0.144    0.000    7.024    0.001 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\collections.py:349(draw)
+        2    0.132    0.066    6.500    3.250 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\m1_vertexMoveEnvironment\m1_vertexMove\m1_vertexMove_Va001\envs\m1_vertexMove_Va001_env.py:468(__init__)
+        1    0.014    0.014    6.022    6.022 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\evaluator.py:4552(create_evaluator)
+        1    0.172    0.172    6.008    6.008 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\evaluator.py:70(__init__)
+       20    0.003    0.000    5.424    0.271 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\evaluator.py:3102(plot_gradient_magnitudes)
+  537/115    0.001    0.000    5.181    0.045 {built-in method builtins.__import__}
+        6    1.996    0.333    5.156    0.859 {built-in method maya.standalone.initialize}
+        5    0.000    0.000    4.917    0.983 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\evaluator.py:3312(plot_trajectories)
+ 2158/735    0.003    0.000    4.904    0.007 <frozen importlib._bootstrap>:1033(_handle_fromlist)
+     2949    0.113    0.000    4.684    0.002 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\axis.py:1295(_update_ticks)
+        1    0.000    0.000    4.547    4.547 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\training\evaluator.py:1(<module>)
+  255/139    0.002    0.000    4.290    0.031 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\_api\deprecation.py:446(wrapper)
+     1110    0.755    0.001    4.099    0.004 C:\keyLabLocal_D\a3-stochastic-git-V1\a3-stochastic-V1\a3-stochastic-V1-algo\m1_vertexMoveEnvironment\m1_vertexMove\m1_vertexMove_Va001\envs\m1_vertexMove_Va001_env.py:4279(returnCoordinates)
+      150    0.009    0.000    4.081    0.027 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\axes\_base.py:4419(get_tightbbox)
+    19399    0.537    0.000    4.053    0.000 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\text.py:358(_get_layout)
+3065/1536    0.019    0.000    3.674    0.002 C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\matplotlib\__init__.py:1470(inner)
+
+
