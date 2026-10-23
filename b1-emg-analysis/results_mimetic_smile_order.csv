@@ -1,0 +1,13 @@
+participant,zygomaticus,orb_oris,orb_oculi,order
+1,0.644,1.043,0.804,zygomaticus → orb_oculi → orb_oris
+2,0.47,0.573,0.48,zygomaticus → orb_oculi → orb_oris
+3,0.367,0.423,0.403,zygomaticus → orb_oculi → orb_oris
+4,0.439,0.45,0.436,orb_oculi → zygomaticus → orb_oris
+5,0.485,0.715,0.503,zygomaticus → orb_oculi → orb_oris
+8,0.518,0.705,0.521,zygomaticus → orb_oculi → orb_oris
+9,0.419,0.603,0.484,zygomaticus → orb_oculi → orb_oris
+10,0.404,0.46,0.655,zygomaticus → orb_oris → orb_oculi
+11,0.493,0.965,0.526,zygomaticus → orb_oculi → orb_oris
+12,0.571,,0.675,zygomaticus → orb_oculi
+13,0.667,0.994,0.612,orb_oculi → zygomaticus → orb_oris
+15,0.609,1.089,0.775,zygomaticus → orb_oculi → orb_oris
