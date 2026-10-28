@@ -17,12 +17,89 @@ import csv
 from pathlib import Path
 import sys
 
-# Ensure repository root is on sys.path so 'paths' can be imported
-REPO_ROOT = Path(__file__).resolve().parents[3]
+# # Ensure repository root is on sys.path so 'paths' can be imported
+# REPO_ROOT = Path(__file__).resolve().parents[3]
+# if str(REPO_ROOT) not in sys.path:
+#     sys.path.insert(0, str(REPO_ROOT))
+
+# from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path, backup_path, results_path
+
+# --- Resolve REPO_ROOT (a3-stochastic-git-V1) dynamically ---
+
+# ==============================================================================
+# Dynamic Repository Root Detection (Works via Shift+Alt+M commandPort)
+# ==============================================================================
+REPO_NAME = "a3-stochastic-git-V1"
+REPO_ROOT = None
+
+# 1. Check if 'paths' is already imported in this Maya session
+if "paths" in sys.modules and hasattr(sys.modules["paths"], "__file__"):
+    cached_path = Path(sys.modules["paths"].__file__).resolve().parent
+    if (cached_path / "paths.py").is_file():
+        REPO_ROOT = cached_path
+
+# 2. Check if running from disk where __file__ is available
+if not REPO_ROOT and "__file__" in globals() and __file__:
+    script_path = Path(__file__).resolve()
+    for p in [script_path] + list(script_path.parents):
+        if (p / "paths.py").is_file():
+            REPO_ROOT = p
+            break
+
+# 3. Check upward from the active Maya scene or working directory
+if not REPO_ROOT:
+    anchors = []
+    current_scene = cmds.file(query=True, sceneName=True)
+    if current_scene:
+        anchors.append(Path(current_scene).resolve())
+    anchors.append(Path(os.getcwd()).resolve())
+
+    for anchor in anchors:
+        for parent in [anchor] + list(anchor.parents):
+            # Check directly in parent
+            if (parent / "paths.py").is_file():
+                REPO_ROOT = parent
+                break
+            # Check sibling folder 'a3-stochastic-git-V1'
+            if (parent / REPO_NAME / "paths.py").is_file():
+                REPO_ROOT = parent / REPO_NAME
+                break
+        if REPO_ROOT:
+            break
+
+# 4. Standard lab & team clone fallbacks
+if not REPO_ROOT:
+    fallbacks = [
+        Path(r"C:\keyLabLocal_D") / REPO_NAME,
+        Path(r"D:\keyLabLocal_D") / REPO_NAME,
+        Path.home() / "git" / REPO_NAME,
+        Path.home() / "Documents" / "GitHub" / REPO_NAME,
+    ]
+    for fb in fallbacks:
+        if (fb / "paths.py").is_file():
+            REPO_ROOT = fb
+            break
+
+if not REPO_ROOT:
+    raise RuntimeError(
+        f"Could not locate '{REPO_NAME}' containing 'paths.py'. "
+        "Verify your repository path."
+    )
+
+# Register repository root
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from paths import a3_stochastic_relative_path, b98_sampling_path, a1_blendshape_path, backup_path, results_path
+# ==============================================================================
+# Import Paths and Sub-modules
+# ==============================================================================
+from paths import (
+    a3_stochastic_relative_path,
+    b98_sampling_path,
+    a1_blendshape_path,
+    backup_path,
+    results_path
+)
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "example_train"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
@@ -105,7 +182,7 @@ CONTINUE_FROM_LAST = True  # Set to True to continue from last animation
 # --- OVERLAP CONFIGURATION ---
 # Set to 0.4 to use overlap-aware checkpoints from [overlap40] DB keys
 # Set to 0.0 to use standard (no-overlap) checkpoints
-OVERLAP_RATIO = 0.0  # 0.0 = standard, 0.4 = 40% overlap co-articulation
+OVERLAP_RATIO = 0.4  # 0.0 = standard, 0.4 = 40% overlap co-articulation
 
 # --- FEEDBACK CONTROL CONFIGURATION ---
 # Dissipating Error Offset (Feedback Control Loop)
