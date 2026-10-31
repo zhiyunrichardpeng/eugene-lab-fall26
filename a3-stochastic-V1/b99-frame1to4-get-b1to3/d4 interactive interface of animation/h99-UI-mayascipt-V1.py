@@ -1,10 +1,10 @@
 # have to run this code in maya
 # open this maya file: 
 # C:\keyLabLocal_D\c99-maya-ziva-workshop\experiment_files\g10-10 rest pose 1200 landmarks v9.mb
-
-
 # commandPort -name "localhost:7001" -sourceType "mel";
 
+# from __unknown__ import phonemes
+# from IPython.core import oinspect
 import maya.cmds as cmds
 import os
 import re
@@ -16,6 +16,11 @@ import maya.OpenMaya as OpenMaya
 import csv
 from pathlib import Path
 import sys
+import inspect
+import datetime
+
+# Safe fallback so os.path.basename(file) does not raise NameError in Maya commandPort
+file = globals().get('file') or globals().get('__file__', '<string>')
 
 # # Ensure repository root is on sys.path so 'paths' can be imported
 # REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -3536,7 +3541,7 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
     # Check if combined_checkpoints.pkl exists in the SOURCE path (from database)
     checkpoint_file_path = os.path.join(source_path, "combined_checkpoints.pkl")
     
-    # Calculate dynamic frames based on phonemes
+    # Calculate dynamic frames based on phonemes, eg vowels and consonant
     transition_frames = get_transition_frames(phoneme_from, phoneme_to, base_frames=35)
     num_checkpoints = transition_frames + 1
     
@@ -3850,12 +3855,21 @@ def run_full_pipeline(*args):
         # Parse the phonemes
         phonemes, _ = parse_sequence_string(user_text)
 
+        # Check phoneme count before the branch
+        print(f"\n[DEBUG] Checking phoneme condition: len(phonemes) = {len(phonemes)}")
+
         # --- NEW LOGIC: Break down into individual transitions ---
         # Restored multi-phoneme transition support
         if len(phonemes) > 2:
+            print(f"🟢 [ENTERED IF]: len(phonemes) is {len(phonemes)} (> 2)")
             print(f"\n{'='*60}")
             print(f"MULTI-PHONEME SEQUENCE DETECTED: {len(phonemes)} phonemes")
             print(f"Breaking down into {len(phonemes)-1} individual transitions...")
+
+            # print(f"🟢 [OK] Reached line {inspect.currentframe().f_lineno} in {os.path.basename(file)}")
+            # print("passed the test, now quit.")
+            # sys.exit(0)  # Exit with status code 0
+                        
             if ENABLE_FEEDBACK_CONTROL:
                 print(f"FEEDBACK CONTROL: ENABLED (dissipation rate: {ERROR_DISSIPATION_RATE})")
             print(f"OVERLAP: {'ENABLED (' + str(int(OVERLAP_RATIO*100)) + '%)' if OVERLAP_RATIO > 0 else 'DISABLED (standard checkpoints)'}")
@@ -4121,6 +4135,15 @@ def run_full_pipeline(*args):
                 print(f"Multi-Phoneme Pipeline Finished! Frames: 14 to {LAST_ANIMATION_END_FRAME}. Final video: {final_video}{debug_msg}")
 
         else:
+
+            # print(f"🔴 [ENTERED ELSE]: len(phonemes) is {len(phonemes)} (<= 2, condition not met)")
+            # --- ORIGINAL LOGIC: Python-based Overlap Blending ---
+            print(f"\n[CLASSIC OVERLAP MODE] Running {phonemes[0]} -> {phonemes[-1]} ({len(phonemes)} phonemes)")
+
+            # print(f"🟢 [OK] Reached line {inspect.currentframe().f_lineno} in {os.path.basename(file)}")
+            # print("passed the test, now quit.")
+            # sys.exit(0)  # Exit with status code 0
+                        
             # --- ORIGINAL LOGIC: Python-based Overlap Blending ---
             print(f"\n[CLASSIC OVERLAP MODE] Running {phonemes[0]} -> {phonemes[-1]} ({len(phonemes)} phonemes)")
 
