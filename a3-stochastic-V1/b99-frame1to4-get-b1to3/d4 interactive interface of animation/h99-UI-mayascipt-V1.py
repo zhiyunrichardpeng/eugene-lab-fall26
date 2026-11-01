@@ -187,7 +187,7 @@ CONTINUE_FROM_LAST = True  # Set to True to continue from last animation
 # --- OVERLAP CONFIGURATION ---
 # Set to 0.4 to use overlap-aware checkpoints from [overlap40] DB keys
 # Set to 0.0 to use standard (no-overlap) checkpoints
-OVERLAP_RATIO = 0.4  # 0.0 = standard, 0.4 = 40% overlap co-articulation
+OVERLAP_RATIO = 0.0  # 26-10-31 not effective yet. 0.0 = standard, 0.4 = 40% overlap co-articulation
 
 # --- FEEDBACK CONTROL CONFIGURATION ---
 # Dissipating Error Offset (Feedback Control Loop)
@@ -1603,7 +1603,7 @@ def run_deformation_processing(phonemes_list, log_paths_list, sequence_folder_na
 
     # --- Your script starts here ---
     
-    overlap_ratio = 0.4 # 0.1, 0.4
+    overlap_ratio = OVERLAP_RATIO  # 0.4 # 0.1, 0.4
 
     # Configuration for the 3 separate paths
     # (THIS IS NOW AN ARGUMENT)
@@ -2081,15 +2081,6 @@ def run_deformation_processing(phonemes_list, log_paths_list, sequence_folder_na
     joint_rotate_num = 1
     correct_dimension = self_n + 3 * joint_rotate_num
 
-    # # Let's dynamically determine the correct dimension size
-    # if action_lists and action_lists[0] and action_lists[0][0]:
-    #     actual_dimension = len(action_lists[0][0])
-    #     print(f"\nDetected actual dimension size: {actual_dimension}")
-    #     if actual_dimension != correct_dimension:
-    #         print(f"ADJUSTING: Using actual dimension {actual_dimension} instead of calculated {correct_dimension}")
-    #         correct_dimension = actual_dimension
-    # else:
-    #     print(f"Warning: Could not detect action list dimension. Using default: {correct_dimension}")
 
     # Let's dynamically determine the correct dimension size
     if action_lists and action_lists[0]:
@@ -2107,71 +2098,6 @@ def run_deformation_processing(phonemes_list, log_paths_list, sequence_folder_na
         correct_dimension = self_n + 3 * joint_rotate_num
         print(f"Using default dimension: {correct_dimension}")
 
-
-
-    # def accumulate_checkpoints(action_lists, checkpoint_indices):
-    #     delta_b0_conca = [0] * correct_dimension
-    #     checkpoints_data_list = []
-    #     global_index = 0
-    #     found_indices = set()
-        
-    #     print(f"\nStarting checkpoint accumulation...")
-    #     print(f"Using dimension size: {correct_dimension}")
-        
-    #     total_frames = sum(len(lst) for lst in action_lists)
-    #     print(f"Total frames available: {total_frames}")
-
-    #     if not checkpoint_indices:
-    #          print("Error: No checkpoint indices provided.")
-    #          return []
-        
-    #     # Adjust last checkpoint
-    #     if checkpoint_indices[-1] >= total_frames and total_frames > 0:
-    #         print(f"Adjusting last checkpoint from {checkpoint_indices[-1]} to {total_frames - 1}")
-    #         checkpoint_indices[-1] = total_frames - 1
-            
-    #     print(f"Checkpoint indices: {checkpoint_indices}")
-        
-    #     checkpoint_data_verification = []
-        
-    #     for phase_idx, action_list in enumerate(action_lists):
-    #         if not action_list:
-    #             continue
-                
-    #         for action_idx, action in enumerate(action_list):
-    #             if len(action) != correct_dimension:
-    #                 print(f"ERROR: Phase {phase_idx+1}, Action {action_idx} has wrong dimension! Expected {correct_dimension}, got {len(action)}")
-    #                 continue # Skip this action
-                    
-    #             delta_b0_conca = [delta_b0_conca[j] + action[j] for j in range(correct_dimension)]
-                
-    #             if global_index in checkpoint_indices:
-    #                 if global_index not in found_indices: # Avoid duplicates
-    #                     non_zero_count = sum(1 for x in delta_b0_conca if x != 0)
-    #                     checkpoint_data_verification.append({
-    #                         'index': global_index, 'non_zero_count': non_zero_count,
-    #                     })
-                        
-    #                     checkpoints_data_list.append((global_index, delta_b0_conca.copy()))
-    #                     found_indices.add(global_index)
-    #                     print(f"Checkpoint at {global_index} (Phase {phase_idx+1}, Action {action_idx}) - {non_zero_count}/{correct_dimension} non-zero values")
-                
-    #             global_index += 1
-        
-    #     print(f"\n=== CHECKPOINT DATA VERIFICATION ===")
-    #     for data in checkpoint_data_verification[:5]:
-    #         print(f"Checkpoint: Index {data['index']}, {data['non_zero_count']} non-zero")
-        
-    #     missing = set(checkpoint_indices) - found_indices
-    #     if missing:
-    #         print(f"\nWarning: Missing {len(missing)} checkpoints: {sorted(missing)}")
-    #         print(f"Maximum available index was {global_index-1}")
-        
-    #     print(f"\nSuccessfully captured {len(checkpoints_data_list)}/{len(checkpoint_indices)} checkpoints")
-    #     return checkpoints_data_list
-
-    # # Process all phases
-    # combined_checkpoints = accumulate_checkpoints(action_lists, checkpoint_indices)
 
 
     def accumulate_checkpoints(action_lists, checkpoint_indices):
@@ -2260,46 +2186,6 @@ def run_deformation_processing(phonemes_list, log_paths_list, sequence_folder_na
     # Process all phases
     combined_checkpoints = accumulate_checkpoints(action_lists, checkpoint_indices)
 
-    # # Additional verification
-    # print(f"\n=== FINAL VERIFICATION ===")
-    # print(f"Total checkpoints captured: {len(combined_checkpoints)}")
-
-    # if combined_checkpoints:
-    #     all_zero_checkpoints = 0
-    #     for idx, (checkpoint_idx, checkpoint_data) in enumerate(combined_checkpoints):
-    #         if sum(1 for x in checkpoint_data if x != 0) == 0:
-    #             all_zero_checkpoints += 1
-        
-    #     if all_zero_checkpoints > 0:
-    #         print(f"TOTAL: {all_zero_checkpoints}/{len(combined_checkpoints)} checkpoints contain all zeros")
-    #     else:
-    #         print("SUCCESS: All checkpoints contain non-zero data")
-            
-    #     print(f"\nFirst checkpoint sample (first 10 elements): {combined_checkpoints[0][1][:10]}")
-    # else:
-    #     print("ERROR: No checkpoints were captured!")
-    #     return # Stop if nothing was processed
-
-    # # Save results
-    # output_path = os.path.join(log_path_output, "combined_checkpoints.pkl")
-    # with open(output_path, 'wb') as f:
-    #     pickle.dump([cp[1] for cp in combined_checkpoints], f)
-
-    # print(f"\nFinal checkpoint indices captured:")
-    # for idx, _ in combined_checkpoints:
-    #     print(f"- {idx}")
-
-    # print(f"\nResults saved to: {output_path}")
-
-    # # Verification
-    # try:
-    #     with open(output_path, "rb") as f:
-    #         loaded_checkpoints = pickle.load(f)
-    #     print(f"Verification: Loaded {len(loaded_checkpoints)} checkpoints")
-    # except Exception as e:
-    #     print(f"Error verifying output: {e}")
-
-    # print("\n--- Deformation Processing Completed Successfully! ---")
 
 
     # Additional verification after processing
@@ -2385,7 +2271,7 @@ def run_deformation_processing_to_source(phonemes_list, log_paths_list, source_p
     print(f"Log Paths: {log_paths_list}")
     print(f"Output Path: {source_path}")
 
-    overlap_ratio = 0
+    
     log_paths = log_paths_list
     log_path_output = source_path  # Use the source path directly
 
@@ -2546,7 +2432,7 @@ def accumulate_checkpoints(action_lists, checkpoint_indices, self_n, joint_rotat
     return [cp[1] for cp in checkpoints]
 
 
-def process_single_deformation(config, num_checkpoints=36, overlap_ratio=0.0):
+def process_single_deformation(config, num_checkpoints=36):
     log_path = config["log_path"]
     phonemes = config["phonemes"]
 
@@ -2612,10 +2498,10 @@ def process_single_deformation(config, num_checkpoints=36, overlap_ratio=0.0):
             eff_start = start_step
             eff_end = end_step
 
-        if i > 0 and overlap_ratio > 0:
+        if i > 0:
             prev_len = phase_boundaries[i] - phase_boundaries[i-1]
-            overlap_steps = int(prev_len * overlap_ratio)
-            eff_start = max(start_step - overlap_steps, phase_boundaries[i-1])
+            
+            eff_start = max(start_step, phase_boundaries[i-1])
 
         cp_indices = np.linspace(eff_start, eff_end, num=num_cp, dtype=int)
         all_checkpoints.extend(cp_indices)
@@ -3519,21 +3405,10 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
     phonemes, log_paths = parse_sequence_string(user_text)
     
     # Get the source path from the database
-    # If OVERLAP_RATIO > 0, try the overlap-aware key first (e.g., "... [overlap40]")
+    
     source_path = log_paths[0] if log_paths else None
     
-    if OVERLAP_RATIO > 0:
-        overlap_pct = int(OVERLAP_RATIO * 100)
-        # The overlap keys in the DB look like: "dataV22_AU0_neutral to dataV22_phoneme_V [overlap40]"
-        overlap_key = f"{phonemes[0]} to {phonemes[1]} [overlap{overlap_pct}]"
-        overlap_path = DEFORMATION_PATH_DB.get(overlap_key)
-        if overlap_path is not None:
-            source_path = overlap_path
-            print(f"[OVERLAP] Using overlap-aware checkpoints: '{overlap_key}'")
-            print(f"[OVERLAP] Path: {source_path}")
-        else:
-            print(f"[OVERLAP] No overlap key '{overlap_key}' found in DB, falling back to standard")
-            print(f"[OVERLAP] Standard path: {source_path}")
+
     
     if source_path is None:
         raise RuntimeError(f"Could not find path for transition: {phoneme_from} -> {phoneme_to}")
@@ -3615,53 +3490,45 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
                 'x_frontalis_joint_conca': [item for sublist in actual_positions.get('frontalis', []) for item in sublist]
             }
             
-            # --- OVERLAP CORRECTION ---
-            # If this transition was generated with overlap (midpoint split), the
-            # actual position at the boundary differs from the true target because:
-            #   - The latter half of L2 (outgoing) was NOT applied
-            #   - The first half of L3 (incoming) WAS prematurely absorbed
-            #
-            # Load the correction offset and apply it:
-            #   corrected_actual = actual + correction_offset
-            #   error = ideal - corrected_actual
-            #
-            overlap_corr_mag_debug = 0.0  # Track for visualization
-            overlap_correction_path = os.path.join(source_path, "overlap_correction.pkl")
-            if os.path.exists(overlap_correction_path):
-                try:
-                    with open(overlap_correction_path, 'rb') as f:
-                        correction_data = pickle.load(f)
+
+            # #
+            # overlap_corr_mag_debug = 0.0  # Track for visualization
+            # overlap_correction_path = os.path.join(source_path, "overlap_correction.pkl")
+            # if os.path.exists(overlap_correction_path):
+            #     try:
+            #         with open(overlap_correction_path, 'rb') as f:
+            #             correction_data = pickle.load(f)
                     
-                    correction_offset = np.array(correction_data['overlap_correction_offset'])
-                    overlap_corr_mag_debug = float(np.linalg.norm(correction_offset))
-                    print(f"[OVERLAP CORRECTION] Loaded correction offset (magnitude: {overlap_corr_mag_debug:.6f})")
+            #         correction_offset = np.array(correction_data['overlap_correction_offset'])
+            #         overlap_corr_mag_debug = float(np.linalg.norm(correction_offset))
+            #         print(f"[OVERLAP CORRECTION] Loaded correction offset (magnitude: {overlap_corr_mag_debug:.6f})")
                     
-                    # The correction offset is a flat vector of dimension N.
-                    # Split it into the same tissue-group structure as actual_flat.
-                    # Layout: OOR (oor_num*3) + jaw (3) + OOC_L (900) + OOC_R (900) + Frontalis (900)
-                    oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
-                    n_lm_oor = oor_num * 3
-                    n_lm = 300 * 3  # 900
-                    idx = 0
+            #         # The correction offset is a flat vector of dimension N.
+            #         # Split it into the same tissue-group structure as actual_flat.
+            #         # Layout: OOR (oor_num*3) + jaw (3) + OOC_L (900) + OOC_R (900) + Frontalis (900)
+            #         oor_num = sum(len(mod.x_joint_position_1) for mod in oor_joint_modules)
+            #         n_lm_oor = oor_num * 3
+            #         n_lm = 300 * 3  # 900
+            #         idx = 0
                     
-                    oor_corr = correction_offset[idx:idx + n_lm_oor]; idx += n_lm_oor
-                    jaw_corr = correction_offset[idx:idx + 3]; idx += 3
-                    ooc_l_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
-                    ooc_r_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
-                    frontalis_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
+            #         oor_corr = correction_offset[idx:idx + n_lm_oor]; idx += n_lm_oor
+            #         jaw_corr = correction_offset[idx:idx + 3]; idx += 3
+            #         ooc_l_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
+            #         ooc_r_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
+            #         frontalis_corr = correction_offset[idx:idx + n_lm]; idx += n_lm
                     
-                    # Apply correction: corrected_actual = actual + correction_offset
-                    actual_flat['x_joint_conca'] = (np.array(actual_flat['x_joint_conca']) + oor_corr).tolist()
-                    actual_flat['x_joint_rotation_conca'] = (np.array(actual_flat['x_joint_rotation_conca']) + jaw_corr).tolist()
-                    actual_flat['x_ooc_l_joint_conca'] = (np.array(actual_flat['x_ooc_l_joint_conca']) + ooc_l_corr).tolist()
-                    actual_flat['x_ooc_r_joint_conca'] = (np.array(actual_flat['x_ooc_r_joint_conca']) + ooc_r_corr).tolist()
-                    actual_flat['x_frontalis_joint_conca'] = (np.array(actual_flat['x_frontalis_joint_conca']) + frontalis_corr).tolist()
+            #         # Apply correction: corrected_actual = actual + correction_offset
+            #         actual_flat['x_joint_conca'] = (np.array(actual_flat['x_joint_conca']) + oor_corr).tolist()
+            #         actual_flat['x_joint_rotation_conca'] = (np.array(actual_flat['x_joint_rotation_conca']) + jaw_corr).tolist()
+            #         actual_flat['x_ooc_l_joint_conca'] = (np.array(actual_flat['x_ooc_l_joint_conca']) + ooc_l_corr).tolist()
+            #         actual_flat['x_ooc_r_joint_conca'] = (np.array(actual_flat['x_ooc_r_joint_conca']) + ooc_r_corr).tolist()
+            #         actual_flat['x_frontalis_joint_conca'] = (np.array(actual_flat['x_frontalis_joint_conca']) + frontalis_corr).tolist()
                     
-                    print(f"[OVERLAP CORRECTION] Applied correction to actual positions before error computation")
+            #         print(f"[OVERLAP CORRECTION] Applied correction to actual positions before error computation")
                     
-                except Exception as e:
-                    print(f"[OVERLAP CORRECTION] Error loading correction: {e}")
-                    print(f"[OVERLAP CORRECTION] Proceeding without correction")
+            #     except Exception as e:
+            #         print(f"[OVERLAP CORRECTION] Error loading correction: {e}")
+            #         print(f"[OVERLAP CORRECTION] Proceeding without correction")
             
             new_error = compute_position_error(actual_flat, ideal_positions)
             
@@ -3716,7 +3583,7 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
                     'residual_error_magnitude': residual_error_mag,
                     'correction_applied': correction_vectors is not None,
                     'dissipation_rate': ERROR_DISSIPATION_RATE,
-                    'overlap_correction_magnitude': overlap_corr_mag_debug
+                    # 'overlap_correction_magnitude': overlap_corr_mag_debug
                 }
                 
                 DEBUG_DATA.append(debug_entry)
