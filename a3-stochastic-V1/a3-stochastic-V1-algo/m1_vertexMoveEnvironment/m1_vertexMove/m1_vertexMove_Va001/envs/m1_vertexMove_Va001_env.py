@@ -40,10 +40,9 @@ import datetime
 import csv
 
 import importlib
-from paths import a3_stochastic_relative_path, backup_path
 
-sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
-sys.path.insert(0, str(a3_stochastic_relative_path /"b98-sampling-joint"/ "300joints_suite_good_old"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
 import dataV22
@@ -471,12 +470,6 @@ class m1_vertexMove_Va001(gym.Env):
 
         # with open(self.save_folder+ "/log" + str(self.i_func) +".txt", 'a') as f:
         #     print(" in env init, self.x_bar_j is  ", self.control_vertices_slice(self.x_bar_j, self.vertex_index), file = f)
-
-        # Add these variables to your class initialization (__init__ method)
-        # self.iteration_count = 0
-        # self.max_iterations = 200
-        # self.coordinate_differences = []  # To store the differences for each iteration
-
         self.point1_list = []
         self.point_jaw_list = []
         self.norm_distances_list = []
@@ -612,8 +605,7 @@ class m1_vertexMove_Va001(gym.Env):
             # self.namespace = "ref" 
 
             # full path to your Maya file to OPEN
-            # self.maya_file_to_open = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\experiment_files\g10-10 rest pose 1200 landmarks v9.mb"
-            # self.maya_file_to_open
+            self.maya_file_to_open = r"C:\keyLabLocal_D\c99-maya-ziva-workshop\experiment_files\g10-10 rest pose 1200 landmarks v9.mb"
 
             if not os.path.exists(self.maya_file_to_open):
                 raise RuntimeError(f"File not found: {self.maya_file_to_open}")
@@ -649,9 +641,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                 cmds.cacheFile(createCacheNode=True, singleCache=True, startTime=1, endTime=50, fileName='myCache', dir='cacheDir')
 
-                # cmds.currentTime(15)
-                for frame_number in range(15):
-                    cmds.currentTime(str(frame_number), edit=True)                
+                cmds.currentTime(15)
 
             except Exception as e:
                 print(f"Failed to open Maya file: {e}")
@@ -768,7 +758,7 @@ class m1_vertexMove_Va001(gym.Env):
         options: Optional[dict] = None, 
     ):
         super().reset(seed=seed)
-        self._readback_cache = {}
+        
         self.start_time = time.time()  # Record the start time
         
         self.point1_list = []
@@ -823,9 +813,6 @@ class m1_vertexMove_Va001(gym.Env):
         self.fix_flag_ship = [0] * (self.joint_num + self.joint_rotate_num  + self.joint_ooc_l_num + self.joint_ooc_r_num+ self.joint_frontalis_num)
 
         self.position = self.control_vertices_slice(self.x_bar_j, self.vertex_index)
-        # print("self.vertex_index", self.vertex_index)
-        # print("passed the test, now quit.")
-        # sys.exit(0)  # Exit with status code 0          
         self.position_jaw = self.control_vertices_slice(self.x_jaw_bar_j, self.vertex_jaw_index)
         self.position_ooc_l =  self.control_vertices_slice(self.x_ooc_l_bar_j, self.vertex_ooc_l_index)
         self.position_ooc_r =  self.control_vertices_slice(self.x_ooc_r_bar_j, self.vertex_ooc_r_index)
@@ -884,18 +871,6 @@ class m1_vertexMove_Va001(gym.Env):
         #     np.array(self.control_vertices_slice(self.target_frontalis_state, self.vertex_frontalis_index)).shape,
         # )
 
-        # Quick debug to find the 2D array at index 7
-
-        # print("len np.array(self.x_ooc_r_joint)", len(self.x_ooc_r_joint))
-        # print("np.array(self.x_ooc_r_joint)", np.array(self.x_ooc_r_joint))
-        # print("np.array(self.position_ooc_l),", np.array(self.position_ooc_l))
-        # print("np.array(self.position_ooc_r),", np.array(self.position_ooc_r))
-
-
-        # print("passed the test, now quit.")
-        # import sys
-        # sys.exit(0)  # Exit with status code 0  
-
         # Concatenate the observation
         obs = np.concatenate(
             [
@@ -940,6 +915,7 @@ class m1_vertexMove_Va001(gym.Env):
     def step(self, **kwargs): # action_previous
 
         # new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
+
 
 
 
@@ -1056,8 +1032,6 @@ class m1_vertexMove_Va001(gym.Env):
             pass
         else:
 
-            real_stdout = sys.stdout
-
             # Redirect stdout and stderr to null
             sys.stdout = open(os.devnull, 'w')
             sys.stderr = open(os.devnull, 'w')
@@ -1097,10 +1071,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                         self.cmds.cacheFile(createCacheNode=True, singleCache=True, startTime=1, endTime=50, fileName='myCache', dir='cacheDir')
 
-                        # self.cmds.currentTime(15)
-                        for frame_number in range(15):
-                            self.cmds.currentTime(str(frame_number), edit=True)
-                            
+                        self.cmds.currentTime(15)
 
                     except Exception as e:
                         print(f"Failed to open Maya file: {e}")
@@ -1116,8 +1087,7 @@ class m1_vertexMove_Va001(gym.Env):
             
             finally:
                 # Restore stdout and stderr
-                # sys.stdout = sys.__stdout__
-                sys.stdout = real_stdout
+                sys.stdout = sys.__stdout__
                 sys.stderr = sys.__stderr__
 
 
@@ -1142,87 +1112,34 @@ class m1_vertexMove_Va001(gym.Env):
         learning_rate = 1  # 0.1 # 0.01
         action = learning_rate * action
 
-        
-        # # Add this debug code where you want to monitor the ooc_l actions
 
-        # if not hasattr(self, 'action_iteration_count'):
-        #     self.action_iteration_count = 0
-        #     self.max_action_iterations = 200
+        def get_smooth_limit():
+            """Double sigmoid that eases both at start and end"""
+            total_growth_steps = self.overlapping_length   # 2000 for now.
             
-        #     # Create debug file header (ONLY ONCE)
-        #     action_debug_path = os.path.join(self.save_folder, "ooc_l_actions_debug.csv")
-        #     with open(action_debug_path, 'w', newline='') as csvfile:
-        #         writer = csv.writer(csvfile)
-        #         # Create header with joint indices
-        #         header = ['iteration']
-        #         for i in range(3*self.joint_ooc_l_num):
-        #             header.append(f'joint_ooc_l_action_{i}')
-        #         writer.writerow(header)
-        #     print(f"Created action debug file: {action_debug_path}")
-
-        # # Extract and print the ooc_l actions
-        # # start_idx = 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num
-        # # end_idx = 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num
-
-        # start_idx = 3*self.joint_num + self.joint_rotate_num * 3
-        # end_idx = 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num
-
-        # ooc_l_actions = action[start_idx:end_idx]
-
-        # # Print to console for debugging
-        # print(f"Iteration {self.action_iteration_count}: ooc_l actions = {ooc_l_actions}")
-
-        # # Save to CSV file
-        # action_debug_path = os.path.join(self.save_folder, "ooc_l_actions_debug.csv")
-        # with open(action_debug_path, 'a', newline='') as csvfile:
-        #     writer = csv.writer(csvfile)
-        #     row = [self.action_iteration_count]
-        #     row.extend(ooc_l_actions)
-        #     writer.writerow(row)
-
-        # # Increment iteration counter
-        # self.action_iteration_count += 1
-
-        # # Check if we've reached the maximum iterations
-        # if self.action_iteration_count >= self.max_action_iterations:
-        #     print("\n=== Action Debug Test Completed ===")
-        #     print(f"Recorded {self.max_action_iterations} iterations of ooc_l actions")
-        #     print("Action debug completed, now exiting.")
-        #     sys.exit(0)
-
-
-        # def get_smooth_limit():
-        #     """Double sigmoid that eases both at start and end"""
-        #     total_growth_steps = self.overlapping_length   # 2000 for now.
+            # Debug print inputs
+            # print(f"\n=== get_smooth_limit() DEBUG ===")
+            # print(f"Current step: {self.step_counter_internal}")
+            # print(f"Total growth steps: {total_growth_steps}")
             
-        #     # Debug print inputs
-        #     # print(f"\n=== get_smooth_limit() DEBUG ===")
-        #     # print(f"Current step: {self.step_counter_internal}")
-        #     # print(f"Total growth steps: {total_growth_steps}")
+            t = min(self.step_counter_internal / total_growth_steps, 1.0)
+            # print(f"Normalized progress t: {t:.4f}")
             
-        #     t = min(self.step_counter_internal / total_growth_steps, 1.0)
-        #     # print(f"Normalized progress t: {t:.4f}")
+            eased_t = t**2 * (3 - 2*t)
+            # print(f"Eased t: {eased_t:.4f}")
             
-        #     eased_t = t**2 * (3 - 2*t)
-        #     # print(f"Eased t: {eased_t:.4f}")
+            t_limit = self.UNIT_PRIME * (0.25 + 0.75 * eased_t)
+            # print(f"Raw t_limit: {t_limit:.6f}")
+            # print(f"UNIT_PRIME: {self.UNIT_PRIME:.6f}")
             
-        #     t_limit = self.UNIT_PRIME * (0.25 + 0.75 * eased_t)
-        #     # print(f"Raw t_limit: {t_limit:.6f}")
-        #     # print(f"UNIT_PRIME: {self.UNIT_PRIME:.6f}")
+            final_limit = min(t_limit, self.UNIT_PRIME)
+            # print(f"Final limit: {final_limit:.6f}")
             
-        #     final_limit = min(t_limit, self.UNIT_PRIME)
-        #     # print(f"Final limit: {final_limit:.6f}")
-            
-        #     return final_limit
+            return final_limit
 
-        # t_limit_sigmoid = get_smooth_limit()
-        # action[0:self.joint_num * 3] = np.clip(action[0:self.joint_num * 3], -t_limit_sigmoid, t_limit_sigmoid)
+        t_limit_sigmoid = get_smooth_limit()
+        action[0:self.joint_num * 3] = np.clip(action[0:self.joint_num * 3], -t_limit_sigmoid, t_limit_sigmoid)
         # this is r prime   degree per step.
-
-
-
-        action, t_limit_sigmoid = self.apply_smooth_limits_to_actions(action, current_phase)
-
 
         set_constant_threshold_percentage = 15/100
         adjust_factor_adhoc = 1.0 # 40/55
@@ -1236,8 +1153,6 @@ class m1_vertexMove_Va001(gym.Env):
         #     T = self.expected_total_steps_for_jaw
         cap_max = self.phase_params['rotation_anatomy_limit'][current_phase]
         T = self.phase_params['expected_total_steps_for_jaw'][current_phase]
-            # from :   params['expected_total_steps_for_jaw'][phase_num] = config['expected_steps']
-            # params['rotation_anatomy_limit'][phase_num] = config['rotation_limit']        
         omega_max = cap_max
         
         # t1 = 0.25*T
@@ -1591,7 +1506,7 @@ class m1_vertexMove_Va001(gym.Env):
 
 
 
-        # for translate joint_ooc_r_num
+        # for translate joint_ooc_l_num
         for actionI in range(3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num , 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num):    # 0,3*self.joint_num         
             base_action_prime[int(actionI)] = action[int(actionI)]
 
@@ -1640,12 +1555,11 @@ class m1_vertexMove_Va001(gym.Env):
         # # to bypass oor for now
         # base_action_prime[0:3*self.joint_num] = 0
         # to bypass ooc for now
-        # base_action_prime[3*self.joint_num + 3*self.joint_rotate_num:3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num] = 0
-        
-        # base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num] = 0
+        base_action_prime[3*self.joint_num + 3*self.joint_rotate_num:3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num] = 0
+        base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num] = 0
 
         # to bypass frontalis for now
-        # base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num + 3 * self.joint_frontalis_num] = 0
+        base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num + 3 * self.joint_frontalis_num] = 0
 
         # new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
 
@@ -1728,7 +1642,7 @@ class m1_vertexMove_Va001(gym.Env):
                 print(f"self.abc_execution_count: {getattr(self, 'abc_execution_count', 'N/A')}")
                 import traceback
                 traceback.print_exc()
-                # import sys
+                import sys
                 sys.exit(1)
 
             # action_previous[self.joint_num * 3:self.joint_num * 3+self.joint_rotate_num * 3] = np.clip(action_previous[self.joint_num * 3:self.joint_num * 3+self.joint_rotate_num * 3], -r_limit_sigmoid_1000_endList[self.abc_execution_count], r_limit_sigmoid_1000_endList[self.abc_execution_count])  # [0]
@@ -1779,42 +1693,8 @@ class m1_vertexMove_Va001(gym.Env):
 
 
 
-        # new_coords_temp0 = self.returnCoordinates("middleres_OrbicularisOris")
-
-        # Visualization check at line 1776
-        def visualize(vertices, object_name):
-            """
-            Visualize the vertices, the sampled joint positions, and the surface mesh.
-
-            Args:
-            - vertices (list of lists): List of 3D coordinates of vertices.
-            - object_name (str): Name for the output file.
-            """
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-
-            # Plot the vertices
-            vertices_np = np.array(vertices)
-            ax.scatter(vertices_np[:, 0], vertices_np[:, 1], vertices_np[:, 2], c='b', marker='o', s=1, label='Vertices')
-
-            # Set the view angle
-            ax.view_init(elev=(180+30), azim=0, roll=90)  # Change these values to set the desired view
-
-            ax.set_xlabel('X Label')
-            ax.set_ylabel('Y Label')
-            ax.set_zlabel('Z Label')
-            ax.legend()
-
-            # Save the plot to a file
-            output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
-            output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
-            plt.savefig(output_file, dpi=300, bbox_inches='tight')
-            plt.close()
-
-        # Visualize new_coords_temp0 at line 1776
-        # coords_temp0_non_concatenate = [new_coords_temp0[i:i+3] for i in range(0, len(new_coords_temp0), 3)]
-        # visualize(coords_temp0_non_concatenate, "line1776_new_coords_temp0")
-
+        # new_coords = self.returnCoordinates("middleres_OrbicularisOris", self.vertex_index)
+        
         # new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
 
 
@@ -1834,7 +1714,6 @@ class m1_vertexMove_Va001(gym.Env):
 
 
         relative_rotation_value = base_action_prime[3*self.joint_num : 3*self.joint_num + 3*self.joint_rotate_num]
-
 
         # rotate. 
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
@@ -1897,9 +1776,11 @@ class m1_vertexMove_Va001(gym.Env):
 
         # translate
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            _moved = np.any(np.asarray(self.x_joint, dtype=float).reshape(-1, 3) != np.asarray(x_joint_, dtype=float).reshape(-1, 3), axis=1)
             for i in range(self.joint_num):
-                if _moved[i]:
+                flag_temp1 = np.array_equal(self.x_joint[3 * i], x_joint_[3 * i])
+                flag_temp2 = np.array_equal(self.x_joint[3 * i + 1], x_joint_[3 * i + 1])
+                flag_temp3 = np.array_equal(self.x_joint[3 * i + 2], x_joint_[3 * i + 2])
+                if not flag_temp1 or not flag_temp2 or not flag_temp3:
                     # Determine the joint name based on the index i
                     if i + 1 <= 9:
                         joint_name = f'oor_0{i + 1}'  # Leading zero for single-digit numbers
@@ -1932,158 +1813,15 @@ class m1_vertexMove_Va001(gym.Env):
 
 
         # translate ooc l
-        # if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-        #     for i in range(self.joint_ooc_l_num):  # joint_num is replaced by joint_ooc_l_num
-        #         flag_temp1 = np.array_equal(self.x_ooc_l_joint[3 * i], x_ooc_l_joint_[3 * i])
-        #         flag_temp2 = np.array_equal(self.x_ooc_l_joint[3 * i + 1], x_ooc_l_joint_[3 * i + 1])
-        #         flag_temp3 = np.array_equal(self.x_ooc_l_joint[3 * i + 2], x_ooc_l_joint_[3 * i + 2])
-        #         if not flag_temp1 or not flag_temp2 or not flag_temp3:
-        #             # Determine the joint name based on the index i
-        #             if i + 1 <= 9:
-        #                 joint_name = f'ooc_l_0{i + 1}'  # Leading zero for single-digit numbers
-        #             elif i + 1 <= 99:
-        #                 joint_name = f'ooc_l_{i + 1}'
-        #             elif i + 1 <= 999:
-        #                 joint_name = f'ooc_l_{i + 1}'
-        #             else:
-        #                 joint_name = f'ooc_l_{i + 1}'
-
-        #             # Move the joint
-        #             if 1==0: # joint_name == "lip_lower191":
-        #                 pass                    
-
-        #             else: 
-        #                 # print("joint_name to deform this time", joint_name)
-        #                 self.cmds.move(x_ooc_l_joint_[3 * i], x_ooc_l_joint_[3 * i + 1], x_ooc_l_joint_[3 * i + 2], joint_name, absolute=True)
-
-        # # In your deformation code, add the comparison logic:
-
-        # if not hasattr(self, 'iteration_count'):
-        #     self.iteration_count = 0
-        #     self.max_iterations = 200
-            
-        #     # Create debug file header (ONLY ONCE)
-        #     debug_file_path = os.path.join(self.save_folder, "difference_debug_comparison.csv")
-        #     with open(debug_file_path, 'w', newline='') as csvfile:
-        #         writer = csv.writer(csvfile)
-        #         writer.writerow([
-        #             'iteration', 'average_difference', 'all_differences'
-        #         ])
-
-            
-        # if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-        #     # Store coordinates before deformation
-        #     before_deform_coords_ooc_l = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
-            
-        #     # Perform the deformation (your existing code)
-        #     for i in range(self.joint_ooc_l_num):
-        #         flag_temp1 = np.array_equal(self.x_ooc_l_joint[3 * i], x_ooc_l_joint_[3 * i])
-        #         flag_temp2 = np.array_equal(self.x_ooc_l_joint[3 * i + 1], x_ooc_l_joint_[3 * i + 1])
-        #         flag_temp3 = np.array_equal(self.x_ooc_l_joint[3 * i + 2], x_ooc_l_joint_[3 * i + 2])
-        #         if not flag_temp1 or not flag_temp2 or not flag_temp3:
-        #             if i + 1 <= 9:
-        #                 joint_name = f'ooc_l_0{i + 1}'
-        #             elif i + 1 <= 99:
-        #                 joint_name = f'ooc_l_{i + 1}'
-        #             elif i + 1 <= 999:
-        #                 joint_name = f'ooc_l_{i + 1}'
-        #             else:
-        #                 joint_name = f'ooc_l_{i + 1}'
-
-        #             if 1==0: # joint_name == "lip_lower191":
-        #                 pass                    
-        #             else: 
-        #                 self.cmds.move(x_ooc_l_joint_[3 * i], x_ooc_l_joint_[3 * i + 1], x_ooc_l_joint_[3 * i + 2], joint_name, absolute=True)
-
-        #     # Get coordinates after deformation
-        #     new_coords_ooc_l = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
-            
-        #     # print("before_deform_coords_ooc_l", before_deform_coords_ooc_l)
-        #     # print("new_coords_ooc_l", new_coords_ooc_l)
-        #     # Calculate the difference
-        #     if before_deform_coords_ooc_l is not None and new_coords_ooc_l is not None:
-        #         if len(before_deform_coords_ooc_l) == len(new_coords_ooc_l):
-        #             # Calculate Euclidean distance for each vertex
-        #             differences = []
-        #             # for before, after in zip(before_deform_coords_ooc_l, new_coords_ooc_l):
-        #             #     if len(before) >= 3 and len(after) >= 3:
-        #             diff = np.linalg.norm(np.array(before_deform_coords_ooc_l) - np.array(new_coords_ooc_l)) # [:3]
-        #             differences.append(diff)
-                    
-        #             if differences:
-        #                 avg_diff = np.mean(differences)
-        #                 max_diff = np.max(differences)
-        #                 min_diff = np.min(differences)
-                        
-        #             # Save to CSV file
-        #             debug_file_path = os.path.join(self.save_folder, "difference_debug_comparison.csv")
-        #             with open(debug_file_path, 'a', newline='') as csvfile:
-        #                 writer = csv.writer(csvfile)
-        #                 writer.writerow([
-        #                     self.iteration_count,  # iteration
-        #                     avg_diff,              # position_difference
-        #                     differences, # all_differences
-        #                 ])
-                    
-        #             print(f"Iteration {self.iteration_count}: Avg diff: {avg_diff:.6f}, Max diff: {max_diff:.6f}, Min diff: {min_diff:.6f}")
-                        
-
-                        
-
-            
-        #     # Increment iteration counter
-        #     self.iteration_count += 1
-            
-        #     # Check if we've reached the maximum iterations
-        #     if self.iteration_count >= self.max_iterations:
-        #         print("\n=== Deformation Test Completed ===")
-        #         print(f"Performed {self.max_iterations} iterations")
-                
-        #         # Print summary statistics
-        #         if differences:
-        #             # all_avg_diffs = [diff['average_difference'] for diff in self.coordinate_differences]
-        #             # all_max_diffs = [diff['max_difference'] for diff in self.coordinate_differences]
-                    
-        #             # final_avg = np.mean(all_avg_diffs)
-        #             # final_max = np.max(all_max_diffs)
-                    
-        #             print(f"Final average difference across all iterations: {avg_diff:.6f}")
-        #             print(f"Maximum difference observed: {max_diff:.6f}")
-                    
-        #             # Save results to file
-        #             # self.save_deformation_results()
-                
-        #         print("Test completed, now exiting.")
-        #         # import sys
-        #         sys.exit(0)
-
-        # In your deformation code, add the comparison logic:
-
-        # if not hasattr(self, 'iteration_count'):
-        #     self.iteration_count = 0
-        #     self.max_iterations = 200
-            
-        #     # Create debug file header (ONLY ONCE)
-        #     debug_file_path = os.path.join(self.save_folder, "difference_debug_comparison.csv")
-        #     with open(debug_file_path, 'w', newline='') as csvfile:
-        #         writer = csv.writer(csvfile)
-        #         writer.writerow([
-        #             'iteration', 'average_difference', 'max_difference', 'min_difference',
-        #             'element_wise_differences'
-        #         ])
-
-            
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            # Store coordinates before deformation
-            # before_deform_coords_ooc_l = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
-            # print("before_deform_coords_ooc_l", before_deform_coords_ooc_l)
-            
-            # Perform the deformation (your existing code)
-            _moved = np.any(np.asarray(self.x_ooc_l_joint, dtype=float).reshape(-1, 3) != np.asarray(x_ooc_l_joint_, dtype=float).reshape(-1, 3), axis=1)
-            for i in range(self.joint_ooc_l_num):
-                if _moved[i]:
+            for i in range(self.joint_num):
+                flag_temp1 = np.array_equal(self.x_ooc_l_joint[3 * i], x_ooc_l_joint_[3 * i])
+                flag_temp2 = np.array_equal(self.x_ooc_l_joint[3 * i + 1], x_ooc_l_joint_[3 * i + 1])
+                flag_temp3 = np.array_equal(self.x_ooc_l_joint[3 * i + 2], x_ooc_l_joint_[3 * i + 2])
+                if not flag_temp1 or not flag_temp2 or not flag_temp3:
+                    # Determine the joint name based on the index i
                     if i + 1 <= 9:
-                        joint_name = f'ooc_l_0{i + 1}'
+                        joint_name = f'ooc_l_0{i + 1}'  # Leading zero for single-digit numbers
                     elif i + 1 <= 99:
                         joint_name = f'ooc_l_{i + 1}'
                     elif i + 1 <= 999:
@@ -2091,106 +1829,22 @@ class m1_vertexMove_Va001(gym.Env):
                     else:
                         joint_name = f'ooc_l_{i + 1}'
 
+                    # Move the joint
                     if 1==0: # joint_name == "lip_lower191":
                         pass                    
+
                     else: 
-                        # print("ooc_l deformed here l1987 i = ", i)
+                        # print("joint_name to deform this time", joint_name)
                         self.cmds.move(x_ooc_l_joint_[3 * i], x_ooc_l_joint_[3 * i + 1], x_ooc_l_joint_[3 * i + 2], joint_name, absolute=True)
 
-            # # Get coordinates after deformation
-            # new_coords_ooc_l = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
-            # print("new_coords_ooc_l", new_coords_ooc_l)
-            
-            # # Calculate the difference
-            # if before_deform_coords_ooc_l is not None and new_coords_ooc_l is not None:
-            #     if len(before_deform_coords_ooc_l) == len(new_coords_ooc_l):
-            #         # Convert to numpy arrays for easier computation
-            #         before_array = np.array(before_deform_coords_ooc_l)
-            #         after_array = np.array(new_coords_ooc_l)
-
-            #         print("before_array", before_array)
-            #         print("after_array", after_array)
-                    
-            #         # Calculate Euclidean distance for each vertex (element-wise)
-            #         vertex_differences = before_array - after_array
-                    
-            #         # Calculate coordinate-wise differences (x, y, z separately)
-            #         coordinate_differences = np.abs(before_array - after_array)
-                    
-            #         # Calculate summary statistics
-            #         avg_diff = np.mean(vertex_differences)
-            #         max_diff = np.max(vertex_differences)
-            #         min_diff = np.min(vertex_differences)
-
-            #         print("vertex_differences", vertex_differences)
-                    
-            #         # Format differences for CSV output
-            #         # For vertex differences: list of Euclidean distances for each vertex
-            #         # vertex_diff_str = ';'.join([f'{d:.6f}' for d in vertex_differences])
-                    
-            #         # For coordinate differences: format as "vertex_idx:x_diff,y_diff,z_diff;..."
-            #         # coord_diff_str_parts = []
-            #         # for i, (before_coord, after_coord) in enumerate(zip(before_array, after_array)):
-            #         #     x_diff = abs(before_coord[0] - after_coord[0])
-            #         #     y_diff = abs(before_coord[1] - after_coord[1])
-            #         #     z_diff = abs(before_coord[2] - after_coord[2])
-            #         #     coord_diff_str_parts.append(f'{i}:{x_diff:.6f},{y_diff:.6f},{z_diff:.6f}')
-            #         # coord_diff_str = ';'.join(coord_diff_str_parts)
-                    
-            #         # Save to CSV file
-            #         debug_file_path = os.path.join(self.save_folder, "difference_debug_comparison.csv")
-            #         with open(debug_file_path, 'a', newline='') as csvfile:
-            #             writer = csv.writer(csvfile)
-            #             writer.writerow([
-            #                 self.iteration_count,  # iteration
-            #                 f'{avg_diff:.6f}',    # average_difference
-            #                 f'{max_diff:.6f}',    # max_difference
-            #                 f'{min_diff:.6f}',    # min_difference
-            #                 # vertex_diff_str,      # all_differences (vertex Euclidean distances)
-            #                 vertex_differences        # element_wise_differences (x,y,z per vertex)
-            #             ])
-                    
-            #         # Also print some summary info to console
-            #         print(f"Iteration {self.iteration_count}: Avg diff: {avg_diff:.6f}, Max diff: {max_diff:.6f}, Min diff: {min_diff:.6f}")
-                    
-            #         # Print the vertex with maximum difference for debugging
-            #         max_diff_vertex = np.argmax(vertex_differences)
-            #         max_diff_coords = coordinate_differences[max_diff_vertex]
-            #         print(f"  Max difference at vertex {max_diff_vertex}: "
-            #             )
-                    
-            #         # f"x={max_diff_coords[0]:.6f}, y={max_diff_coords[1]:.6f}, z={max_diff_coords[2]:.6f}"
-
-            
-            # # Increment iteration counter
-            # self.iteration_count += 1
-            
-            # # Check if we've reached the maximum iterations
-            # if self.iteration_count >= self.max_iterations:
-            #     print("\n=== Deformation Test Completed ===")
-            #     print(f"Performed {self.max_iterations} iterations")
-                
-            #     # Print final summary statistics
-            #     print(f"Final average difference: {avg_diff:.6f}")
-            #     print(f"Maximum difference observed: {max_diff:.6f}")
-            #     print(f"Minimum difference observed: {min_diff:.6f}")
-                
-            #     # Find and print the vertex with the overall maximum difference
-            #     if vertex_differences.size > 0:
-            #         overall_max_vertex = np.argmax(vertex_differences)
-            #         overall_max_coords = coordinate_differences[overall_max_vertex]
-            #         # print(f"Overall maximum difference at vertex {overall_max_vertex}: "
-            #         #     f"x={overall_max_coords[0]:.6f}, y={overall_max_coords[1]:.6f}, z={overall_max_coords[2]:.6f}")
-                
-            #     print("Test completed, now exiting.")
-            #     # import sys
-            #     sys.exit(0)
 
         # translate ooc l
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            _moved = np.any(np.asarray(self.x_ooc_r_joint, dtype=float).reshape(-1, 3) != np.asarray(x_ooc_r_joint_, dtype=float).reshape(-1, 3), axis=1)
-            for i in range(self.joint_ooc_r_num):
-                if _moved[i]:
+            for i in range(self.joint_num):
+                flag_temp1 = np.array_equal(self.x_ooc_r_joint[3 * i], x_ooc_r_joint_[3 * i])
+                flag_temp2 = np.array_equal(self.x_ooc_r_joint[3 * i + 1], x_ooc_r_joint_[3 * i + 1])
+                flag_temp3 = np.array_equal(self.x_ooc_r_joint[3 * i + 2], x_ooc_r_joint_[3 * i + 2])
+                if not flag_temp1 or not flag_temp2 or not flag_temp3:
                     # Determine the joint name based on the index i
                     if i + 1 <= 9:
                         joint_name = f'ooc_r_0{i + 1}'  # Leading zero for single-digit numbers
@@ -2210,11 +1864,13 @@ class m1_vertexMove_Va001(gym.Env):
                         self.cmds.move(x_ooc_r_joint_[3 * i], x_ooc_r_joint_[3 * i + 1], x_ooc_r_joint_[3 * i + 2], joint_name, absolute=True)
 
 
-        # translate frontalis
+        # translate ooc l
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            _moved = np.any(np.asarray(self.x_frontalis_joint, dtype=float).reshape(-1, 3) != np.asarray(x_frontalis_joint_, dtype=float).reshape(-1, 3), axis=1)
-            for i in range(self.joint_frontalis_num):
-                if _moved[i]:
+            for i in range(self.joint_num):
+                flag_temp1 = np.array_equal(self.x_frontalis_joint[3 * i], x_frontalis_joint_[3 * i])
+                flag_temp2 = np.array_equal(self.x_frontalis_joint[3 * i + 1], x_frontalis_joint_[3 * i + 1])
+                flag_temp3 = np.array_equal(self.x_frontalis_joint[3 * i + 2], x_frontalis_joint_[3 * i + 2])
+                if not flag_temp1 or not flag_temp2 or not flag_temp3:
                     # Determine the joint name based on the index i
                     if i + 1 <= 9:
                         joint_name = f'frontalis_0{i + 1}'  # Leading zero for single-digit numbers
@@ -2251,56 +1907,16 @@ class m1_vertexMove_Va001(gym.Env):
         #     method = 'euclidean'
         #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(self.target_jaw_state, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_adhoc, self.vertex_jaw_index))
         #     print("m1 line 1801, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
-       
+
 
         new_coords = self.returnCoordinates("middleres_OrbicularisOris", self.vertex_index)
         
         new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
-        new_coords_ooc_r = self._read_if_moved("middleres_OrbicularisOculi_r", x_ooc_r_joint_, self.vertex_ooc_r_index)
-        new_coords_ooc_l = self._read_if_moved("middleres_OrbicularisOculi_l", x_ooc_l_joint_, self.vertex_ooc_l_index)
-        new_coords_frontalis = self._read_if_moved("middleres_Frontalis", x_frontalis_joint_, self.vertex_frontalis_index)
+        # new_coords_ooc_r = self.returnCoordinates("middleres_OrbicularisOculi_r", self.vertex_ooc_r_index)
+        # new_coords_ooc_l = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
+        # new_coords_frontalis = self.returnCoordinates("middleres_Frontalis", self.vertex_frontalis_index)
         # bypass these three since we don't handle them in this task.
-      
 
-        # new_coords_temp1 = self.returnCoordinates("middleres_OrbicularisOris")
-
-        # Visualization check at line 2232 (now line 2266)
-        def visualize_temp1(vertices, object_name):
-            """
-            Visualize the vertices, the sampled joint positions, and the surface mesh.
-
-            Args:
-            - vertices (list of lists): List of 3D coordinates of vertices.
-            - object_name (str): Name for the output file.
-            """
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-
-            # Plot the vertices
-            vertices_np = np.array(vertices)
-            ax.scatter(vertices_np[:, 0], vertices_np[:, 1], vertices_np[:, 2], c='b', marker='o', s=1, label='Vertices')
-
-            # Set the view angle
-            ax.view_init(elev=(180+30), azim=0, roll=90)  # Change these values to set the desired view
-
-            ax.set_xlabel('X Label')
-            ax.set_ylabel('Y Label')
-            ax.set_zlabel('Z Label')
-            ax.legend()
-
-            # Save the plot to a file
-            output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
-            output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
-            plt.savefig(output_file, dpi=300, bbox_inches='tight')
-            plt.close()
-
-        # Visualize new_coords_temp1 at line 2232 (now line 2266)
-        # coords_temp1_non_concatenate = [new_coords_temp1[i:i+3] for i in range(0, len(new_coords_temp1), 3)]
-        # visualize_temp1(coords_temp1_non_concatenate, "line2232_new_coords_temp1")
-
-        # print("passed the test, now quit.")
-        # # import sys
-        # sys.exit(0)  # Exit 
 
         # if current_phase == 3:
         #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
@@ -2315,9 +1931,9 @@ class m1_vertexMove_Va001(gym.Env):
         #     print("m1 line 1822, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
 
 
-        # new_coords_ooc_l = self.position_ooc_l
-        # new_coords_ooc_r = self.position_ooc_r
-        # new_coords_frontalis = self.position_frontalis
+        new_coords_ooc_l = self.position_ooc_l
+        new_coords_ooc_r = self.position_ooc_r
+        new_coords_frontalis = self.position_frontalis
 
 
         # self.log_plot_every = 5
@@ -2328,8 +1944,8 @@ class m1_vertexMove_Va001(gym.Env):
             def strain_energy_calculator(new_coords, coords_rest):
 
                 import numpy as np
-                # import sys
-                sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
+                import sys
+                sys.path.insert(0, str(backup_path / "database")
                 import importlib
 
                 # import dataV22_after_deform
@@ -2389,7 +2005,7 @@ class m1_vertexMove_Va001(gym.Env):
                     
 
                 #     # debug the "F = np.column_stack((E1_deformed, E2_def" dimonsion error
-                #     # log_path =str(results_path / "240423-150653 log files/log_debug25-2-20.txt")
+                #     # log_path = str(results_path / \240423-150653 log files\log_debug25-2-20.txt"
 
 
                 #     # new_coords_for_energy = new_coords
@@ -2672,7 +2288,7 @@ class m1_vertexMove_Va001(gym.Env):
                 
 
         #         # Save the plot to a file
-        #         output_folder = str(backup_path / "e68 backed to e71 no speed up and visualize debug"
+        #         output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e68 backed to e71 no speed up and visualize debug"
         #         output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
         #         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         #         plt.close()        
@@ -2775,7 +2391,7 @@ class m1_vertexMove_Va001(gym.Env):
                 
 
                 # Save the plot to a file
-                output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
+                output_folder = str(backup_path / "d83 initiate rest to AU12 smile"
                 output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
                 plt.savefig(output_file, dpi=300, bbox_inches='tight')
                 plt.close()        
@@ -2946,12 +2562,6 @@ class m1_vertexMove_Va001(gym.Env):
                 self.print_allow = 0
         self.step_counter = self.step_counter + 1       
 
-        # --- Exit Condition ---
-        # if self.step_counter == 2250:
-        #     print("passed the test, now quit.")
-            
-        #     sys.exit(0)  # Exit with status code 0                 
-
 
         self.action_real_list.append(base_action_prime) # important line.
 
@@ -2962,18 +2572,10 @@ class m1_vertexMove_Va001(gym.Env):
         epsilon_min = 0.01 # avoid the small change leading to not converge when the distance min is 0.
 
         if "both" == self.action_mode:
-            # Bypass OOC success threshold if theoretical distance is 0 for these specific tasks
-            current_phase = self.phase_manager.current_phase if hasattr(self, 'phase_manager') else 1
-            current_task = self.phase_params.get('task', {}).get(current_phase, "")
+            # currently don't need to count the distance of the jaw, since it does not translate.
             
-            # ooc_bypassed = current_task in ["dataV22_AU6 to dataV22_AU7", "dataV22_AU7 to dataV22_AU6"]
-            
-            # ooc_l_condition = True if ooc_bypassed else (distance_ooc_l <= self.distance_ooc_l_min + epsilon_min)
-            # ooc_r_condition = True if ooc_bypassed else (distance_ooc_r <= self.distance_ooc_r_min + epsilon_min)
-
-            # ooc_l_condition and ooc_r_condition and
-            # if distance_jaw <= self.distance_jaw_min and distance <= self.distance_min  + epsilon_min and distance_frontalis <= self.distance_frontalis_min  + epsilon_min:
             if distance_jaw <= self.distance_jaw_min and distance <= self.distance_min  + epsilon_min and distance_ooc_l <= self.distance_ooc_l_min  + epsilon_min and distance_ooc_r <= self.distance_ooc_r_min  + epsilon_min and distance_frontalis <= self.distance_frontalis_min  + epsilon_min:
+
 
                 # def obtain_r_limit_sigmoid_1000_endList():
                 #     adjust_factor_adhoc = 1.0 # 40/55
@@ -3255,18 +2857,6 @@ class m1_vertexMove_Va001(gym.Env):
                 s_jaw_next_full = self.returnCoordinates("middleres_Jaw")
                 self.plot_distances_portal(self.target_jaw_state, s_jaw_next_full, object_name, self.vertex_jaw_index)
 
-                object_name = "ooc_l"
-                s_ooc_l_next_full = self.returnCoordinates("middleres_OrbicularisOculi_l")  # , self.vertex_ooc_l_index
-                self.plot_distances_portal(self.target_ooc_l_state, s_ooc_l_next_full, object_name, self.vertex_ooc_l_index)
-                object_name = "ooc_r"
-                s_ooc_r_next_full = self.returnCoordinates("middleres_OrbicularisOculi_r")  # , self.vertex_ooc_r_index
-                self.plot_distances_portal(self.target_ooc_r_state, s_ooc_r_next_full, object_name, self.vertex_ooc_r_index)        
-
-                object_name = "frontalis"
-                s_frontalis_next_full = self.returnCoordinates("middleres_Frontalis")  # , self.vertex_frontalis_index
-                self.plot_distances_portal(self.target_frontalis_state, s_frontalis_next_full, object_name, self.vertex_frontalis_index)        
-
-
                 # def plot_adhoc():
 
                 #     def visualize(vertices, object_name):
@@ -3296,7 +2886,7 @@ class m1_vertexMove_Va001(gym.Env):
                         
 
                 #         # Save the plot to a file
-                #         output_folder = str(backup_path / "e68 backed to e71 no speed up and visualize debug"
+                #         output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e68 backed to e71 no speed up and visualize debug"
                 #         output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
                 #         plt.savefig(output_file, dpi=300, bbox_inches='tight')
                 #         plt.close()        
@@ -3337,8 +2927,8 @@ class m1_vertexMove_Va001(gym.Env):
                     def strain_energy_calculator(new_coords, coords_rest):
 
                         import numpy as np
-                        # import sys
-                        sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline"/ "database"))
+                        import sys
+                        sys.path.insert(0, str(backup_path / "database")
                         import importlib
 
                         # import dataV22_after_deform
@@ -3621,7 +3211,6 @@ class m1_vertexMove_Va001(gym.Env):
                 phase_logs = self._get_phase_logs(current_phase)
 
                 phase_logs['distance'].append(distance)
-                # phase_logs['distance'].append(distance_ooc_r)
                 phase_logs['step_counter_internal'].append(self.step_counter_internal)
                 phase_logs['time_for_energy'].append(elapsed_time)
                 phase_logs['rotational_kinetic_energy'].append(rotational_kinetic_energy)
@@ -3723,8 +3312,6 @@ class m1_vertexMove_Va001(gym.Env):
             # print("env debug l499")
             if success_flag == 1:
                 print("in env l526, hit one success. should early stop now. success_flag:", success_flag)            
-            else:
-                print("in env l526, failed. reached step_counter_internal_max, should early stop now. flag:", success_flag)            
             done = True   
             self.fix_flag_ship = [0] * (self.joint_num + self.joint_rotate_num  + self.joint_ooc_l_num + self.joint_ooc_r_num + self.joint_frontalis_num)
             
@@ -3762,7 +3349,6 @@ class m1_vertexMove_Va001(gym.Env):
             # self.time_log.append(elapsed_time)
 
             phase_logs = self._get_phase_logs(current_phase)
-            # phase_logs['distance'].append(distance_ooc_r)
             phase_logs['distance'].append(distance)
 
 
@@ -4151,7 +3737,7 @@ class m1_vertexMove_Va001(gym.Env):
 
 
         if success_flag == 1:
-            print("in env l646, hit one success. should early stop now. ") # self.info['success_flag']:", self.info['success_flag']     
+            print("in env l646, hit one success. should early stop now. self.info['success_flag']:", self.info['success_flag'])     
 
             # if current_phase == 2:
             #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
@@ -4263,18 +3849,6 @@ class m1_vertexMove_Va001(gym.Env):
         distance_ship_vertices = np.sqrt(squared_diff_vertices)
 
         return distance_ship_vertices.tolist()
-  
-
-    def _read_if_moved(self, object_name, joints_now, vertex_indices):
-        # Reuse the last readback of this mesh if its joints are exactly where they were then.
-        cache = self.__dict__.setdefault("_readback_cache", {})
-        joints_now = np.array(joints_now, dtype=float)
-        last = cache.get(object_name)
-        if last is not None and np.array_equal(last[0], joints_now):
-            return last[1].copy()
-        coords = self.returnCoordinates(object_name, vertex_indices)
-        cache[object_name] = (joints_now, np.array(coords))
-        return coords
 
     def returnCoordinates(self, object_name, vertex_indices=None):
         # Select the object
@@ -4961,8 +4535,8 @@ class m1_vertexMove_Va001(gym.Env):
         plt.figure(figsize=(8, 6), dpi=300)
         plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
         
-        if self.this_task in self.contract_to_neutral_task:  # current_phase == 1 or current_phase == 5 or current_phase == 7:
-            rotation_velocity = -rotation_velocity
+        if current_phase == 3 or current_phase == 5 or current_phase == 7:
+            rotation_velocity = - rotation_velocity
 
         plt.plot(steps, -rotation_velocity,
                 label='Angular velocity\nover optimization steps',
@@ -6190,6 +5764,69 @@ class m1_vertexMove_Va001(gym.Env):
     
     def return_coordinates_adhoc(self, rot_forward, current_phase=1):
 
+        
+
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5710, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+
+
+
+
+        # # Redirect stdout and stderr to null
+        # sys.stdout = open(os.devnull, 'w')
+        # sys.stderr = open(os.devnull, 'w')
+
+        # try:
+        #     if not self.opened_file_status:
+        #         if self.cmds.file(query=True, modified=True):
+        #             print("Unsaved changes detected.")
+        #             if 1==0:  # save_changes in ['yes', 'y']:
+        #                 self.cmds.file(save=True)
+        #                 print("Changes saved.")
+        #             else:
+        #                 self.cmds.file(newFile=True, force=True)
+
+        #         try:
+        #             self.opened_file = self.cmds.file(self.maya_file_to_open, open=True, force=True)
+        #             print("Opened file:", self.opened_file)
+        #             self.cmds.playbackOptions(min=1, max=50, animationStartTime=1, animationEndTime=50)
+
+        #             def delete_cache_nodes():
+        #                 cache_nodes = self.cmds.ls(type='cacheFile')
+        #                 for node in cache_nodes:
+        #                     self.cmds.delete(node)
+
+        #             delete_cache_nodes()
+        #             self.cmds.cacheFile(createCacheNode=True, singleCache=True, startTime=1, endTime=50, fileName='myCache', dir='cacheDir')
+        #             self.cmds.currentTime(15)
+
+        #         except Exception as e:
+        #             print(f"Failed to open Maya file: {e}")
+
+        #         self.opened_file_status = True
+
+        # finally:
+        #     sys.stdout = sys.__stdout__
+        #     sys.stderr = sys.__stderr__
+
+
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5760, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+        #     print("rot_forward", rot_forward)
+
+
         relative_rotation_value = rot_forward
 
         for i in range(0,self.joint_rotate_num):
@@ -6205,7 +5842,28 @@ class m1_vertexMove_Va001(gym.Env):
                         except Exception as e3:
                             print(f"An error occurred: {e3}")
 
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5786, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+
+
+
         new_coords_jaw_forward = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
+
+
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5710, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
 
 
         def calculate_accumulated_work():
@@ -6248,6 +5906,24 @@ class m1_vertexMove_Va001(gym.Env):
 
                 delta_b0_conca = self.calculate_accumulated_rotated_angle()
 
+                # def calculate_accumulated_rotated_angle():
+
+                    
+                    
+                #     # final_epoch_action_list = self.action_real_list
+
+
+                #     # delta_b0j = final_epoch_action_list
+                #     # delta_b0j_conca = delta_b0j
+
+                #     # delta_b0_conca = [0] * 3*self.joint_num + [0] * 3 * self.joint_rotate_num  + [0] * 3 *self.joint_ooc_l_num  + [0] * 3 * self.joint_ooc_r_num  + [0] * 3 * self.joint_frontalis_num
+                    
+                #     # for i in range(len(delta_b0j_conca)):
+                #     #     delta_b0_conca = [delta_b0_conca[j] + delta_b0j_conca[i][j] for j in range(3*self.joint_num + 3*self.joint_rotate_num + 3 *self.joint_ooc_l_num + 3 * self.joint_ooc_r_num + 3 * self.joint_frontalis_num)]
+                #     return delta_b0_conca
+
+                # delta_b0_conca = calculate_accumulated_rotated_angle()
+                
                 # Store in phase-specific data
                 phase_data = self._get_phase_specific_data(current_phase)
                 phase_data['angles'].append(delta_b0_conca[self.n : self.n + 3*self.joint_rotate_num])
@@ -6289,7 +5965,17 @@ class m1_vertexMove_Va001(gym.Env):
 
         relative_rotation_value = -rot_forward
 
- 
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5898, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+
+
+        #     print("-rot_forward", -rot_forward)        
 
         for i in range(0,self.joint_rotate_num):
             flag_temp1 = relative_rotation_value[3*i] == 0 and relative_rotation_value[3*i+1] == 0 and relative_rotation_value[3*i+2] == 0
@@ -6303,6 +5989,15 @@ class m1_vertexMove_Va001(gym.Env):
                         except Exception as e3:
                             print(f"An error occurred: {e3}")
 
+
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5923, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
 
 
         def undo_this_append():
@@ -6324,10 +6019,28 @@ class m1_vertexMove_Va001(gym.Env):
         if self.add_energy_to_jaw_objective_flag == 1:
             undo_this_append()
 
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5937, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+
 
         self.cmds.select(cl=True)
         self.cmds.currentCtx()
 
+
+        # if current_phase == 3:
+        #     s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.suc_position_save()
+        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+        #     method = 'euclidean'
+        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+        #     print("m1 line 5710, at the end of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
 
 
         return new_coords_jaw_forward, accumulated_work_at_last
@@ -6434,18 +6147,12 @@ class m1_vertexMove_Va001(gym.Env):
         # s_ooc_l_next_full = self.returnCoordinates("middleres_OrbicularisOculi_r", self.vertex_ooc_r_index)
         # s_ooc_r_next_full = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
         # s_frontalis_next_full = self.returnCoordinates("middleres_Frontalis", self.vertex_frontalis_index)      
-        # s_ooc_l_next_full = getattr(dataV22, "x_middleres_OrbicularisOculi_l" + str(0)) # did not change, so we use the original one.
-        # s_ooc_l_next_full=s_ooc_l_next_full.flatten()
-        # s_ooc_r_next_full = getattr(dataV22, "x_middleres_OrbicularisOculi_r" + str(0))
-        # s_ooc_r_next_full = s_ooc_r_next_full.flatten()
-        # s_frontalis_next_full = getattr(dataV22, "x_middleres_Frontalis" + str(0))         
-        # s_frontalis_next_full = s_frontalis_next_full.flatten()
-        # s_ooc_l_next_full = np.array(getattr(dataV22, "x_middleres_OrbicularisOculi_l" + str(0))).flatten()
-        # s_ooc_r_next_full = np.array(getattr(dataV22, "x_middleres_OrbicularisOculi_r" + str(0))).flatten()
-        # s_frontalis_next_full = np.array(getattr(dataV22, "x_middleres_Frontalis" + str(0))).flatten()        
-        s_ooc_l_next_full = self.returnCoordinates("middleres_OrbicularisOculi_l")
-        s_ooc_r_next_full = self.returnCoordinates("middleres_OrbicularisOculi_r")
-        s_frontalis_next_full = self.returnCoordinates("middleres_Frontalis")       
+        s_ooc_l_next_full = getattr(dataV22, "x_middleres_OrbicularisOculi_l" + str(0)) # did not change, so we use the original one.
+        s_ooc_r_next_full = getattr(dataV22, "x_middleres_OrbicularisOculi_r" + str(0))
+        s_frontalis_next_full = getattr(dataV22, "x_middleres_Frontalis" + str(0))         
+        # s_ooc_l_next_full = self.returnCoordinates("middleres_OrbicularisOculi_r", self.vertex_ooc_r_index)
+        # s_ooc_r_next_full = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
+        # s_frontalis_next_full = self.returnCoordinates("middleres_Frontalis", self.vertex_frontalis_index)       
         
         self.cmds.select(cl=True)
         self.cmds.currentCtx()        
@@ -6694,91 +6401,33 @@ class m1_vertexMove_Va001(gym.Env):
     #         print(f"reward {reward}", file=f)
     #         print(f"expected_total_steps, step_counter_internal, remaining_steps: {expected_total_steps}, {step_counter_internal}, {remaining_steps}", file=f)    
 
-    # def log_step_details(self, current_phase=1, step_counter=None, s_prime=None, 
-    #                     base_action_prime=None, s_next=None, x_joint=None, 
-    #                     x_joint_=None, x_joint_rotation=None, x_joint_rotation_=None,
-    #                     distance=None, distance_jaw=None, distance_ooc_r=None,
-    #                     distance_ooc_l=None, distance_frontalis=None, reward=None,
-    #                     expected_total_steps=None, step_counter_internal=None,
-    #                     remaining_steps=None):
-    #     """Log detailed step information for any phase (1, 2, 3, ...)"""
-    #     with open(self._get_log_filename(current_phase), 'a') as f:
-    #         print(f"Step {step_counter},", file=f)
-    #         print(f"current State[0:12]: {s_prime[0:12]},", file=f)
-    #         print(f"Action[0:12]: {base_action_prime[0:12]},", file=f)
-    #         print(f"next State[0:12]: {s_next[0:12]},", file=f)
-    #         print(f"Target State[0:12]: {self.control_vertices_slice(self.target_state, self.vertex_index)[0:12]},", file=f)
-    #         print(f"current joint position[0:12]: {x_joint[0:12]},", file=f)
-    #         print(f"next joint position[0:12]: {x_joint_[0:12]},", file=f)
-    #         print(f"current joint rotation position: {x_joint_rotation},", file=f)
-    #         print(f"next joint rotation position: {x_joint_rotation_}", file=f)
-    #         print(f"distance after action {distance}", file=f)
-    #         print(f"distance jaw after action {distance_jaw}", file=f)
-    #         print(f"rotation action {base_action_prime[3*self.joint_num : 3*self.joint_num + 3*self.joint_rotate_num]}", file=f)
-    #         print(f"distance ooc_r after action {distance_ooc_r}", file=f)
-    #         print(f"distance ooc_l after action {distance_ooc_l}", file=f)
-    #         print(f"distance frontalis after action {distance_frontalis}", file=f)
-    #         print(f"reward {reward}", file=f)
-    #         print(f"expected_total_steps, step_counter_internal, remaining_steps: {expected_total_steps}, {step_counter_internal}, {remaining_steps}", file=f)
-            
     def log_step_details(self, current_phase=1, step_counter=None, s_prime=None, 
-                            base_action_prime=None, s_next=None, x_joint=None, 
-                            x_joint_=None, x_joint_rotation=None, x_joint_rotation_=None,
-                            distance=None, distance_jaw=None, distance_ooc_r=None,
-                            distance_ooc_l=None, distance_frontalis=None, reward=None,
-                            expected_total_steps=None, step_counter_internal=None,
-                            remaining_steps=None):
-            """Log detailed step information for any phase (1, 2, 3, ...)"""
-            with open(self._get_log_filename(current_phase), 'a') as f:
-                print(f"Step {step_counter},", file=f)
-                print(f"current State[0:12]: {s_prime[0:12]},", file=f)
-                print(f"Action[0:12]: {base_action_prime[0:12]},", file=f)
-                print(f"next State[0:12]: {s_next[0:12]},", file=f)
-                print(f"Target State[0:12]: {self.control_vertices_slice(self.target_state, self.vertex_index)[0:12]},", file=f)
-                print(f"current joint position[0:12]: {x_joint[0:12]},", file=f)
-                print(f"next joint position[0:12]: {x_joint_[0:12]},", file=f)
-                print(f"current joint rotation position: {x_joint_rotation},", file=f)
-                print(f"next joint rotation position: {x_joint_rotation_}", file=f)
-                print(f"distance after action {distance}", file=f)
-                print(f"distance jaw after action {distance_jaw}", file=f)
-                print(f"rotation action {base_action_prime[3*self.joint_num : 3*self.joint_num + 3*self.joint_rotate_num]}", file=f)
-                print(f"distance ooc_r after action {distance_ooc_r}", file=f)
-                print(f"distance ooc_l after action {distance_ooc_l}", file=f)
-                print(f"distance frontalis after action {distance_frontalis}", file=f)
-                print(f"reward {reward}", file=f)
-                print(f"expected_total_steps, step_counter_internal, remaining_steps: {expected_total_steps}, {step_counter_internal}, {remaining_steps}", file=f)
-                
-                # --- Begin Estimated Steps Calculation ---
-                
-                # Note: self.initial_distance, self.distance_min, etc., 
-                # are assumed to be accessible as class attributes.
-                
-                # Helper function for estimation
-                def estimate_steps(current_dist, min_dist, initial_dist, steps_taken):
-                    if current_dist <= min_dist:
-                        return 0
-                    # Avoid division by zero if no distance has been reduced
-                    reduced_dist = initial_dist - current_dist
-                    if reduced_dist <= 1e-9: # Check for near-zero
-                        return float('inf') 
-                    return int(round((current_dist - min_dist) * steps_taken / reduced_dist))
-
-                # Estimate for OOR (Overall distance)
-                steps_left_oor = estimate_steps(distance, self.distance_min, self.initial_distance, step_counter)
-
-                # Estimate for OOC_R
-                steps_left_ooc_r = estimate_steps(distance_ooc_r, self.distance_ooc_r_min, self.initial_ooc_r_distance, step_counter)
-
-                # Estimate for OOC_L
-                steps_left_ooc_l = estimate_steps(distance_ooc_l, self.distance_ooc_l_min, self.initial_ooc_l_distance, step_counter)
-                
-                print(f"estimated steps left for OOR: {steps_left_oor}", file=f)
-                print(f"estimated steps left for OOC_R: {steps_left_ooc_r}", file=f)
-                print(f"estimated steps left for OOC_L: {steps_left_ooc_l}", file=f)
-                
-                # --- End Estimated Steps Calculation ---
-                
-   
+                        base_action_prime=None, s_next=None, x_joint=None, 
+                        x_joint_=None, x_joint_rotation=None, x_joint_rotation_=None,
+                        distance=None, distance_jaw=None, distance_ooc_r=None,
+                        distance_ooc_l=None, distance_frontalis=None, reward=None,
+                        expected_total_steps=None, step_counter_internal=None,
+                        remaining_steps=None):
+        """Log detailed step information for any phase (1, 2, 3, ...)"""
+        with open(self._get_log_filename(current_phase), 'a') as f:
+            print(f"Step {step_counter},", file=f)
+            print(f"current State[0:12]: {s_prime[0:12]},", file=f)
+            print(f"Action[0:12]: {base_action_prime[0:12]},", file=f)
+            print(f"next State[0:12]: {s_next[0:12]},", file=f)
+            print(f"Target State[0:12]: {self.control_vertices_slice(self.target_state, self.vertex_index)[0:12]},", file=f)
+            print(f"current joint position[0:12]: {x_joint[0:12]},", file=f)
+            print(f"next joint position[0:12]: {x_joint_[0:12]},", file=f)
+            print(f"current joint rotation position: {x_joint_rotation},", file=f)
+            print(f"next joint rotation position: {x_joint_rotation_}", file=f)
+            print(f"distance after action {distance}", file=f)
+            print(f"distance jaw after action {distance_jaw}", file=f)
+            print(f"rotation action {base_action_prime[3*self.joint_num : 3*self.joint_num + 3*self.joint_rotate_num]}", file=f)
+            print(f"distance ooc_r after action {distance_ooc_r}", file=f)
+            print(f"distance ooc_l after action {distance_ooc_l}", file=f)
+            print(f"distance frontalis after action {distance_frontalis}", file=f)
+            print(f"reward {reward}", file=f)
+            print(f"expected_total_steps, step_counter_internal, remaining_steps: {expected_total_steps}, {step_counter_internal}, {remaining_steps}", file=f)
+            
 
     def log_final_distances(self, current_phase=1, distance_jaw=None, distance=None,
                         distance_ooc_l=None, distance_ooc_r=None, distance_frontalis=None):
@@ -7018,97 +6667,3 @@ class m1_vertexMove_Va001(gym.Env):
             f.write(f"Joint Rotate Num: {self.joint_rotate_num}\n")
             f.write(f"Slice Index n: {self.n}\n")
             f.write(f"Full delta_b0_conca length: {len(delta_b0_conca)}\n")    
-
-
-    def apply_smooth_limits_to_actions(self, action, current_phase):
-        """
-        Applies the smooth, time-dependent limit (double sigmoid) to the
-        translational movement components of the action vector (oor, ooc_l, ooc_r, frontalis).
-        Each component uses its own configured UNIT_PRIME for its maximum limit.
-        
-        :param action: The NumPy array representing the current action vector.
-        :return: The clipped action array.
-        """
-
-        # --- 1. Limit Calculation Function ---
-        def get_smooth_limit(unit_prime):
-            """
-            Calculates the maximum allowable magnitude for the action components,
-            eased in over time using a smooth step function, constrained by unit_prime.
-            """
-            # total_growth_steps is the length of the warm-up phase (e.g., 2000 steps).
-            total_growth_steps = self.overlapping_length 
-            
-            # Normalize progress (t is between 0 and 1)
-            t = min(self.step_counter_internal / total_growth_steps, 1.0)
-            
-            # Smooth step (ease-in-out function: t^2 * (3 - 2t))
-            eased_t = t**2 * (3 - 2*t)
-            
-            # Scale the limit: starts at 0.25 * unit_prime and grows up to unit_prime.
-            t_limit = unit_prime * (0.25 + 0.75 * eased_t)
-            
-            # Final limit ensures it never exceeds unit_prime
-            final_limit = min(t_limit, unit_prime)
-            
-            return final_limit
-
-        self.UNIT_PRIME_OOR = self.phase_params['translation_anatomy_limit'][current_phase]
-
-        self.UNIT_PRIME_OOC_L = self.phase_params['ooc_l_translation_limit'][current_phase]
-        self.UNIT_PRIME_OOC_R = self.phase_params['ooc_r_translation_limit'][current_phase] 
-        self.UNIT_PRIME_FRONTALIS = self.phase_params['frontalis_translation_limit'][current_phase]        
-        # print("self.UNIT_PRIME_OOR", self.UNIT_PRIME_OOR)
-        # print("self.UNIT_PRIME_OOC_L", self.UNIT_PRIME_OOC_L)
-        # print("self.UNIT_PRIME_OOC_R", self.UNIT_PRIME_OOC_R)
-        # print("self.UNIT_PRIME_FRONTALIS", self.UNIT_PRIME_FRONTALIS)
-        # --- 2. Calculate the Limit Values (One for each component) ---
-        t_limit_oor = get_smooth_limit(self.UNIT_PRIME_OOR)
-        # print("t_limit_oor", t_limit_oor)
-        t_limit_ooc_l = get_smooth_limit(self.UNIT_PRIME_OOC_L)
-        t_limit_ooc_r = get_smooth_limit(self.UNIT_PRIME_OOC_R)
-        t_limit_frontalis = get_smooth_limit(self.UNIT_PRIME_FRONTALIS)
-
-        # --- 3. Define Index Offsets ---
-        # The action vector is structured as:
-        # [OOR_TRANS] + [JOINT_ROTATE] + [OOC_L_TRANS] + [OOC_R_TRANS] + [FRONTALIS_TRANS] + ...
-
-        # Lengths (each movement has 3 dimensions: X, Y, Z)
-        len_oor = self.joint_num * 3
-        len_rotate = self.joint_rotate_num * 3
-        len_ooc_l = self.joint_ooc_l_num * 3
-        len_ooc_r = self.joint_ooc_r_num * 3
-        len_frontalis = self.joint_frontalis_num * 3
-
-        # --- 4. Apply Clipping to All Segments ---
-
-        # A. OOR / Main Translation 
-        action_oor = action[0:len_oor]
-        action_oor = np.clip(action_oor, -t_limit_oor, t_limit_oor)
-        action[0:len_oor] = action_oor
-
-        # Calculate starting point for the OOC/Frontalis group
-        start_offset = len_oor + len_rotate
-
-        # B. OOC_L Translation
-        start_ooc_l = start_offset
-        end_ooc_l = start_ooc_l + len_ooc_l
-        action_ooc_l = action[start_ooc_l:end_ooc_l]
-        action_ooc_l = np.clip(action_ooc_l, -t_limit_ooc_l, t_limit_ooc_l)
-        action[start_ooc_l:end_ooc_l] = action_ooc_l
-
-        # C. OOC_R Translation
-        start_ooc_r = end_ooc_l
-        end_ooc_r = start_ooc_r + len_ooc_r
-        action_ooc_r = action[start_ooc_r:end_ooc_r]
-        action_ooc_r = np.clip(action_ooc_r, -t_limit_ooc_r, t_limit_ooc_r)
-        action[start_ooc_r:end_ooc_r] = action_ooc_r
-
-        # D. Frontalis Translation
-        start_frontalis = end_ooc_r
-        end_frontalis = start_frontalis + len_frontalis
-        action_frontalis = action[start_frontalis:end_frontalis]
-        action_frontalis = np.clip(action_frontalis, -t_limit_frontalis, t_limit_frontalis)
-        action[start_frontalis:end_frontalis] = action_frontalis
-
-        return action, t_limit_oor            

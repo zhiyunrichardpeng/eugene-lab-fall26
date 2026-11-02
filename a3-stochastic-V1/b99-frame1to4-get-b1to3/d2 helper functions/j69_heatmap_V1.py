@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import glob
 import os
-from paths import results_path, a3_stochastic_relative_path
+from paths import results_path, a3_stochastic_path
 
 # Set paths
 input_folder = str(results_path / "maya_render_output_hub" / "temp_rendered_png_hub" / "face_closeup" / "beauty")
-output_folder = str(a3_stochastic_relative_path / "visualization")
+output_folder = str(a3_stochastic_path / "visualization")
 os.makedirs(output_folder, exist_ok=True)
 output_video_path = os.path.join(output_folder, 'heatmap_video_surprise_v3.mp4')
 

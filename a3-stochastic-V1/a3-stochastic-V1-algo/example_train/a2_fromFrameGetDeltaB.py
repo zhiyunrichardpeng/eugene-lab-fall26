@@ -1,8 +1,454 @@
+# class JawRotationConfig:
+#     def __init__(self):
+#         self.configs = {
+#             '0.99': {
+#                 'degree': 0.04044802306349184,
+#                 'magnitude': 0.000238,
+#                 'expected_steps': 750,
+#                 'result_folder': str(results_path / \job_250528-110109\250528-110124"
+#             },
+#             '0.9': {
+#                 'degree': 0.3651137509011078,
+#                 'magnitude': 0.00009884,
+#                 'expected_steps': 3503,
+#                 'result_folder': str(results_path / \job_250528-132635\250528-132708"
+#             },
+#             '0.8': {
+#                 'degree': 0.601027211885696,
+#                 'magnitude': 0.00010070,
+#                 'expected_steps': 6795,
+#                 'result_folder': str(results_path / \job_250528-155156\250528-155211"
+#             },
+#             '0.5': {
+#                 'degree': 1.5025544699609665,
+#                 'magnitude': 0.00010379,
+#                 'expected_steps': 17798,
+#                 'result_folder': str(results_path / \job_250528-164424\250528-164438"
+#             },
+#             '0.1': {
+#                 'degree': None,  # Not provided in your data
+#                 'magnitude': 0.00009017,
+#                 'expected_steps': 33076,
+#                 'result_folder': None  # Not provided in your data
+#             },
+#             '0.999': {
+#                 'degree': 0.00354841096639418,  # Not provided in your data
+#                 'magnitude': 0.05351417,
+#                 'expected_steps': 75,
+#                 'result_folder': None  # Not provided in your data
+#             },
+#             '0.9999': {
+#                 'degree': 0.000354841096639418,  # Not provided in your data
+#                 'magnitude': 0.05351417,
+#                 'expected_steps': 75,
+#                 'result_folder': None  # Not provided in your data
+#             }
+#         }
+    
+#     def get_config(self, threshold):
+#         """Get configuration for a specific threshold"""
+#         threshold_key = str(threshold)
+#         if threshold_key not in self.configs:
+#             raise ValueError(f"Threshold {threshold} not found in configurations. Available: {list(self.configs.keys())}")
+        
+#         return self.configs[threshold_key]
+    
+
+
+    # def set_current_threshold(self, threshold):
+    #     """Set the current threshold and update parameters"""
+    #     config = self.get_config(threshold)
+        
+    #     self.expected_total_steps_for_jaw = config['expected_steps']
+    #     self.rotation_anatomy_limit = config['magnitude']
+    #     self.degree = config['degree']
+    #     self.result_folder = config['result_folder']
+        
+    #     return self
+
+
+class JawRotationConfig:
+    def __init__(self):
+        self.configs = {
+            # '0.99': {
+            #     'phases': {
+            #         1: {
+            #             'degree': 0.04044802306349184,
+            #             'magnitude': 0.000238,
+            #             'expected_steps': 750,
+            #             'rotation_limit': 0.06112688,  # rotation_anatomy_limit for phase 1
+            #         },
+            #         2: {
+            #             'degree': 0.06112688,  # rotation_anatomy_limit_phase2
+            #             'magnitude': 0.000238,
+            #             'expected_steps': 75,
+            #             'rotation_limit': 0.06112688,
+            #         }
+            #     },
+            #     'result_folder': str(results_path / \job_250528-110109\250528-110124"
+            # },
+            # '0.9': {
+            #     'phases': {
+            #         1: {
+            #             'degree': 0.3651137509011078,
+            #             'magnitude': 0.00009884,
+            #             'expected_steps': 3503,
+            #             'rotation_limit': 0.00047612,
+            #         },
+            #         2: {
+            #             'degree': 1.3210710746775983,
+            #             'magnitude': 0.00009884,
+            #             'expected_steps': 3503,
+            #             'rotation_limit': 0.00047612,
+            #         }
+            #     },
+            #     'result_folder': str(results_path / \job_250528-132635\250528-132708"
+            # },
+            # '0.9999': {
+            #     'phases': {
+            #         1: {
+            #             'degree': 0.000354841096639418,  # Not provided in your data
+            #             # 'magnitude': 0.05351417,
+            #             'expected_steps': 75,
+            #             'rotation_limit': 0.05351417,
+                        
+            #         },
+            #         2: {
+            #             'degree': 0.000354841096639418,  # Not provided in your data
+            #             # 'magnitude': 0.05351417,
+            #             'expected_steps': 75,
+            #             'rotation_limit': 0.05351417,
+            #         },
+            #         3: {
+            #             'degree': 0.000354841096639418,  # Not provided in your data
+            #             # 'magnitude': 0.05351417,
+            #             'expected_steps': 75,
+            #             'rotation_limit': 0.05351417,
+            #         }
+            #     },
+            #     'result_folder': str(results_path / \job_250611-102136\250611-102151"
+            # },
+
+
+            '0.9999': {
+                'phases': {
+                    1: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 75,
+                        'rotation_limit': 0.05351417,
+                        'task': 'Neutral to N'
+                    },
+                    2: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 45,  # 20108/33076 × 75 ≈ 45
+                        'rotation_limit': 0.05351417,
+                        'task': 'N to AA'
+                    },
+                    3: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 61,  # 27029/33076 × 75 ≈ 61
+                        'rotation_limit': 0.05351417,
+                        'task': 'AA to T'
+                    },
+                    4: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 42,  # 18457/33076 × 75 ≈ 42
+                        'rotation_limit': 0.05351417,
+                        'task': 'T to IY'
+                    },
+                    5: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 105,  # 46178/33076 × 75 ≈ 105
+                        'rotation_limit': 0.05351417,
+                        'task': 'IY to V'
+                    },
+                    6: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 48,  # 21298/33076 × 75 ≈ 48
+                        'rotation_limit': 0.05351417,
+                        'task': 'V to N'
+                    },
+                    7: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 136,  # 60141/33076 × 75 ≈ 136
+                        'rotation_limit': 0.05351417,
+                        'task': 'N to Y'
+                    },
+                    8: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 45,  # Same as phase 2 (similar expected_steps)
+                        'rotation_limit': 0.05351417,
+                        'task': 'Y to UW'
+                    }
+                },
+                'result_folder': str(results_path / "job_250611-102136\250611-102151")
+            },
+
+            # '0.999': {
+            #     'phases': {
+            #         1: {
+            #             'degree': 0.000354841096639418,  # Not provided in your data
+            #             # 'magnitude': 0.05351417,
+            #             'expected_steps': 75,
+            #             'rotation_limit': 0.05351417,
+                        
+            #         },
+            #         2: {
+            #             'degree': None,  # Not provided in your data
+            #             # 'magnitude': 0.05351417,
+            #             'expected_steps': 75,
+            #             'rotation_limit': 0.05351417,
+            #         },
+            #         3: {
+            #             'degree': None,  # Not provided in your data
+            #             # 'magnitude': 0.05351417,
+            #             'expected_steps': 75,
+            #             'rotation_limit': 0.05351417,
+            #         }
+            #     },
+            #     'result_folder': str(results_path / \job_250611-105222\250611-105237"
+            # },
+
+            '0.999': {
+                'phases': {
+                    1: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 75,
+                        'rotation_limit': 0.05351417,
+                        'task': 'Neutral to N'
+                    },
+                    2: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 45,
+                        'rotation_limit': 0.05351417,
+                        'task': 'N to AA'
+                    },
+                    3: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 61,
+                        'rotation_limit': 0.05351417,
+                        'task': 'AA to T'
+                    },
+                    4: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 42,
+                        'rotation_limit': 0.05351417,
+                        'task': 'T to IY'
+                    },
+                    5: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 105,
+                        'rotation_limit': 0.05351417,
+                        'task': 'IY to V'
+                    },
+                    6: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 48,
+                        'rotation_limit': 0.05351417,
+                        'task': 'V to N'
+                    },
+                    7: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 136,
+                        'rotation_limit': 0.05351417,
+                        'task': 'N to Y'
+                    },
+                    8: {
+                        'degree': 0.000354841096639418,
+                        'expected_steps': 45,
+                        'rotation_limit': 0.05351417,
+                        'task': 'Y to UW'
+                    }
+                },
+                'result_folder': str(results_path / "job_250611-105222\250611-105237")
+            },
+
+            '0.99': {
+                'phases': {
+                    1: {
+                        'degree': 0.04044802306349184,                        
+                        'expected_steps': 750,
+                        'rotation_limit': 0.000238,
+                        
+                    },
+                    2: {
+                        'degree': 0.06112688,  # rotation_anatomy_limit_phase2
+                        'expected_steps': 260,
+                        'rotation_limit': 0.02019004,
+                    },
+                    3: {
+                        'degree': 0.06112688,  # Not provided in your data
+                        'expected_steps': 260,
+                        'rotation_limit': 0.02019004,
+                    }
+                },
+                'result_folder': str(results_path / "job_250611-132640\250611-132654")
+            },            
+
+            '0.9': {
+                'phases': {
+                    1: {
+                        'degree': 0.3651137509011078,                        
+                        'expected_steps': 3503,
+                        'rotation_limit': 0.00009884,
+                    },
+                    2: {
+                        'degree': 0.9080949540937429,
+                        'expected_steps': 3266 ,
+                        'rotation_limit': 0.00035912,
+                    },
+                    3: {
+                        'degree': -0.1207412343196439,
+                        'expected_steps': 968 ,
+                        'rotation_limit': 0.00037021,
+                    }
+                },
+                'result_folder': None
+            },           
+
+            '0.5': {
+                'phases': {
+                    1: {
+                        'degree': 1.5025544699609665,                        
+                        'expected_steps': 17798,
+                        'rotation_limit': 0.00010379,
+                    },
+                    2: {
+                        'degree': None,
+                        'expected_steps': 17798,
+                        'rotation_limit': 0.00031714,
+                    },
+                    3: {
+                        'degree': None,
+                        'expected_steps': 17798,
+                        'rotation_limit': 0.00031714,
+                    }
+                },
+                'result_folder': None
+            },    
+
+            '0.1': {
+                'phases': {
+                    1: {
+                        'degree': 2.7,                        
+                        'expected_steps': 33076,
+                        'rotation_limit': 0.00009017,
+                        'task': 'Neutral to N',
+                    },
+                    2: {
+                        'degree': 2.760640384121652, # rotate down
+                        'expected_steps': 20108,
+                        'rotation_limit': 0.00015033,
+                        'task': 'N to AA',
+                    },
+                    3: {
+                        'degree': -4.973067617011925, # rotate up
+                        'expected_steps': 27029,
+                        'rotation_limit': 0.00020326,
+                        'task': 'AA to T',
+                    },
+                    4: {
+                        'degree': 0,
+                        'expected_steps': 18457,
+                        'rotation_limit': 0.001,
+                        'task': 'T to IY',
+                    },
+                    5: {
+                        'degree': 1.8, 
+                        'expected_steps': 46178,
+                        'rotation_limit': 4.306e-5,
+                        'task': 'IY to V',
+                    },
+                    6: {
+                        'degree': 3,
+                        'expected_steps': 21298,
+                        'rotation_limit': 1.5412e-4,
+                        'task': 'V to N',
+                    },
+                    7: {
+                        'degree': 0,
+                        'expected_steps': 60141,
+                        'rotation_limit': 0.001,
+                        'task': 'N to Y',
+                    },
+                    8: {
+                        'degree': 2.760640384121652, # rotate down
+                        'expected_steps': 20108,
+                        'rotation_limit': 0.00015033,
+                        'task': 'Y to UW',
+                    }
+                },
+                'result_folder': None
+            },    
+
+        }
+    
+    def get_phase_config(self, threshold, phase):
+        """Get configuration for a specific threshold and phase"""
+        threshold_key = str(threshold)
+        if threshold_key not in self.configs:
+            raise ValueError(f"Threshold {threshold} not found in configurations. Available: {list(self.configs.keys())}")
+        
+        if phase not in self.configs[threshold_key]['phases']:
+            raise ValueError(f"Phase {phase} not found for threshold {threshold}")
+            
+        return self.configs[threshold_key]['phases'][phase]
+
+    def set_current_threshold(self, threshold, phase=1):
+        """Set the current threshold and phase, then update parameters
+        
+        Args:
+            threshold (float/str): The threshold key to use (e.g., '0.99', '0.9')
+            phase (int): The phase number (default: 1)
+        
+        Returns:
+            self: Returns the instance for method chaining
+        """
+        phase_config = self.get_phase_config(threshold, phase)
+        
+        # Update all parameters from the phase configuration
+        self.expected_total_steps_for_jaw = phase_config['expected_steps']
+        self.rotation_anatomy_limit = phase_config['rotation_limit']
+        self.degree = phase_config['degree']
+        self.magnitude = phase_config['magnitude']
+        
+        # Store additional information
+        self.current_threshold = str(threshold)
+        self.current_phase = phase
+        self.result_folder = self.configs[str(threshold)]['result_folder']
+        
+        return self
+
+
+    def get_all_phases(self, threshold):
+        """Return all phases for a threshold in a structured format"""
+        threshold_key = str(threshold)
+        if threshold_key not in self.configs:
+            raise ValueError(f"Threshold {threshold} not found")
+        
+        phases = self.configs[threshold_key]['phases']
+        
+        # Convert to dictionary of parameters by phase
+        params = {
+            'expected_total_steps_for_jaw': {},
+            'rotation_anatomy_limit': {},
+            'unit_prime_jaw_translate': {},
+            'degrees': {},
+            # Add other parameters as needed
+        }
+        
+        for phase_num, config in phases.items():
+            params['expected_total_steps_for_jaw'][phase_num] = config['expected_steps']
+            params['rotation_anatomy_limit'][phase_num] = config['rotation_limit']
+            # params['unit_prime_jaw_translate'][phase_num] = config['unit_prime_jaw_translate']
+            params['degrees'][phase_num] = config['degree']
+        
+        return params
+
 def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFunctional, x_ooc_r_joint_interFunctional, x_frontalis_joint_interFunctional, 
                           x_jaw_joint_rotation_interFunctional, s_next_interFunctional, s_jaw_next_interFunctional, 
                           s_ooc_l_next_interFunctional, s_ooc_r_next_interFunctional, s_frontalis_next_interFunctional,
-                          log_path, job_time_stamp, action_mode, previous_pose_folder, current_threshold, phase_params, 
-                          contract_to_neutral_task, this_task, maya_file_to_open, estimated_steps, estimated_completion_steps_ooc_l, estimated_completion_steps_ooc_r, **argsTypeIn):
+                          log_path, job_time_stamp, action_mode, previous_pose_folder, **argsTypeIn):
 
     j_func = i_func + 1
     print("a2_fromFrameGetDeltaB start")
@@ -22,20 +468,19 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
     import argparse
     import os
-    from paths import a3_stochastic_relative_path, backup_path
     #import numpy as np
 
     import sys
-    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochasstic-V1-algo"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "a1-blendshape-guided-animation-pipeline" / "database"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "300joints_suite_good_old"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "joint_positions" / "joint_position_ooc_l"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "joint_positions" / "joint_position_ooc_r"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "b98-sampling-joint" / "joint_positions" / "joint_position_frontalis"))
-
+    sys.path.insert(0, str(a3_stochastic_path))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "example_train"))
+    sys.path.insert(0, str(a3_stochastic_path / "env_gym"))
+    sys.path.insert(0, str(backup_path / "database"))
+    sys.path.insert(0, str(b98_sampling_joint))
+    sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
+    sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_l"))
+    sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_r"))
+    sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_frontalis"))
+    
 
     import matplotlib.pyplot as plt
     import matplotlib
@@ -99,8 +544,8 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
     # from utils.initialization import create_env
 
     # epoch_number = 500 # also called max_iteration   #800 # 1500  # 800 # 400 + 1500 #1000 # 5 # 1000 # 200 # 1000 # 10000 # 50 # 100  #1000  5000   250
-    buffer_warm_size = 200 # 20 # 20 # 100 #20 # 1000 # 100  # 100 # 1000
-    print_every = 200 # 200 #  this is the print every in log0.txt. imporYtat. put it smaller if in debug. 100 # 2000 # 2000 # 500  # 500 # 10000  # 5000 #1 # 500  # 1000 # 10000 # 5000 # 1000  # 10000*2 # 10000*1  # 50000
+    buffer_warm_size = 1 # 20 # 20 # 100 #20 # 1000 # 100  # 100 # 1000
+    print_every = 200 #  this is the print every in log0.txt. importat. put it smaller if in debug. 100 # 2000 # 2000 # 500  # 500 # 10000  # 5000 #1 # 500  # 1000 # 10000 # 5000 # 1000  # 10000*2 # 10000*1  # 50000
     print_every_forList = 1000  # 1000 # 1 # 1000
     print_continue_num = 1 # 3  # 3 #1 # 3
     # printEvery = 10 # 5 # 1 # 10  # 5
@@ -413,7 +858,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         ################################################
         # 7. Data savings
         #parser.add_argument("--save_folder", type=str, default= "/home/wangwenxuan/gops_idp/gops/results/DSAC2/humanoid_r_0.2_sb_20_si_1_2")
-        parser.add_argument("--save_folder", type=str, default= None)  #str(a3_stochastic_relative_path) / "a3-stochastic-V1-algo", "results", "DSAC_V2_m1_vertexMove_Va001", "rewardOutput_001"
+        parser.add_argument("--save_folder", type=str, default= None)  #str(a3_stochastic_path\results\DSAC_V2_m1_vertexMove_Va001\rewardOutput_001"
         # Save value/policy every N updates
         parser.add_argument("--apprfunc_save_interval", type=int, default=5000)
 
@@ -439,8 +884,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # by default x is for x with lip lower
         # important line. this line decides what target pose the face will deform to.
 
-        target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(j_func))         # x_middleres_OrbicularisOculi
-        target_state_temp_ooc_l = getattr(dataV22, "x_middleres_OrbicularisOculi_l" + str(j_func))         # x_middleres_OrbicularisOculi
+        target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(j_func))        
 
 
         def visualize(vertices, object_name):
@@ -470,18 +914,15 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
             
 
             # Save the plot to a file
-            output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
+            output_folder = str(backup_path / "d83 initiate rest to AU12 smile"
             output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
             plt.savefig(output_file, dpi=300, bbox_inches='tight')
             plt.close()     
 
-        coords_rest_non_concatenate = target_state_temp_ooc_l
+        coords_rest_non_concatenate = target_state_temp
         # coords_rest_non_concatenate = [coords_rest[i:i+3] for i in range(0, len(coords_rest), 3)]
-        # visualize(coords_rest_non_concatenate, "target_neutral")
+        # visualize(coords_rest_non_concatenate, "target")
 
-        # print("passed the test, now quit.")
-        # import sys
-        # sys.exit(0)  # Exit with status code 0  
 
         # temporary = getattr(dataV22, "x_middleres_Jaw" + str(j_func))
         x_conca = [item for sublist in target_state_temp for item in sublist]
@@ -499,12 +940,8 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         x_ooc_l_joint = x_ooc_l_joint_interFunctional
         x_ooc_l_joint_conca = [item for sublist in x_ooc_l_joint for item in sublist]
 
-        
-
         x_ooc_r_joint = x_ooc_r_joint_interFunctional
         x_ooc_r_joint_conca = [item for sublist in x_ooc_r_joint for item in sublist]
-
-        # print("x_ooc_r_joint_conca A2 L511", len(x_ooc_r_joint_conca))
 
         x_frontalis_joint = x_frontalis_joint_interFunctional
         x_frontalis_joint_conca = [item for sublist in x_frontalis_joint for item in sublist]
@@ -530,10 +967,6 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # get ooc_l's rest position
         x_ooc_l_bar =  s_ooc_l_next_interFunctional
         x_ooc_l_bar_conca = [item for sublist in x_ooc_l_bar for item in sublist]
-        print(f"x_ooc_l_bar_conca shape: {np.array(x_ooc_l_bar).shape}")
-        # print(f"x_ooc_l_bar_conca sample: {x_ooc_l_bar_conca[:5]}")  # First 5 elements
-        print(f"x_ooc_l_conca shape: {np.array(x_ooc_l_bar_conca).shape}")
-        # print(f"x_ooc_l_conca sample: {x_ooc_l_conca[:5]}")
 
         # get ooc_r's rest position
         x_ooc_r_bar =  s_ooc_r_next_interFunctional
@@ -621,11 +1054,6 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         max_array_jaw = np.maximum(x_jaw_bar_conca, x_jaw_conca)
         min_array_jaw = np.minimum(x_jaw_bar_conca, x_jaw_conca)  
 
-        # print(f"x_ooc_l_bar_conca shape: {np.array(x_ooc_l_bar_conca).shape}")
-        # print(f"x_ooc_l_bar_conca sample: {x_ooc_l_bar_conca[:5]}")  # First 5 elements
-        # print(f"x_ooc_l_conca shape: {np.array(x_ooc_l_conca).shape}")
-        # print(f"x_ooc_l_conca sample: {x_ooc_l_conca[:5]}")
-
         max_array_ooc_l = np.maximum(x_ooc_l_bar_conca, x_ooc_l_conca)
         min_array_ooc_l = np.minimum(x_ooc_l_bar_conca, x_ooc_l_conca)  
 
@@ -702,7 +1130,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # max_array_jaw = np.maximum(x_jaw_bar_conca, x_jaw_conca)
         # min_array_jaw = np.minimum(x_jaw_bar_conca, x_jaw_conca)  
 
-        # print("vertices dimention N", N, "", "n  joints dimention n is ", n, "", "n  joint_num is ", joint_num, "", "n  vertices_num is ", vertices_num)
+        # print("vertices dimention N", N, "\n  joints dimention n is ", n, "\n  joint_num is ", joint_num, "\n  vertices_num is ", vertices_num)
 
 
         x_bar_conca = np.asarray(x_bar_conca)
@@ -885,28 +1313,19 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # expected_total_steps_for_jaw = 33076 # 3525 # 6742   # by our syn extimation fitting function
         # rotation_anatomy_limit =  0.00009017  #  0.00014464 #  0.000238 # 0.0004 * 0.85 * 0.7 # by our syn optimization results.  # degree per second
 
-        # # Call the helper function to get the values
-        # target_rotation_deg, estimated_steps, r_limit, this_task = calculate_rotation_parameters()
 
-        # # Initialize config with the calculated values
-        # jaw_config = JawRotationConfig(
-        #     target_rotation_deg=target_rotation_deg,
-        #     estimated_steps=estimated_steps,
-        #     r_limit=r_limit,
-        #     task=this_task
-        # )
-        
+        jaw_config = JawRotationConfig()
         
 
         # Switch to different thresholds as needed
         # current_threshold = '0.9'  # Change this to switch between configurations
-        # current_threshold = str(args['distance_jaw_threshold_percentage'])
-        # current_phase = 1  # or 2, or whatever phase you're in
+        current_threshold = str(args['distance_jaw_threshold_percentage'])
+        current_phase = 1  # or 2, or whatever phase you're in
         # Get the configuration for current phase
         # phase_config = jaw_config.get_phase_config(current_threshold, current_phase)
 
         # Load all phases at once
-        # phase_params = jaw_config.get_all_phases(current_threshold)
+        phase_params = jaw_config.get_all_phases(current_threshold)
         # Now you have dictionaries like:
         # phase_params['expected_total_steps_for_jaw'][1]  # Phase 1 value
         # phase_params['expected_total_steps_for_jaw'][2]  # Phase 2 value
@@ -945,7 +1364,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         #     expected_total_steps_for_jaw_phase2 = 33076 
         #     rotation_anatomy_limit_phase2 = 0.00030677
 
-        # print("", "nParameters ready for use in your simulation:")
+        # print("\nParameters ready for use in your simulation:")
         # print(f"expected_total_steps_for_jaw = {expected_total_steps_for_jaw}")
         # print(f"rotation_anatomy_limit = {rotation_anatomy_limit}")
 
@@ -970,7 +1389,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         #     UNIT_PRIME_jaw_translate = rotation_anatomy_limit
 
         
-        rest_pose_rotational_position_degree = -5.2205880446952335  # or 5.43429431912 if using 0.1 case in "C:", "keyLabLocal_D", "a3-stochastic-V1-backup-and-results", "results", "DSAC_V2_m1_vertexMove_Va003", "job_250604-025434", "250604-025448"
+        rest_pose_rotational_position_degree = -5.2205880446952335  # or 5.43429431912 if using 0.1 case in "C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250604-025434\250604-025448"
 
 
         max_expected_work = 0.45 # Joule, set by past accumulated work done by muscle 's  plot.
@@ -990,48 +1409,24 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # max_muscle_work = np.sum(muscle_forces * landmark_displacements)  # For lips
         max_muscle_work = 0.000073209
         obj_full_version = 0
-        adjustment_factor = 1.731 #  * 3
-        if estimated_steps <= 1e-3:
-            if estimated_completion_steps_ooc_r!= 0:
-                estimated_steps_temp = estimated_completion_steps_ooc_r
-            if estimated_completion_steps_ooc_l!= 0:
-                estimated_steps_temp = estimated_completion_steps_ooc_l
 
-            else:
-                estimated_steps_temp = 2000
+        overlapping_length = 2000
 
-        else:
-            estimated_steps_temp = estimated_steps
-        
-        overlapping_length = math.floor(estimated_steps_temp * adjustment_factor * 1 / 35) #make it around 4000  35 is the frames in animation.
-        print("overlapping_length", overlapping_length)
-        # note that this also affact "self.MAX_ABC_EXECUTIONS ", the multiuple phases deformation running for overlap.
-
-        # Correct way to access the task information
-        # phase_number = 1  # The phase you want to access
-        # config_key = '0.9999'  # The configuration key
-
-        # First get the config, then the phase, then the task
-        # jaw_config = JawRotationConfig()
-        # phase_params_tempt = jaw_config.configs[config_key]['phases'][phase_number]
-        # this_task = phase_params_tempt['task']  # This will give you the full string "Neutral to IY"
-
-
-
-        
-        # previous_pose_folder = r"C:", "keyLabLocal_D", "a3-stochastic-V1-backup-and-results", "results", "DSAC_V2_m1_vertexMove_Va003", "job_250428-184837", "250428-184853"
+        this_task = "Neutral to N"
+        contract_to_neutral_task = ['AA to T', 'IY to V', 'N to Y']        
+        # previous_pose_folder = str(results_path / \job_250428-184837\250428-184853"
         debug_mode = False
         
         if debug_mode == True:
             log_plot_every = 2 # 30 1
         else:
-            log_plot_every = math.floor(1870/100)  # take around 100 points to plot. saving time.
+            log_plot_every = math.floor(20000/100)  # take around 100 points to plot. saving time.
         
         only_run_phase1_flag = 0 #   1: only run phase 1.  0: run phase 1 and 2.
 
         run_abc = False
 
-        count_diff_log_interval = math.floor(1e7/40) # 100  # 1500  aim to sample only 20 points will be enough. sample another 20 more for extra.  if debug, can set smaller lie 1500.
+        count_diff_log_interval = math.floor(1e7/40) # 1500  aim to sample only 20 points will be enough. sample another 20 more for extra.  if debug, can set smaller lie 1500.
 
         fowrad_gradient_log_interval = math.floor(1e7/40) # 4e3   same with above
 
@@ -1073,8 +1468,6 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
         angle_needed_rotate = calculate_normal_angle()  
 
-        # print("x_ooc_r_joint_conca A2 L1060", len(x_ooc_r_joint_conca))
-
         args.update({'joint_num': joint_num, 
                 'joint_rotate_num': joint_rotate_num,
                 'joint_ooc_l_num': joint_ooc_l_num,
@@ -1090,10 +1483,6 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
                 # 'UNIT_PRIME_jaw_translate': UNIT_PRIME_jaw_translate,
                 'phase_params': phase_params,
                 'initial_distance': initial_distance,
-                'initial_jaw_distance': initial_jaw_distance,
-                'initial_ooc_l_distance': initial_ooc_l_distance,
-                'initial_ooc_r_distance': initial_ooc_r_distance,
-                'initial_frontalis_distance': initial_frontalis_distance,
 
                 'distance_min': distance_min,
                 'distance_jaw_min': distance_jaw_min,
@@ -1189,10 +1578,9 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
                 # 'UNIT_PRIME_jaw_translate_phase2': UNIT_PRIME_jaw_translate_phase2,
                 'fowrad_gradient_log_interval': fowrad_gradient_log_interval,
                 'overlapping_length': overlapping_length,
-                'maya_file_to_open': maya_file_to_open,
                 })
 
-        print(" ", "n", "n", "n *************************** max_iteration, step_counter_internal_max, initial_distance, distance_min, initial_distance ooc r, distance_min ooc r, initial_distance ooc l, distance_min ooc l,  initial_distance frontalis, distance_min frontalis, UNIT_PRIME", 
+        print(" \n\n\n *************************** max_iteration, step_counter_internal_max, initial_distance, distance_min, initial_distance ooc r, distance_min ooc r, initial_distance ooc l, distance_min ooc l,  initial_distance frontalis, distance_min frontalis, UNIT_PRIME", 
               args['max_iteration'], args['step_counter_internal_max'], initial_distance, args['distance_min'], 
               initial_ooc_r_distance, args['distance_ooc_r_min'], 
               initial_ooc_l_distance, args['distance_ooc_l_min'], 
@@ -1206,11 +1594,11 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         env = create_env(**args)
         args = init_args(env, job_time_stamp, **args)
 
-        code_folder = r"modified after folder f26"
+        code_folder = r"modified after folder d48"
         # code source
 
         with open(args['save_folder'] + "/log" + str(i_func) +".txt", 'w') as f:
-            print("log starts ", "n ", "n", file = f)  
+            print("log starts \n \n", file = f)  
 
 
         with open(args['save_folder'] + "/log" + str(i_func) +".txt", 'a') as f:
@@ -1227,8 +1615,6 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
             print(" initial_frontalis_distance: ", initial_frontalis_distance, file = f)
             print(" distance_frontalis_min: ", args['distance_frontalis_min'], file = f)
             print(" This result is from code folder: ", code_folder, file = f)
-            print(" This task: ", this_task, file = f)
-            print(" overlapping_length: ", overlapping_length, file = f)
 
         #bk8
         # with open(args['save_folder']+ "/log" + str(i_func) +".txt", 'a') as f:
@@ -1238,7 +1624,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # if initial_distance > 10:
         #start_tensorboard(args["save_folder"])
         # Step 0: Create phase manager
-        phase_manager = PhaseManager(max_phases=1)  # Set your actual number of phases        
+        phase_manager = PhaseManager(max_phases=8)  # Set your actual number of phases        
         # Step 1: create algorithm and approximate function
         # alg = create_alg(**args)
         # Step 2: create sampler in trainer
@@ -1287,7 +1673,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # Plot and save training figures
         #plot_all(args["save_folder"])
 
-        # controls the save to csv with the RL data to a folder called "data", and contains around 10 files, from "a3-stochastic-V1-algo", "utils", "tensorboard_setup.py"
+        # controls the save to csv with the RL data to a folder called "data", and contains around 10 files, from "a3-stochastic-V1-algo\utils\tensorboard_setup.py"
         # save_tb_to_csv(args["save_folder"])
 
         # print("Plot & Save are finished!")

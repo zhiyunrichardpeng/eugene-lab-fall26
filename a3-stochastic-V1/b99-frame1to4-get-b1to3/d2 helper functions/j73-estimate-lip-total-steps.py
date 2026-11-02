@@ -11,14 +11,12 @@ from os import path
 # from utils.common_utils import set_seed
 
 import sys
-from paths import a3_stochastic_relative_path, b98_sampling_path, backup_path, a1_blendshape_path
-
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"  / "example_train"))
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
-sys.path.insert(0, str(a1_blendshape_path / "database"))
+sys.path.insert(0, str(a3_stochastic_path))
+sys.path.insert(0, str(a3_stochastic_path / "example_train"))
+sys.path.insert(0, str(a3_stochastic_path / "env_gym"))
+sys.path.insert(0, str(backup_path / "database"))
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
 
 
 sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
@@ -64,10 +62,6 @@ importlib.reload(dataV22_phoneme_Y)
 import dataV22_phoneme_UW
 
 importlib.reload(dataV22_phoneme_UW)
-
-import dataV22_AU0_neutral
-
-importlib.reload(dataV22_AU0_neutral)
 
 class JawAngleCalculator:
     def __init__(self):
@@ -202,23 +196,23 @@ if __name__ == "__main__":
     # x_jaw_pose2 = getattr(dataV22_phoneme_AA, "x_middleres_Jaw" + str(1))
         # temporary = getattr(dataV22, "x_middleres_Jaw" + str(j_func))
 
-    target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(1))                
+    target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(1))                
     x_conca = [item for sublist in target_state_temp for item in sublist]    
     x_conca = np.asarray(x_conca)
     target_state1 = x_conca
     
 
-    target_state_temp = getattr(dataV22_AU0_neutral, "x_middleres_OrbicularisOris" + str(1))                
+    target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(1))                
     x_conca = [item for sublist in target_state_temp for item in sublist]    
     x_conca = np.asarray(x_conca)
     target_state2 = x_conca
     
 
-    # x_jaw_pose1 = getattr(dataV22_AU0_neutral, "x_middleres_Jaw" + str(1))
-    # x_jaw_pose2 = getattr(dataV22_phoneme_V, "x_middleres_Jaw" + str(1))
+    x_jaw_pose1 = getattr(dataV22_phoneme_UW, "x_middleres_Jaw" + str(1))
+    x_jaw_pose2 = getattr(dataV22_phoneme_Y, "x_middleres_Jaw" + str(1))
 
-    # x_jaw_pose1_conca = [item for sublist in x_jaw_pose1 for item in sublist]
-    # x_jaw_pose2_conca = [item for sublist in x_jaw_pose2 for item in sublist]
+    x_jaw_pose1_conca = [item for sublist in x_jaw_pose1 for item in sublist]
+    x_jaw_pose2_conca = [item for sublist in x_jaw_pose2 for item in sublist]
     
     # # DEBUG: Print the raw jaw pose data
     # print(f"Raw x_jaw_pose1 length: {len(x_jaw_pose1_conca)}")
@@ -243,5 +237,5 @@ if __name__ == "__main__":
     method = 'euclidean'
     initial_distance = distance_calculator.calculate_distance(method, calculator.control_vertices_slice(target_state1, vertex_index), calculator.control_vertices_slice(target_state2, vertex_index))           
     print(" initial_distance  ", initial_distance)
-    estimated_completion_steps = math.floor(916 * initial_distance)
-    print("estimated completion steps:", estimated_completion_steps)
+
+    print("estimated completion steps:", math.floor(916 * initial_distance))

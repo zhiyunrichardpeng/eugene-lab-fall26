@@ -92,14 +92,14 @@ if str(REPO_ROOT) not in sys.path:
 # Import Paths and Sub-modules
 # ==============================================================================
 from paths import (
-    a3_stochastic_relative_path,
+    a3_stochastic_path,
     b98_sampling_path,
     a1_blendshape_path,
     backup_path,
     results_path
 )
 
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(b98_sampling_path))
 sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
@@ -154,7 +154,7 @@ PER_FRAME_DEBUG_HISTORY = []        # Per-frame live tracking
 LIVE_DEBUG_FRAMES = []
 LIVE_DEBUG_POSITIONS = []
 
-DEBUG_OUTPUT_DIR = str(a3_stochastic_relative_path / "b99-frame1to4-get-b1to3" / "debug_results")
+DEBUG_OUTPUT_DIR = str(a3_stochastic_path / "b99-frame1to4-get-b1to3" / "debug_results")
 CURRENT_JAW_LOG_FILE = os.path.join(DEBUG_OUTPUT_DIR, "jaw_rotation_dissipation_log.txt")
 TEETH_TONGUE_MESH_PATTERNS = ['*loTeeth01_geo*', '*tongue01_geo*']
 
@@ -311,7 +311,7 @@ def normalize_task_key(task_string):
 
 def load_database():
     """Load the deformation path database and state map from JSON file."""
-    base_dir = str(a3_stochastic_relative_path)
+    base_dir = str(a3_stochastic_path)
     db_path = os.path.join(base_dir, "automation", "deformation_path_db.json")
 
     try:
@@ -668,7 +668,7 @@ def run_deformation_processing_with_dissipation(phonemes_list, log_paths_list,
             os.makedirs(network_hub, exist_ok=True)
             base_path = network_hub
         except Exception:
-            fallback = os.path.join(str(a3_stochastic_relative_path), "combined_deformation_hub")
+            fallback = os.path.join(str(a3_stochastic_path), "combined_deformation_hub")
             os.makedirs(fallback, exist_ok=True)
             base_path = fallback
 

@@ -3,7 +3,7 @@ import maya.mel as mel
 import json
 import os
 import time
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_path
 
 def export_lbs_data():
     """
@@ -11,7 +11,7 @@ def export_lbs_data():
     Run this script inside Maya's Script Editor when the character is in its Neutral/Bind Pose.
     """
     mesh_name = "middleres_Jaw"
-    output_dir = str(a3_stochastic_relative_path / "automation")
+    output_dir = str(a3_stochastic_path / "automation")
     
     # Ensure output directory exists
     if not os.path.exists(output_dir):

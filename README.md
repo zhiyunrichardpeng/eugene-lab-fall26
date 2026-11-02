@@ -24,7 +24,7 @@ python a3-stochastic-V1/automation/run_pipeline_update.py
 > if str(REPO_ROOT) not in sys.path:
 >     sys.path.insert(0, str(REPO_ROOT))
 > 
-> from paths import a3_stochastic_relative_path
+> from paths import a3_stochastic_path
 > ```
 > Alternatively, you can set `PYTHONPATH` to the repository root directory in your environment.
 
@@ -33,7 +33,7 @@ python a3-stochastic-V1/automation/run_pipeline_update.py
 ## Code Setup
 All of the core codebase is located under the `a3-stochastic-V1` directory. As such, it is the base for the rest of the paths defined in `paths.py`: a convenient file to import necessary paths from. It includes:
 ```
-a3_stochastic_relative_path: resolves to <repo_root>\a3-stochastic-V1
+a3_stochastic_path: resolves to <repo_root>\a3-stochastic-V1
 b98_sampling_path 
 b99_frame1to4_path
 a1_blendshape_path

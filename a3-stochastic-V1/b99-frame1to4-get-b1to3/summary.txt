@@ -1,5 +1,55 @@
-backup the codebase before release to undergrad 2026 fall
+run the 8 phases together
 
 
-used the code base from "i73 finished the highreso video next is landmark increase"
+succeed, time 19 hours.
+
+90% acc
+
+
+
+
+side note:
+
+
+Phoneme Transition Durations and Weights:
+delta 1 Neutral to N: 0.23s (13.7%)
+2 N to AA: 0.29s (17.3%)
+3 AA to T: 0.15s (8.9%)
+4 T to IY: 0.22s (13.1%)
+5 IY to V: 0.09s (5.4)%)
+6 V to N: 0.16s (9.5%)
+7 N to Y: 0.02s (1.2%)
+8 Y to UW: 0.52s (31.0%)
+
+Count per phase:
+Neutral to N: 5 checkpoints  (6th frame is the end of N)
+N to AA: 6 checkpoints
+AA to T: 3 checkpoints
+T to IY: 5 checkpoints
+IY to V: 2 checkpoints
+V to N: 4 checkpoints
+N to Y: 1 checkpoints
+Y to UW: 9 checkpoints
+
+Optimized checkpoints: [0, 3678, 13486, 23295, 33104, 36782, 38981, 43381, 47781, 52181, 56582, 58781, 69756, 77738, 88713, 90651, 95820, 100989, 106159, 108097, 135373, 162649, 168034, 189577, 211120, 216505, 237327, 245008, 253787, 262566, 271345, 280124, 288903, 297682, 306462, 314143]
+
+
+note that the 0.1 acc's parameters are generated from deepseek, using 0.9 acc's parameters. and 0.9 acc's parameters are from the linear estimation from the history calculation.
+
+
+result folder:
+C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250620-191133\250620-191151
+
+newest 25-7-14:
+C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003\job_250623-144458\250623-144522
+
+newest: 26-10-30
+\\bbysvm-nfs1.its.sfu.ca\GrUViLab\Data\richardPeng\keyLabCloud\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003_25-7-18\job_250623-144458\250623-144522
+
+animation:
+"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e52 succeed 8 phases not even you 0.9 acc\final result animation.mb"
+and video:
+"C:\Users\zpa18\OneDrive - Simon Fraser University (1sfu)\physically based facial model\animation portfolio\animation 0.9 acc case 8 phonemes V1.mp4"
+
+plot: from slide 99.
 

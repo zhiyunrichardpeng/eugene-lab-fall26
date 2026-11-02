@@ -1,10 +1,9 @@
 import numpy as np
 import pickle
 import os
-from paths import results_path
 
 # Configuration
-base_path =str(results_path / "job_250623-144458/250623-144522")
+base_path = str(results_path / \job_250620-191133\250620-191151"
 only_run_phase1_flag = 0  # Set to 1 to only run phase 1
 
 # Initialize parameters
@@ -24,7 +23,7 @@ for i in range(1, 9):
         
     if i == 1:
         file_path = os.path.join(base_path, f"final_epoch_action_list.pkl")
-        # r"\final_epoch_action_list.pkl",
+        r"\final_epoch_action_list.pkl",
     else:
         file_path = os.path.join(base_path, f"final_epoch_action_list_phase{i}.pkl")
     

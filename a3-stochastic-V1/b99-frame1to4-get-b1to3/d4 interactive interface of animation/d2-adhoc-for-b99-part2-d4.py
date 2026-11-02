@@ -14,9 +14,9 @@ debug_mode_vsCode = 0
 import sys
 from paths import *
 
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(b98_sampling_path))
 sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))

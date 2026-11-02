@@ -1,7 +1,7 @@
 import gym
 import sys
-from paths import a3_stochastic_relative_path
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "m1_vertexMoveEnvironment" / "m1_vertexMove"))
+from paths import a3_stochastic_path
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "m1_vertexMoveEnvironment" / "m1_vertexMove"))
 # import cartpoleV2
 # import gym
 import m1_vertexMove_Va001

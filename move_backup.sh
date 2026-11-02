@@ -1,7 +1,7 @@
 #!/bin/bash
 backup_dir=$1
-dest_dir=$2
-input=$3
+dest_dir="a3-stochastic-V1"
+input=$2
 
 while IFS= read -r filename
 do
@@ -12,15 +12,15 @@ do
         echo "No match found for: $filename in $dest_dir"
         continue
     fi
-    src="$backup_dir$filename"
-
+    src="$backup_dir/$filename"
+    # echo "[ DEBUG ] src file: $src"
     if [ ! -f "$src" ]; then
         echo "No source file in $backup_dir: $filename"
         continue
     fi
 
-    echo "mv \"$src\" \"$dest\""
-    # mv "$src" "$dest"
+    # echo "mv \"$src\" \"$dest\""
+    mv "$src" "$dest"
 done < "$input"
 
 echo "Done"

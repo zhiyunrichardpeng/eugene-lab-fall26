@@ -8,7 +8,7 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import csv
 import os
-from paths import a3_stochastic_relative_path
+from paths import a3_stochastic_path
 
 try:
     import matplotlib.pyplot as plt
@@ -119,7 +119,7 @@ def main():
     start_frame = int(cmds.playbackOptions(query=True, minTime=True))
     end_frame = int(cmds.playbackOptions(query=True, maxTime=True))
     
-    output_dir = str(a3_stochastic_relative_path / "visualization")
+    output_dir = str(a3_stochastic_path / "visualization")
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         

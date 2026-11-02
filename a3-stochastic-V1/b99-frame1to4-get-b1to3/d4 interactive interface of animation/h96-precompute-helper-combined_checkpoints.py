@@ -18,10 +18,10 @@ import re
 import pickle
 import math
 import numpy as np
-from paths import a3_stochastic_relative_path, results_path
+from paths import a3_stochastic_path, results_path
 
 # --- PATH CONFIGURATION ---
-BASE_DIR = str(a3_stochastic_relative_path)
+BASE_DIR = str(a3_stochastic_path)
 DB_PATH = os.path.join(BASE_DIR, "automation", "deformation_path_db.json")
 OUTPUT_BASE_PATH =str(results_path / "sequence_combined_deformation_parameters_hub")
 

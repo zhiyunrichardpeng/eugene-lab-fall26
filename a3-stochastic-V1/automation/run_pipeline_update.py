@@ -180,10 +180,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from paths import a3_stochastic_relative_path, backup_path, results_path
+from paths import a3_stochastic_path, backup_path, results_path
 
 
-sys.path.insert(0, str(a3_stochastic_relative_path))
+sys.path.insert(0, str(a3_stochastic_path))
 from automation.checkpoint_generator import run_deformation_processing
 
 # ==============================================================================

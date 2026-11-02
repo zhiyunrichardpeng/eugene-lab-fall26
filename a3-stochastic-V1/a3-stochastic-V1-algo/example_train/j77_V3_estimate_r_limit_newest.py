@@ -10,7 +10,7 @@ def calculate_rotation_parameters():
     import sys
     from os import path
     import importlib
-    from paths import b98_sampling_path, a3_stochastic_relative_path, a1_blendshape_path, backup_path, results_path
+    from paths import b98_sampling_path, a3_stochastic_path, a1_blendshape_path, backup_path, results_path
     empirical_factor = 9.95657316385
     # empirical_factor = 85/48.52657980700467 # 9.95657316385
     # empirical_factor_ooc_l = 40/29.123996797586287
@@ -44,9 +44,9 @@ def calculate_rotation_parameters():
     maya_file_to_open = r"C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb"
 
     # --- System Paths and Module Imports ---
-    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
-    sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
     sys.path.insert(0, str(a1_blendshape_path / "database"))
     sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
     sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))

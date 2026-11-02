@@ -291,12 +291,12 @@ def run_standalone_experiment():
     print("\n=== Running Standalone Analytical Gradient Experiment (Set B) ===")
     import time
     import os
-    from paths import a3_stochastic_relative_path
+    from paths import a3_stochastic_
     
     # 1. Initialize the calculator with your REAL Maya data
     calc = AnalyticalGradientCalculator(
-        str(a3_stochastic_relative_path / "automation" / "oor_bind_pose.json"),
-        str(a3_stochastic_relative_path / "automation" / "oor_skin_weights.json")
+        str(a3_stochastic_" / "oor_bind_pose.json"),
+        str(a3_stochastic_" / "oor_skin_weights.json")
     )
     
     # 2. Create a challenging target mesh (e.g. moving all landmarks by some known amounts)

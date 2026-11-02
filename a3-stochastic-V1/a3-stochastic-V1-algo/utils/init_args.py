@@ -4,7 +4,7 @@ import json
 import os
 import torch
 import warnings
-from paths import a3_stochastic_relative_path, results_path
+from paths import a3_stochastic_path, results_path
 from .common_utils import change_type, seed_everything
 
 

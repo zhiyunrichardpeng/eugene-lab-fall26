@@ -19,7 +19,7 @@ import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import os
-from paths import a3_stochastic_relative_path, results_path
+from paths import a3_stochastic_path, results_path
 
 # ── SIGGRAPH TOG style ──────────────────────────────────────────────
 matplotlib.rcParams['font.family'] = 'serif'
@@ -29,7 +29,7 @@ matplotlib.rcParams['font.size'] = 11
 
 # ── Paths ───────────────────────────────────────────────────────────
 csv_path =str(results_path / "job_260508-130429/260508-130439/objective_terms_data_diff.csv")
-output_dir = str(a3_stochastic_relative_path / "visualization")
+output_dir = str(a3_stochastic_path / "visualization")
 os.makedirs(output_dir, exist_ok=True)
 
 # ── Load data ───────────────────────────────────────────────────────

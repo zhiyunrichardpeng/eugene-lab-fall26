@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 import math
-from paths import a3_stochastic_relative_path, results_path
+from paths import a3_stochastic_path, results_path
 
 def create_comparison_video():
     seq1_dir =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/muscle_closeup/beauty")
@@ -11,7 +11,7 @@ def create_comparison_video():
     seq1_prefix = "u54_test_V2_1_"
     seq2_prefix = "u55_test_V2_1_"
     
-    output_dir = str(a3_stochastic_relative_path / "visualization")
+    output_dir = str(a3_stochastic_path / "visualization")
     os.makedirs(output_dir, exist_ok=True)
     
     output_path = os.path.join(output_dir, "overlap_comparison_heatmap_2.58s_v2.mp4")
