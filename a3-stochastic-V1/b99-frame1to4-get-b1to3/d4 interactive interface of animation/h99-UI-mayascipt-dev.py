@@ -141,8 +141,8 @@ except ImportError as e:
 # ==============================================================================
 ENABLE_FEEDBACK_CONTROL = True      # Enable Closed-Loop Feedback Control
 ERROR_DISSIPATION_RATE = 0.5        # alpha: fraction of error corrected (0.0 to 1.0)
-OVERLAP_RATIO = 0.4                 # 40% coarticulation overlap between phases
-BASE_TRANSITION_FRAMES = 35         # Baseline frame duration per transition
+OVERLAP_RATIO = 0.1                 # 40% coarticulation overlap between phases
+BASE_TRANSITION_FRAMES = 50         # Baseline frame duration per transition
 DEBUG_ENABLED = True
 TEETH_HACK_ENABLED = True
 teeth_correction_weight = 0.25      # 25% jaw rotation on lower teeth/tongue
@@ -1224,7 +1224,7 @@ if __name__ == '__main__':
     TEST_SEQ = "0 to V to AA to V to 0"
     print(f"[DEV SANDBOX] Starting execution for: {TEST_SEQ}")
     try:
-        run_dev_pipeline(TEST_SEQ, start_frame=14, overlap_ratio=0.4)
+        run_dev_pipeline(TEST_SEQ, start_frame=14, overlap_ratio=OVERLAP_RATIO)
     except Exception as e:
         print(f"[DEV SANDBOX ERROR] {e}")
         import traceback
