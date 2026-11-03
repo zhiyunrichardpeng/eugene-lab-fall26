@@ -7,11 +7,6 @@ sys.path.insert(0, str(a1_blendshape_path / "database"))
 
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
-
-
-# print("debug plot l7")
-# print("loadPathRotation", loadPathRotation)
-
 run_c96_finalized_datav21generating = 1
 run_a2_fromFrameGetDeltaB = 0
 run_both = 0
@@ -39,7 +34,6 @@ parser.add_argument("--max_iteration", type=int, default=12000)
 # Key Parameters for Richard's
 parser.add_argument("--step_counter_internal_max", type=int, default=100, help="id of environment")
 # this many steps
-# parser.add_argument("--distance_min", type=float, default=0.05, help="DSAC_V2 or DSAC_V1")
 #set algorithm default to DSAC_V2, but it can be replaced by DSAC_V1 if you want to use the old version of DSAC.
 parser.add_argument("--num_eval_episode", type=int, default=5)
 parser.add_argument("--eval_interval", type=int, default=100)
@@ -63,13 +57,6 @@ if 1 == run_c96_finalized_datav21generating:
     import c96_finalized_datav21generating_for_b98 as c96_finalized_datav21generating_for_b98
     c96_finalized_datav21generating_for_b98.c96_finalized_datav21generating(keyframe_num)
 
-# from PyQt5.QtCore import Qt, QCoreApplication
-# from PyQt5.QtWidgets import QApplication, QLabel        
-
-# # Set the attribute before creating the QApplication
-# QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
-
-# app = QApplication(sys.argv)
 
 print("debug plot l69")
 
