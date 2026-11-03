@@ -1,14 +1,22 @@
 import datetime
 import os
 import sys
+from paths import (
+    a3_stochastic_path,
+    b98_sampling_path,
+    a1_blendshape_path,
+    backup_path,
+    results_path
+)
+
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "example_train"))
-sys.path.insert(0, str(backup_path / "database")
-sys.path.insert(0, r"C:\Users\zpa18\a3-stochastic-V1\b98-sampling-joint")
+sys.path.insert(0, str(backup_path / "database"))
+sys.path.insert(0, str(b98_sampling_path))
 sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_l"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_r"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_frontalis"))
-sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub")
+sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
 
 
@@ -106,7 +114,7 @@ importlib.reload(dataV22_for_rest_adhoc)
 
 def main():
     # Your code here
-    loadPathRotation = r"D:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va002\job_240612-203822 rotation 0.05\240612-203830"
+    loadPathRotation = str(results_path / "job_240612-203822 rotation 0.05" / "240612-203830")
 
     if 1==run_a2_fromFrameGetDeltaB:
         if 1 == run_both:

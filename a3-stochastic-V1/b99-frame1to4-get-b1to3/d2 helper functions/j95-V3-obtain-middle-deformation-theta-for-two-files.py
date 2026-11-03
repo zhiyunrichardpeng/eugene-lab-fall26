@@ -1,9 +1,9 @@
 import numpy as np
 import pickle
 import os
-
+from paths import results_path
 # Configuration
-base_path = str(results_path / \job_250620-191133\250620-191151"
+base_path = str(results_path / "job_250620-191133" / "250620-191151")
 only_run_phase1_flag = 0  # Set to 1 to only run phase 1
 
 # Initialize parameters

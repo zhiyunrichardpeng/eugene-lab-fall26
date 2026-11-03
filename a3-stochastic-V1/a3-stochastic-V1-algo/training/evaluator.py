@@ -11,6 +11,14 @@ from utils.initialization import create_env
 from utils.common_utils import set_seed
 
 import sys
+from paths import (
+    a3_stochastic_path,
+    b98_sampling_path,
+    a1_blendshape_path,
+    backup_path,
+    results_path
+)
+
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
@@ -1713,29 +1721,23 @@ class Evaluator:
                 self.log_computation_time(self.phase_manager.current_phase)
 
                 # Calculate and log Maya distance
-                if phase == 1:
-                    target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    
-                if phase == 2:
-                    target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))        
-
-                if phase == 3:
-                    target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))        
-
-                if phase == 4:
-                    target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))        
-
-                if phase == 5:
-                    target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    
-                if phase == 6:
-                    target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))        
-
-                if phase == 7:
-                    target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))        
-
-                if phase == 8:
-                    target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                match phase:
+                    case 1:
+                        target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                    case 2:
+                        target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                    case 3:
+                        target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                    case 4:
+                        target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                    case 5:
+                        target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                    case 6:
+                        target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                    case 7:
+                        target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                    case 8:
+                        target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))        
 
 
                 x_conca = np.asarray([item for sublist in target_state_temp for item in sublist])

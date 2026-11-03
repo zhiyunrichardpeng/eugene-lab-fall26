@@ -471,6 +471,14 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
     #import numpy as np
 
     import sys
+    from paths import (
+    a3_stochastic_path,
+    b98_sampling_path,
+    a1_blendshape_path,
+    backup_path,
+    results_path
+)
+
     sys.path.insert(0, str(a3_stochastic_path))
     sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "example_train"))
     sys.path.insert(0, str(a3_stochastic_path / "env_gym"))
@@ -914,7 +922,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
             
 
             # Save the plot to a file
-            output_folder = str(backup_path / "d83 initiate rest to AU12 smile"
+            output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
             output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
             plt.savefig(output_file, dpi=300, bbox_inches='tight')
             plt.close()     

@@ -11,6 +11,14 @@ from os import path
 # from utils.common_utils import set_seed
 
 import sys
+from paths import (
+    a3_stochastic_path,
+    b98_sampling_path,
+    a1_blendshape_path,
+    backup_path,
+    results_path
+)
+
 sys.path.insert(0, str(a3_stochastic_path))
 sys.path.insert(0, str(a3_stochastic_path / "example_train"))
 sys.path.insert(0, str(a3_stochastic_path / "env_gym"))
