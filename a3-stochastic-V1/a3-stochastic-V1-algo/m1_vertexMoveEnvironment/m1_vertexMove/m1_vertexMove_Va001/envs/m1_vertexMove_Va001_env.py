@@ -1984,98 +1984,6 @@ class m1_vertexMove_Va001(gym.Env):
                     # Split quadrangle into two triangles: [v0, v1, v2], [v0, v2, v3]
                     return [[element[0], element[1], element[2]], [element[0], element[2], element[3]]]
 
-                # Function to compute deformation gradient F and area A
-                # def compute_F_and_A(vertices_rest, vertices_deformed, element):
-                #     # Rest pose edges
-                #     X = vertices_rest[element]
-                
-                # def compute_F_and_A(vertices_rest, vertices_deformed, triangle):
-                #     print(f"\n=== DEBUG: compute_F_and_A ===")
-                #     print(f"vertices_rest shape: {vertices_rest.shape}")
-                #     print(f"vertices_deformed shape: {vertices_deformed.shape}")
-                #     print(f"triangle: {triangle}")
-                #     print(f"Max element index in triangle: {max(triangle)}")
-                    
-                #     # Check if any triangle indices are out of bounds
-                #     for i, element in enumerate(triangle):
-                #         if element >= len(vertices_rest):
-                #             print(f"ERROR: Triangle index {i} has invalid element {element} (max allowed: {len(vertices_rest)-1})")
-                    
-                #     X = vertices_rest[element]  # This is where the error occurs   
-
-                #     E1_rest = X[1] - X[0]
-                #     E2_rest = X[2] - X[0]
-                    
-                #     # Deformed pose edges
-                #     x = vertices_deformed[element]
-                #     E1_deformed = x[1] - x[0]
-                #     E2_deformed = x[2] - x[0]
-                    
-
-                #     # debug the "F = np.column_stack((E1_deformed, E2_def" dimonsion error
-                #     # log_path = str(results_path / \240423-150653 log files\log_debug25-2-20.txt"
-
-
-                #     # new_coords_for_energy = new_coords
-                #     # with open(log_path, 'w') as f:
-                #     #     # Print new_coords_for_energy
-                #     #     print("new_coords_for_energy shape:", np.shape(new_coords_for_energy), file=f)
-                #     #     print("new_coords_for_energy first 5 elements:\n", new_coords_for_energy[:5], file=f)
-                        
-                #     #     # Print coords_rest
-                #     #     print("\ncoords_rest shape:", np.shape(coords_rest), file=f)
-                #     #     print("coords_rest first 5 elements:\n", coords_rest[:5], file=f)
-
-                #     #     # Print self.elements
-                #     #     print("\nself.elements shape:", np.shape(self.elements), file=f)
-                #     #     print("self.elements first 5 elements:\n", self.elements[:5], file=f)
-
-                #     #     # Compute deformation vectors
-                #     #     # E1_deformed = new_coords_for_energy[self.elements[:, 1]] - new_coords_for_energy[self.elements[:, 0]]
-                #     #     # E2_deformed = new_coords_for_energy[self.elements[:, 2]] - new_coords_for_energy[self.elements[:, 0]]
-                        
-                #     #     # E1_rest = coords_rest[self.elements[:, 1]] - coords_rest[self.elements[:, 0]]
-                #     #     # E2_rest = coords_rest[self.elements[:, 2]] - coords_rest[self.elements[:, 0]]
-
-                #     #     # Print E1_deformed and E2_deformed
-                #     #     print("\nE1_deformed shape:", np.shape(E1_deformed), file=f)
-                #     #     print("E1_deformed first 1 elements:\n", E1_deformed, file=f)
-                        
-                #     #     print("\nE2_deformed shape:", np.shape(E2_deformed), file=f)
-                #     #     print("E2_deformed first 1 elements:\n", E2_deformed, file=f)
-
-                #     #     # Print E1_rest and E2_rest
-                #     #     print("\nE1_rest shape:", np.shape(E1_rest), file=f)
-                #     #     print("E1_rest first 1 elements:\n", E1_rest, file=f)
-
-                #     #     print("\nE2_rest shape:", np.shape(E2_rest), file=f)
-                #     #     print("E2_rest first 1 elements:\n", E2_rest, file=f)
-
-                #     #     # Check if any of these arrays are empty (which might cause the np.cross error)
-                #     #     if E1_deformed.size == 0 or E2_deformed.size == 0:
-                #     #         print("\nERROR: One of the deformation vectors (E1_deformed, E2_deformed) is empty!", file=f)
-
-                #     #     if E1_rest.size == 0 or E2_rest.size == 0:
-                #     #         print("\nERROR: One of the rest vectors (E1_rest, E2_rest) is empty!", file=f)
-
-                #     #     # Try computing the transformation matrix F and catch errors
-                #     #     try:
-                #     #         F = np.column_stack((E1_deformed, E2_deformed, np.cross(E1_deformed, E2_deformed))) @ \
-                #     #             np.linalg.inv(np.column_stack((E1_rest, E2_rest, np.cross(E1_rest, E2_rest))))
-                #     #         print("\nF matrix computed successfully!", file=f)
-                #     #     except Exception as e:
-                #     #         print("\nERROR while computing F:", str(e), file=f)
-
-
-
-                #     # Deformation gradient F (3x3 matrix, approximate plane deformation)
-                #     F = np.column_stack((E1_deformed, E2_deformed, np.cross(E1_deformed, E2_deformed))) @ \
-                #         np.linalg.inv(np.column_stack((E1_rest, E2_rest, np.cross(E1_rest, E2_rest))))
-                    
-                #     # Area of the triangle (half the magnitude of the cross product of the two edges)
-                #     area = 0.5 * np.linalg.norm(np.cross(E1_rest, E2_rest))
-                    
-                #     return F, area
 
                 def compute_F_and_A(vertices_rest, vertices_deformed, triangle):
                     # print(f"\n=== DEBUG: compute_F_and_A ===")
@@ -2236,13 +2144,6 @@ class m1_vertexMove_Va001(gym.Env):
             s_ooc_l_next = new_coords_ooc_l
             s_ooc_r_next = new_coords_ooc_r
             s_frontalis_next = new_coords_frontalis
-
-            # if "translation" != self.action_mode:
-            #     s_jaw_next = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
-            # else:
-            #     s_jaw_next = s_jaw_prime
-            # pass
-
         else:
             # Action is invalid, return current state
 
@@ -2266,82 +2167,6 @@ class m1_vertexMove_Va001(gym.Env):
         
         method = 'euclidean'
         distance = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(self.target_state, self.vertex_index), s_next)           
-
-        # def plot_adhoc():
-
-        #     def visualize(vertices, object_name):
-        #         """
-        #         Visualize the vertices, the sampled joint positions, and the surface mesh.
-
-        #         Args:
-        #         - vertices (list of lists): List of 3D coordinates of vertices.
-        #         - faces (list of lists): List of indices defining the faces of the mesh.
-        #         - sampled_points (list of lists): List of 3D coordinates of sampled joint positions.
-        #         """
-        #         fig = plt.figure()
-        #         ax = fig.add_subplot(111, projection='3d')
-
-        #         # Plot the vertices
-        #         vertices_np = np.array(vertices)
-        #         ax.scatter(vertices_np[:, 0], vertices_np[:, 1], vertices_np[:, 2], c='b', marker='o', s=1, label='Vertices')
-
-        #         # Set the view angle
-        #         ax.view_init(elev=(180+30), azim=0, roll=90)  # Change these values to set the desired view
-
-        #         ax.set_xlabel('X Label')
-        #         ax.set_ylabel('Y Label')
-        #         ax.set_zlabel('Z Label')
-        #         ax.legend()
-        #         # plt.show()
-                
-
-        #         # Save the plot to a file
-        #         output_folder = r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\backup\e68 backed to e71 no speed up and visualize debug"
-        #         output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
-        #         plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        #         plt.close()        
-
-        #     s_jaw_next_full = self.returnCoordinates("middleres_Jaw")
-        #     coords_rest = s_jaw_next_full # np.array(dataV22.x_middleres_OrbicularisOris0)
-            
-        #     if current_phase == 3:
-        #         x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
-        #         x_jaw_conca = [item for sublist in x_jaw for item in sublist]
-        #         target_jaw_state_adhoc = np.asarray(x_jaw_conca)
-        #         s_jaw_next_adhoc = s_jaw_next_full
-        #         # s_jaw_next_adhoc_conca = [item for sublist in s_jaw_next_adhoc for item in sublist]
-        #         # s_jaw_next_adhoc_conca = np.asarray(s_jaw_next_adhoc_conca)
-
-        #         # distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_adhoc_conca, self.vertex_jaw_index))
-        #         method = 'euclidean'
-        #         distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(self.target_jaw_state, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_adhoc, self.vertex_jaw_index))
-        #         print("m1 line 2199, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
-
-
-        #     # call:
-        #     # new_coords_for_energy_non_concatenate = [new_coords_for_energy[i:i+3] for i in range(0, len(new_coords_for_energy), 3)]
-        #     coords_rest_concatenate = [coords_rest[i:i+3] for i in range(0, len(coords_rest), 3)]
-        #     # x_bar_conca_rest_adhoc = [x_bar_conca_rest_adhoc[i:i+3] for i in range(0, len(x_bar_conca_rest_adhoc), 3)]
-
-        #     # rest_vertices = np.array(dataV22.x_middleres_OrbicularisOris0)
-        #     visualize(coords_rest_concatenate, "phase3 jaw plot")                    
-
-
-        # if current_phase == 3:
-        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
-        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
-        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
-        #     # s_jaw_next_adhoc = s_jaw_next_full
-        #     # s_jaw_next_adhoc_conca = [item for sublist in s_jaw_next_adhoc for item in sublist]
-        #     # s_jaw_next_adhoc_conca = np.asarray(s_jaw_next_adhoc_conca)
-        #     method = 'euclidean'
-
-        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), s_jaw_next)
-        #     print("m1 line 2220, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
-
-
-
-
         # method = 'euclidean'
         distance_jaw = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(self.target_jaw_state, self.vertex_jaw_index), s_jaw_next)
 

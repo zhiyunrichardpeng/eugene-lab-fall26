@@ -22,7 +22,7 @@ from paths import (
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
-sys.path.insert(0, str(a1_blenshape_path / "database"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
 import importlib
@@ -68,8 +68,6 @@ import matplotlib.pyplot as plt
 import csv
 import pickle
 from utils.phase_manager import PhaseManager
-
-
 
 class Evaluator:
     def __init__(self, phase_manager=None, index=0, history_size=300, exploration_prob=0.2, **kwargs):
@@ -902,14 +900,6 @@ class Evaluator:
                     self.term_history_backward['strain'].append(strain_contribution)
                     self.term_history_backward['muscle'].append(muscle_contribution/enlarge_contribution_factor)
                     
-                    # # Write to log file
-                    # with open(os.path.join(self.save_folder, "objective_terms_log_backward.txt"), 'a') as f:
-                    #     f.write(f"Step: {self.step_objective}\n")
-                    #     f.write(f"Distance Contribution: {distance_contribution:.6f}\n")
-                    #     f.write(f"Strain Contribution: {strain_contribution:.6f}\n")
-                    #     f.write(f"Muscle Contribution: {muscle_contribution:.6f}\n")
-                    #     f.write("-"*50 + "\n")
-
                                 
                     # Check if file exists to determine if we need headers
                     file_exists = os.path.exists(os.path.join(self.save_folder, "objective_terms_log_backward.csv"))
@@ -979,20 +969,11 @@ Copilot input:
 Swap the gradient computation while preserving the deprecated branch’s phase transitions and payload format. 
 Keep recording the trajectories, but consider plotting them after a transition completes rather than repeatedly during optimization. 
 That separates visualization cost from gradient cost and preserves the plots you care about.
-
 """
     def compute_single_gradient(self, position, target, positions_lip_joint, step_t1, 
                                 object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
         # Initialize a cumulative gradient to sum over all steps
         cumulative_gradient = np.zeros_like(position, dtype=np.float32)        
-
-        # Initialize a dictionary to store gradient magnitudes for each object_name if not already initialized
-        # if not hasattr(self, 'gradient_magnitudes_dict'):
-        #     self.gradient_magnitudes_dict = {}
-
-        # # Ensure the object_name key exists in the dictionary
-        # if object_name not in self.gradient_magnitudes_dict:
-        #     self.gradient_magnitudes_dict[object_name] = []    
         # Get current phase
         current_phase = self.phase_manager.current_phase
         # Ensure the gradient_magnitudes dictionary has the object_name key
@@ -1019,20 +1000,21 @@ That separates visualization cost from gradient cost and preserves the plots you
 
                 method = 'euclidean'
                 scaling_factor = 1 # 9.62e-4  # 1 # 9.62e-4
-                # assume the velocity is the current step's this current landmark's velocity, not the average from the past.
-                # final unit: m/s
-                # scaling_factor = 0.0962  # 1 Maya unit = 0.0962 cm   = 0.000962 m
+                """
+                assume the velocity is the current step's this current landmark's velocity, not the average from the past.
+                final unit: m/s
+                scaling_factor = 0.0962  # 1 Maya unit = 0.0962 cm   = 0.000962 m
 
-                # originally, strain_distance = ... this equation is to calculate AA to rest process. In this case, target pose is "neutral pose".
-                # so when the current pose is at the begining status, the strain distance is maximum. and distance_remain = strain_distance.
-                # at the end, the strain distance is minimum.
+                originally, strain_distance = ... this equation is to calculate AA to rest process. In this case, target pose is "neutral pose".
+                so when the current pose is at the begining status, the strain distance is maximum. and distance_remain = strain_distance.
+                at the end, the strain distance is minimum.
 
-                # after some exploration, we assume, strain energy at all of the target pose, be it "neutral pose", "smile", or any other pose, is the minimum strain energy.
-                # this allows the gradient, 3 composnents of the gradient, work together to converge, in a general way.
+                after some exploration, we assume, strain energy at all of the target pose, be it "neutral pose", "smile", or any other pose, is the minimum strain energy.
+                this allows the gradient, 3 composnents of the gradient, work together to converge, in a general way.
 
-                # Case study 2: from neutral pose to smile. The strain energy, we assume it is very large at the neutral pose. and when it deforms to the target pose,
-                # the strain energy reaches the minimum. So "distance_remain = strain_distance" still holds.
-
+                Case study 2: from neutral pose to smile. The strain energy, we assume it is very large at the neutral pose. and when it deforms to the target pose,
+                the strain energy reaches the minimum. So "distance_remain = strain_distance" still holds.
+                """
                 strain_distance = self.distance_calculator.calculate_distance(method, target, pos_forward)  * scaling_factor         
                 strain_distance_back = self.distance_calculator.calculate_distance(method, target, pos_backward)   * scaling_factor        
                 
@@ -1043,8 +1025,6 @@ That separates visualization cost from gradient cost and preserves the plots you
                 landmark_velocities = epsilon * scaling_factor_adhoc / (  (35/30) /self.expected_total_steps)   #  epsilon per step.  convert to epsilon per s , 
 
                 if self.obj_full_version == 1:   
-                    # landmark_displacements = strain_distance
-                    # landmark_displacements_back = strain_distance_back
                     landmark_displacements = self.distance_calculator.calculate_distance(method, self.x_bar_j_selected[i], pos_forward[i])   * scaling_factor         
                     landmark_displacements_back = self.distance_calculator.calculate_distance(method, self.x_bar_j_selected[i], pos_backward[i])  * scaling_factor         
                     scale_factor_reward = 1e8
@@ -1057,58 +1037,61 @@ That separates visualization cost from gradient cost and preserves the plots you
                     
                 def calculate_muscle_force(activation, original_length, landmark_translations, landmark_velocities, 
                                         F_max, l_0, sigma, v_max, K, a, b, k_PEE, k_SEE, l_tendon):
-                    # Debug file setup
-                    # debug_file = os.path.join(self.save_folder, "muscle_force_debug.txt")
-                    
-                    # with open(debug_file, 'a') as f:
-                    #     f.write(f"\n=== Muscle Force Calculation Debug ===\n")
-                    #     f.write(f"self.step_objective: {self.step_objective}\n")
-                        
-                    #     # Original debug info
-                    #     f.write(f"Original landmark_translations (before scaling): {landmark_translations}\n")
-                    #     f.write(f"Type: {type(landmark_translations)}, Shape: {np.array(landmark_translations).shape if hasattr(landmark_translations, 'shape') else 'N/A'}\n")
-                        
-                    #     # Convert all units to cm
-                    #     scaling_factor_adhoc = 9.62e-4
-                    #     landmark_translations = np.array(landmark_translations) * scaling_factor_adhoc * 100  
-                    #     landmark_velocities = np.array(landmark_velocities) * scaling_factor_adhoc * 100  
-                    #     original_length = original_length * 100 # m to cm
-                    #     l_0 = l_0 * 100
 
-                    #     # Debug scaled values
-                    #     f.write(f"Scaled landmark_translations: {landmark_translations}\n")
+                    # Viktor: This was commented out but it may be useful?
+                    if self.debug_mode_vsCode == 1:
+                        # Debug file setup
+                        debug_file = os.path.join(self.save_folder, "muscle_force_debug.txt")
                         
-                    #     # Try both approaches and compare
-                    #     try:
-                    #         # Original approach with np.mean()
-                    #         avg_with_mean = np.mean(landmark_translations)
-                    #         f.write(f"Average with np.mean(): {avg_with_mean}\n")
+                        with open(debug_file, 'a') as f:
+                            f.write(f"\n=== Muscle Force Calculation Debug ===\n")
+                            f.write(f"self.step_objective: {self.step_objective}\n")
                             
-                    #         # Direct approach (assuming scalar)
-                    #         avg_direct = landmark_translations # landmark_translations[0] if len(landmark_translations) == 1 else landmark_translations
-                    #         f.write(f"Average direct access: {avg_direct}\n")
+                            # Original debug info
+                            f.write(f"Original landmark_translations (before scaling): {landmark_translations}\n")
+                            f.write(f"Type: {type(landmark_translations)}, Shape: {np.array(landmark_translations).shape if hasattr(landmark_translations, 'shape') else 'N/A'}\n")
                             
-                    #         # Compare results
-                    #         if np.allclose(avg_with_mean, avg_direct):
-                    #             f.write("Results MATCH - safe to remove np.mean()\n")
-                    #             avg_translation = avg_direct  # Use the faster approach
-                    #         else:
-                    #             f.write("Results DIFFER - keep np.mean()\n")
-                    #             avg_translation = avg_with_mean
+                            # Convert all units to cm
+                            scaling_factor_adhoc = 9.62e-4
+                            landmark_translations = np.array(landmark_translations) * scaling_factor_adhoc * 100  
+                            landmark_velocities = np.array(landmark_velocities) * scaling_factor_adhoc * 100  
+                            original_length = original_length * 100 # m to cm
+                            l_0 = l_0 * 100
+
+                            # Debug scaled values
+                            f.write(f"Scaled landmark_translations: {landmark_translations}\n")
+                            
+                            # Try both approaches and compare
+                            try:
+                                # Original approach with np.mean()
+                                avg_with_mean = np.mean(landmark_translations)
+                                f.write(f"Average with np.mean(): {avg_with_mean}\n")
                                 
-                    #     except Exception as e:
-                    #         f.write(f"Error during comparison: {str(e)}\n")
-                    #         avg_translation = np.mean(landmark_translations)  # Fallback to original
-                            
-                    #     # Continue with velocity calculation
-                    #     try:
-                    #         avg_velocity = landmark_velocities  # landmark_velocities[0] if len(landmark_velocities) == 1 else np.mean(landmark_velocities)
-                    #         f.write(f"Velocity average: {avg_velocity}\n")
-                    #     except Exception as e:
-                    #         f.write(f"Error in velocity calculation: {str(e)}\n")
-                    #         avg_velocity = np.mean(landmark_velocities)
-                            
-                    #     f.write("------------------------\n")
+                                # Direct approach (assuming scalar)
+                                avg_direct = landmark_translations # landmark_translations[0] if len(landmark_translations) == 1 else landmark_translations
+                                f.write(f"Average direct access: {avg_direct}\n")
+                                
+                                # Compare results
+                                if np.allclose(avg_with_mean, avg_direct):
+                                    f.write("Results MATCH - safe to remove np.mean()\n")
+                                    avg_translation = avg_direct  # Use the faster approach
+                                else:
+                                    f.write("Results DIFFER - keep np.mean()\n")
+                                    avg_translation = avg_with_mean
+                                    
+                            except Exception as e:
+                                f.write(f"Error during comparison: {str(e)}\n")
+                                avg_translation = np.mean(landmark_translations)  # Fallback to original
+                                
+                            # Continue with velocity calculation
+                            try:
+                                avg_velocity = landmark_velocities  # landmark_velocities[0] if len(landmark_velocities) == 1 else np.mean(landmark_velocities)
+                                f.write(f"Velocity average: {avg_velocity}\n")
+                            except Exception as e:
+                                f.write(f"Error in velocity calculation: {str(e)}\n")
+                                avg_velocity = np.mean(landmark_velocities)
+                                
+                            f.write("------------------------\n")
                             
 
                     # Convert all units to cm
@@ -1166,16 +1149,6 @@ That separates visualization cost from gradient cost and preserves the plots you
                     
                     # Total force (clamped to not exceed F_max)
                     muscle_force = min(activation * F_length * F_velocity + F_PEE + F_SEE, F_max)
-                    
-                    # return {
-                    #     'muscle_force': muscle_force,
-                    #     'F_length': F_length,
-                    #     'F_velocity': F_velocity,
-                    #     'F_PEE': F_PEE,
-                    #     'F_SEE': F_SEE,
-                    #     'active_force': activation * F_length * F_velocity
-                    # }
-
 
                     log_muscle_force_flag = 0
                     if log_muscle_force_flag == 1:                    
