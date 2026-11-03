@@ -1,0 +1,3133 @@
+diff --git a/a3-stochastic-V1/a3-stochastic-V1-algo/training/evaluator.py b/a3-stochastic-V1/a3-stochastic-V1-algo/training/evaluator.py
+index 1665c0d..0256532 100644
+--- a/a3-stochastic-V1/a3-stochastic-V1-algo/training/evaluator.py
++++ b/a3-stochastic-V1/a3-stochastic-V1-algo/training/evaluator.py
+@@ -6,21 +6,26 @@ import math
+ import os
+ 
+ from os import path
+-from paths import a3_stochastic_relative_path, backup_path, a1_blendshape_path
+ 
+ from utils.initialization import create_env
+ from utils.common_utils import set_seed
+ 
+ import sys
+-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"))
+-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "example_train"))
+-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo" / "env_gym"))
++from paths import (
++    a3_stochastic_path,
++    b98_sampling_path,
++    a1_blendshape_path,
++    backup_path,
++    results_path
++)
++
++sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
++sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
++sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
+ sys.path.insert(0, str(a1_blendshape_path / "database"))
+ sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
+-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "training"/ "analysic_gradient"))
+ 
+ import importlib
+-from pytorch_analytical_gradient import AnalyticalGradientCalculator
+ 
+ import dataV22
+ importlib.reload(dataV22)
+@@ -64,8 +69,6 @@ import csv
+ import pickle
+ from utils.phase_manager import PhaseManager
+ 
+-
+-
+ class Evaluator:
+     def __init__(self, phase_manager=None, index=0, history_size=300, exploration_prob=0.2, **kwargs):
+         for key, value in kwargs.items():
+@@ -98,7 +101,6 @@ class Evaluator:
+             }
+ 
+ 
+-
+         self.distance_calculator = MeshDistanceCalculator()
+         self.env = create_env(**kwargs)
+         _, self.env = set_seed(kwargs["trainer"], kwargs["seed"], index + 400, self.env)
+@@ -141,7 +143,6 @@ class Evaluator:
+         self.distance_jaw_min = kwargs["distance_jaw_min"]
+         self.distance_jaw_threshold_percentage = kwargs["distance_jaw_threshold_percentage"]
+         self.gradients_over_iterations = []
+-        self.gradients_over_iterations_dict = {}
+         self.current_index = 0  # Track the current index to update
+     
+         self.prev_gradients = None
+@@ -154,35 +155,6 @@ class Evaluator:
+         self.next_info = {}
+         # self.phase_2_flag = 0
+         self.phase_manager.current_phase = phase  # Set the current phase        
+-        # 1. Instantiate the specific analytical calculators for all tissues
+-        self.analytical_calculator = AnalyticalGradientCalculator(
+-            str(a3_stochastic_relative_path / "automation"/ "oor_bind_pose.json"),
+-            str(a3_stochastic_relative_path / "automation"/ "oor_skin_weights.json"),
+-            vertex_index=self.vertex_index
+-        )
+-        self.analytical_calculator_jaw = AnalyticalGradientCalculator(
+-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_bind_pose.json"), 
+-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_skin_weights.json"), 
+-            vertex_index=self.vertex_jaw_index,
+-            joint_pivots_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_joint_pivots.json")
+-        )
+-        self.analytical_calculator_ooc_l = AnalyticalGradientCalculator(
+-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_bind_pose.json"),
+-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_skin_weights.json"),
+-            vertex_index=self.vertex_ooc_l_index
+-        )
+-        self.analytical_calculator_ooc_r = AnalyticalGradientCalculator(
+-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_bind_pose.json"),
+-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_skin_weights.json"),
+-            vertex_index=self.vertex_ooc_r_index
+-        )
+-        self.analytical_calculator_frontalis = AnalyticalGradientCalculator(
+-            bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_bind_pose.json"),
+-            skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_skin_weights.json"),
+-            vertex_index=self.vertex_frontalis_index
+-        )
+-
+-        self.analytical_gradient_scale = 0.022
+ 
+         self.next_info.update({
+ 
+@@ -190,7 +162,9 @@ class Evaluator:
+ 
+             # Add more variables as needed
+         })
++
+         self.count_diff_log_phase2 = 0
++
+         self.term_histories = {
+             1: {
+                 'forward': {'steps': [], 'distance': [], 'strain': [], 'muscle': []},
+@@ -206,7 +180,10 @@ class Evaluator:
+         self.r_limit_sigmoid_1000_endList = []
+         self.t_limit_sigmoid_1000_endList = []
+ 
+-        
++        # self.w1 = 0.95
++        # self.w2 = 0.025
++        # self.w3 = 0.025
++
+         self.w1 = 0.34
+         self.w2 = 0.33
+         self.w3 = 0.33
+@@ -248,8 +225,6 @@ class Evaluator:
+         # self.networks.load_state_dict(state_dict)
+         pass
+ 
+-
+-
+     def run_evaluation(self, phase=None, payload=None):
+ 
+         """Generic evaluation function that handles all phases"""
+@@ -345,11 +320,6 @@ class Evaluator:
+             )           
+ 
+ 
+-            # print(f"\n=== DEBUG: run_evaluation phase {phase} ===")
+-            # print(f"Type of info: {type(info)}")
+-            # print(f"Info content: {info}")
+-            # print(f"Payload keys: {payload.keys() if payload else 'Payload is None'}")
+-
+             info['distance_jaw'] = initial_jaw_distance
+             
+             # Set phase 2 specific parameters
+@@ -377,9 +347,6 @@ class Evaluator:
+         abc_execution_count = 0
+         MAX_ABC_EXECUTIONS = self.overlapping_length
+ 
+-        landmark_trajectory = []
+-        vertex_trajectory = []
+-
+         while not (done or info["TimeLimit.truncated"]):
+             self.step_t1 += 1
+             if self.step_t1 % 3*self.joint_num == 0:
+@@ -389,9 +356,6 @@ class Evaluator:
+             positions = obs[3*self.joint_num + 3*self.joint_rotate_num : 3*self.joint_rotate_num + 3*self.joint_num + 3*self.vertices_num]
+             positions_jaw = obs[3*self.joint_rotate_num + 3*self.joint_num + 3*self.vertices_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
+             positions_lip_joint = obs[0 : 3*self.joint_num]
+-
+-            landmark_trajectory.append(np.copy(positions_lip_joint[0:3]))
+-            vertex_trajectory.append(np.copy(positions[0:3]))
+             positions_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+                                                 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num : 
+                                                 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+@@ -420,77 +384,6 @@ class Evaluator:
+             targets_jaw = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
+                             3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
+             
+-
+-            targets_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num]
+-
+-            targets_ooc_r = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num]
+-
+-            positions_frontalis = obs[3*self.joint_num + 
+-                                                3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num : 3*self.joint_num + 
+-                                                3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num + 3*self.vertices_frontalis_num]  # this is for jaw
+-
+-            targets_frontalis = obs[3*self.joint_num + 
+-                                                3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num + 3*self.vertices_frontalis_num : 3*self.joint_num + 
+-                                                3*self.joint_rotate_num + 3*self.vertices_num + 
+-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+-                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num  + 3*self.vertices_frontalis_num  + 3*self.vertices_frontalis_num]
+-
+-
+-
+-            # 2. Extract joints and vertices dynamically based on the exact offset in `obs`
+-            
+-            # Base offset (skipping lip/jaw joints and target states)
+-            offset = 3*self.joint_num + 3*self.joint_rotate_num + 6*self.vertices_num + 6*self.vertices_jaw_num
+-            
+-            # --- OOC_L ---
+-            positions_ooc_l_joint = obs[offset : offset + 3*self.joint_ooc_l_num]
+-            offset += 3*self.joint_ooc_l_num
+-            
+-            # --- OOC_R ---
+-            positions_ooc_r_joint = obs[offset : offset + 3*self.joint_ooc_r_num]
+-            offset += 3*self.joint_ooc_r_num
+-            
+-            # --- OOC_L Vertices ---
+-            positions_ooc_l_vertex = obs[offset : offset + 3*self.vertices_ooc_l_num]
+-            offset += 3*self.vertices_ooc_l_num
+-            
+-            # --- OOC_R Vertices ---
+-            positions_ooc_r_vertex = obs[offset : offset + 3*self.vertices_ooc_r_num]
+-            offset += 3*self.vertices_ooc_r_num
+-            
+-            # Skip OOC_L and OOC_R target states
+-            offset += 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num
+-            
+-            # --- Frontalis ---
+-            positions_frontalis_joint = obs[offset : offset + 3*self.joint_frontalis_num]
+-            offset += 3*self.joint_frontalis_num
+-            
+-            positions_frontalis_vertex = obs[offset : offset + 3*self.vertices_frontalis_num]
+-
+-
+-
+             # For phase 2, get previous targets
+             if phase >= 2:
+                 targets_previous = payload["next_obs"][3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num : 
+@@ -499,234 +392,32 @@ class Evaluator:
+                                                         3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
+ 
+ 
+-            # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
+-            # if phase == 3:
+-            #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-            #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-            #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-            #     method = 'euclidean'
+-            #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+-            #     print("e1 line 1436, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+-
+ 
+-            # # Compute gradients
+-            # object_name = "oor"
+-            # if self.initial_distance <= 0.001:
+-            #     gradient = np.zeros(len(positions))
+-            #     self.oor_dense_numerical_gradient = np.zeros(len(positions))
+-            # else:
+-            #     gradient = self.compute_single_gradient(positions, targets, positions_lip_joint, self.step_t1, object_name)
+-            #     self.oor_dense_numerical_gradient = np.copy(self.prev_gradients)
+-            
+-            # Initialize iteration tracker if it doesn't exist
+-            if not hasattr(self, 'action_iteration_count'):
+-                self.action_iteration_count = 0
+-                self.max_action_iterations = 1e7
+-                
+-            # --- 1. OOR ---
++            # Compute gradients
+             object_name = "oor"
+-            if self.initial_distance <= 0.001:
+-                gradient = np.zeros(len(positions))
+-            else:
+-                # For OOR, positions_lip_joint acts as your active joints
+-                gradient = self.compute_single_gradient(
+-                    joints=positions_lip_joint, 
+-                    target=targets, 
+-                    initial_distance=self.initial_distance, 
+-                    observed_position=positions, 
+-                    calculator=self.analytical_calculator,
+-                    object_name=object_name
+-                )
+-            self.oor_dense_numerical_gradient = np.copy(self.prev_gradients)
+-
+-
+-
+-
+-
+-            # RECORD IT HERE!
+-            self.record_gradient_step("oor", gradient, self.phase_manager.current_phase)
+-            # RECORD THE MAGNITUDE HERE!
+-            self.record_gradient_magnitude_step("oor", gradient, self.phase_manager.current_phase)
+-            # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
+-            # if phase == 3:
+-            #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-            #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-            #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-            #     method = 'euclidean'
+-            #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+-            #     print("e1 line 1475, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
++            gradient = self.compute_single_gradient(positions, targets, positions_lip_joint, self.step_t1, object_name)
+ 
+             rotation_values = 3 * self.joint_rotate_num * [0.0]
+-            
+-
+-            object_name = "jaw"
+-            if self.initial_jaw_distance <= 0.001:
+-                gradient_jaw = np.zeros(len(rotation_values))
+-            else:
+-                gradient_jaw = self.compute_analytical_gradient_jaw(rotation_values, targets_jaw, obs)
+-
+-
+-            # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
+-            # if phase == 3:
+-            #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-            #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-            #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-            #     method = 'euclidean'
+-            #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+-            #     print("e1 line 1488, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+-
+-            # gradient_ooc_l = np.zeros(len(positions_ooc_l))
+-
+-            # object_name = "ooc_l"
+-            
+-            # if self.initial_ooc_l_distance <= 0.001:
+-            #     gradient_ooc_l = np.zeros(len(positions_ooc_l))
+-            # else:
+-            #     gradient_ooc_l = self.compute_single_gradient(positions_ooc_l, targets_ooc_l, positions_lip_joint, self.step_t1, object_name)  # positions_lip_joint is useless.
+-
+-            # --- 2. OOC_L ---
+-            object_name = "ooc_l"
+-            if self.initial_ooc_l_distance <= 0.001:
+-                gradient_ooc_l = np.zeros(len(positions_ooc_l))
+-            else:
+-                gradient_ooc_l = self.compute_single_gradient(
+-                    joints=positions_ooc_l_joint, 
+-                    target=targets_ooc_l, 
+-                    initial_distance=self.initial_ooc_l_distance, 
+-                    observed_position=positions_ooc_l_vertex, 
+-                    calculator=self.analytical_calculator_ooc_l,
+-                    object_name=object_name
+-                )
+-
+-            # RECORD IT HERE!
+-            self.record_gradient_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
+-            # RECORD THE MAGNITUDE HERE!
+-            self.record_gradient_magnitude_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
+-            # --- 3. OOC_R ---
+-            object_name = "ooc_r"
+-            if self.initial_ooc_r_distance <= 0.001:
+-                gradient_ooc_r = np.zeros(len(positions_ooc_r))
+-            else:
+-                gradient_ooc_r = self.compute_single_gradient(
+-                    joints=positions_ooc_r_joint, 
+-                    target=targets_ooc_r, 
+-                    initial_distance=self.initial_ooc_r_distance, 
+-                    observed_position=positions_ooc_r_vertex, 
+-                    calculator=self.analytical_calculator_ooc_r,
+-                    object_name=object_name
+-                )
+-            # RECORD IT HERE!
+-            self.record_gradient_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
+-            # RECORD THE MAGNITUDE HERE!
+-            self.record_gradient_magnitude_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
+-
+-            # --- 4. FRONTALIS ---
+-            object_name = "frontalis"
+-            if self.initial_frontalis_distance <= 0.001:
+-                gradient_frontalis = np.zeros(len(positions_frontalis))
+-            else:
+-                gradient_frontalis = self.compute_single_gradient(
+-                    joints=positions_frontalis_joint, 
+-                    target=targets_frontalis, 
+-                    initial_distance=self.initial_frontalis_distance, 
+-                    observed_position=positions_frontalis_vertex, 
+-                    calculator=self.analytical_calculator_frontalis,
+-                    object_name=object_name
+-                )
+-
+-            # RECORD IT HERE!
+-            self.record_gradient_step("frontalis", gradient_frontalis, self.phase_manager.current_phase)                
+-            # RECORD THE MAGNITUDE HERE!
+-            self.record_gradient_magnitude_step("frontalis", gradient_frontalis, self.phase_manager.current_phase)
+-
+-            # print("gradient_ooc_l", gradient_ooc_l)
+-
+-            # gradient_ooc_r = np.zeros(len(positions_ooc_r))
+-            # gradient_frontalis = np.zeros(len(positions_frontalis))
+-
+-            # object_name = "ooc_r"
+-            
+-            # if self.initial_ooc_r_distance <= 0.001:
+-            #     gradient_ooc_r = np.zeros(len(positions_ooc_r))
+-            # else:
+-            #     gradient_ooc_r = self.compute_single_gradient(positions_ooc_r, targets_ooc_r, positions_lip_joint, self.step_t1, object_name)  # positions_lip_joint is useless.
+-
+-            # object_name = "frontalis"
+-            
+-            # if self.initial_frontalis_distance <= 0.001:
+-            #     gradient_frontalis = np.zeros(len(positions_frontalis))
+-            # else:
+-            #     gradient_frontalis = self.compute_single_gradient(positions_frontalis, targets_frontalis, positions_lip_joint, self.step_t1, object_name)  # positions_lip_joint is useless.
++            gradient_jaw = self.compute_gradient_rotation(rotation_values, targets_jaw)
+ 
+ 
++            gradient_ooc_l = np.zeros(len(positions_ooc_l))
++            gradient_ooc_r = np.zeros(len(positions_ooc_r))
++            gradient_frontalis = np.zeros(len(positions_frontalis))
+             self.current_index = (self.current_index + 1) % len(positions)    
+             
+             # For phase 2, compute previous gradients
+             if phase >= 2 and abc_execution_count < MAX_ABC_EXECUTIONS:
+                 gradient_previous = self.compute_single_gradient(positions, targets_previous, positions_lip_joint, self.step_t1, object_name)
+ 
+-                # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
+-                # if phase == 3:
+-                #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-                #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-                #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-                #     method = 'euclidean'
+-                #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+-                #     print("e1 line 1506, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+                 gradient_jaw_previous = self.compute_gradient_rotation(rotation_values, targets_jaw_previous)
+ 
+-                # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
+-                # if phase == 3:
+-                #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-                #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-                #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-                #     method = 'euclidean'
+-                #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+-                #     print("e1 line 1516, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+-
+                 action_previous = np.concatenate([gradient_previous, gradient_jaw_previous, gradient_ooc_l, gradient_ooc_r, gradient_frontalis], axis=0)
+             else:
+                 action_previous = -9999
+ 
+             action = np.concatenate([gradient, gradient_jaw, gradient_ooc_l, gradient_ooc_r, gradient_frontalis], axis=0)
+ 
+-            # Plot gradients
+-            # object_names = ["oor"]  # "oor", ooc_l
+-            # for obj_name in object_names:
+-            #     self.plot_gradient_magnitudes(obj_name, self.phase_manager.current_phase)
+-            #     self.plot_gradients_over_iterations(obj_name, self.phase_manager.current_phase)
+-
+-            # # Plot landmark vs vertex trajectory (1st oor landmark ↔ 1st vertex, 1-to-1 mapping)
+-            # self.plot_trajectories(landmark_trajectory, vertex_trajectory, self.phase_manager.current_phase)
+-
+-
+-
+-            # Increment the counter
+-            self.action_iteration_count += 1
+-
+-            # Only plot every 100 iterations
+-            if self.action_iteration_count % 100 == 0:
+-                # Plot gradients
+-                object_names = ["oor", "ooc_l","ooc_r", "frontalis"]  # "oor", ooc_l
+-                for obj_name in object_names:
+-                    self.plot_gradient_magnitudes(obj_name, self.phase_manager.current_phase)
+-                    self.plot_gradients_over_iterations(obj_name, self.phase_manager.current_phase)
+-
+-                # Plot landmark vs vertex trajectory (1st oor landmark ↔ 1st vertex, 1-to-1 mapping)
+-                self.plot_trajectories(landmark_trajectory, vertex_trajectory, self.phase_manager.current_phase)
+-
+-            # print("passed the test, now quit.")
+-            # import sys
+-            # sys.exit(0)  # Exit with status code 0  
+-
+-            # # Add this debug code where you want to monitor the ooc_l actions
+-
+-
+             # Prepare parameters for environment step
+             base_params = {
+                 'action': action,                
+@@ -758,16 +449,6 @@ class Evaluator:
+ 
+             # Execute environment step
+ 
+-            # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
+-            # if phase == 3:
+-            #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-            #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-            #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-            #     method = 'euclidean'
+-            #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+-            #     print("e1 line 1561, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+-
+             next_obs, reward, done, next_info, r_limit_sigmoid_1000_endList, t_limit_sigmoid_1000_endList = self.env.unwrapped.step(**base_params)
+             self.r_limit_sigmoid_1000_endList = r_limit_sigmoid_1000_endList
+             self.t_limit_sigmoid_1000_endList = t_limit_sigmoid_1000_endList
+@@ -797,21 +478,16 @@ class Evaluator:
+                 pbar.update(update_every)            
+ 
+ 
+-        # if phase == 2:
+-        #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-        #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-        #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-        #     method = 'euclidean'
+-        #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(next_info['s_jaw_next_full'], self.vertex_jaw_index))
+-        #     print("e1 line 1521, at the end of phase 2, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+ 
+         # Post-episode processing
+         ep_rs_sum = sum(reward_list)
+         running_reward = ep_rs_sum
+ 
+-
+-
++        # Plot gradients
++        object_names = ["oor"]
++        for obj_name in object_names:
++            # self.plot_gradient_magnitudes(obj_name, self.phase_2_flag)
++            self.plot_gradient_magnitudes(obj_name, self.phase_manager.current_phase)
+ 
+         # self.log_episode_info(self.phase_2_flag, running_reward=running_reward, next_info=next_info)
+         self.log_episode_info(self.phase_manager.current_phase, running_reward=running_reward, next_info=next_info)
+@@ -858,29 +534,23 @@ class Evaluator:
+                 self.log_computation_time(self.phase_manager.current_phase)
+ 
+                 # Calculate and log Maya distance
+-                if phase == 1:
+-                    target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
+-                    
+-                if phase == 2:
+-                    target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))        
+-
+-                if phase == 3:
+-                    target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))        
+-
+-                if phase == 4:
+-                    target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))        
+-
+-                if phase == 5:
+-                    target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))        
+-                    
+-                if phase == 6:
+-                    target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))        
+-
+-                if phase == 7:
+-                    target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))        
+-
+-                if phase == 8:
+-                    target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                match phase:
++                    case 1:
++                        target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                    case 2:
++                        target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                    case 3:
++                        target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                    case 4:
++                        target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                    case 5:
++                        target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                    case 6:
++                        target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                    case 7:
++                        target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))        
++                    case 8:
++                        target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))        
+ 
+ 
+                 x_conca = np.asarray([item for sublist in target_state_temp for item in sublist])
+@@ -893,22 +563,6 @@ class Evaluator:
+                 
+                 print("Game over since hit one success action sequence. Exiting the program early.")
+                 s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
+-                
+-                # s_next_full = next_info['s_next_full']
+-                # s_jaw_next_full = next_info['s_jaw_next_full']
+-                # s_ooc_l_next_full = next_info['s_ooc_l_next_full']
+-                # s_ooc_r_next_full = next_info['s_ooc_r_next_full']
+-                # s_frontalis_next_full = next_info['s_frontalis_next_full']
+-
+-                # if phase == 2:
+-                #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-                #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-                #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-                #     method = 'euclidean'
+-                #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
+-                #     print("e1 line 1521, at the end of phase 2, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+-
+ 
+ 
+                 # Prepare data for saving
+@@ -925,7 +579,6 @@ class Evaluator:
+                 
+                 # Save results
+                 import pickle
+-                # filename = "/deltaB_temp_phase2.pkl" if phase == 2 else "/deltaB_temp.pkl"
+                 
+                 # Usage:
+                 filename = self.get_phase_filename("deltaB_temp", phase)
+@@ -963,29 +616,9 @@ class Evaluator:
+                 }
+                 
+                 self.plot_objective_terms_diff(self.phase_manager.current_phase)
+-
+-                # print("passed the test, now quit.")
+-                # sys.exit(0)  # Exit with status code 0  
+-
+-
+                 # self.plot_objective_terms_forward(self.phase_2_flag)
+                 self.plot_objective_terms_forward(self.phase_manager.current_phase)
+ 
+-
+-
+-                # if phase == 2:
+-                #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
+-                #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
+-                #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
+-                #     s_jaw_next_adhoc = pickle_package['s_jaw_next']
+-                #     s_jaw_next_adhoc_conca = [item for sublist in s_jaw_next_adhoc for item in sublist]
+-                #     s_jaw_next_adhoc_conca = np.asarray(s_jaw_next_adhoc_conca)
+-
+-                #     method = 'euclidean'
+-
+-                #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_adhoc_conca, self.vertex_jaw_index))
+-                #     print("e1 line 1677, at the end of phase 2, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
+-
+                 
+                 return pickle_package # if phase != self.phase_manager.max_phases else exit_flag
+         
+@@ -1007,21 +640,10 @@ class Evaluator:
+         return combined_slices    
+ 
+         
+-    # def format_list(self, lst):
+-    #     return [f"{x:.3f}" for x in lst]   
+     def format_list(self, lst):
+         # Format each number to 3 decimal places and join them with ', '
+         return ", ".join([f"{x:.3f}" for x in lst])    
+ 
+-    # def log_computation_time(self, phase_2_flag):
+-    #     toc = time.time()  # End time using time.time()
+-    #     elapsed_minutes = round((toc - self.tic) / 60, 1)
+-    #     # dont bother to modify it here. not important.
+-        
+-    #     with open(self._get_log_filename(phase_2_flag), 'a') as f:
+-    #     # with open(self.save_folder + "/log" + str(self.i_func) + ".txt", 'a') as f:
+-    #         print("\n ----- Computation time = " + str(elapsed_minutes) + "m", file=f)
+-
+     def log_computation_time(self, current_phase):
+         toc = time.time()
+         elapsed_minutes = round((toc - self.tic) / 60, 1)
+@@ -1037,7 +659,7 @@ class Evaluator:
+ 
+ 
+ 
+-    def translation_reward_function_forward(self, current_position, target, landmark_displacements, landmark_velocities, muscle_forces, strain_distance, distance_remain, object_name, w1=1.0, w2=0.1, w3=0.1):
++    def translation_reward_function_forward(self, current_position, target, landmark_displacements, landmark_velocities, muscle_forces, strain_distance, distance_remain, w1=1.0, w2=0.1, w3=0.1):
+ 
+         """
+         Objective function that balances distance, strain energy, and muscle work.
+@@ -1056,170 +678,44 @@ class Evaluator:
+         # Distance term
+         # distance = self.euclidean_distance(current_position, target)
+ 
+-
+-        # ablation_mode = os.environ.get("ABLATION_MODE", "none")
+-        ablation_mode = "none"
+-        total_w = w1 + w2 + w3
+-        if ablation_mode == "1":
+-            w1, w2, w3 = total_w, 0.0, 0.0
+-        elif ablation_mode == "2":
+-            sub_total = w2 + w3
+-            if sub_total > 0:
+-                w2, w3 = (w2 / sub_total) * total_w, (w3 / sub_total) * total_w
+-            else:
+-                w2, w3 = 0.0, 0.0
+-            w1 = 0.0
+-        elif ablation_mode == "3":
+-            sub_total = w1 + w2
+-            if sub_total > 0:
+-                w1, w2 = (w1 / sub_total) * total_w, (w2 / sub_total) * total_w
+-            else:
+-                w1, w2 = 0.0, 0.0
+-            w3 = 0.0
+-        elif ablation_mode == "4":
+-            sub_total = w1 + w3
+-            if sub_total > 0:
+-                w1, w3 = (w1 / sub_total) * total_w, (w3 / sub_total) * total_w
+-            else:
+-                w1, w3 = 0.0, 0.0
+-            w2 = 0.0
+-
+         # obj_full_version = 0
+-        if False and self.obj_full_version == 1:     
+-            pass   
+-
+-        else:
+-            # scaling_factor = 9.62e-4   "ooc_l" "frontalis"
+-            if object_name == "oor":
+-                temp_init_distance = self.initial_distance
+-            elif object_name == "ooc_l":
+-                temp_init_distance = self.initial_ooc_l_distance
+-            elif object_name == "ooc_r":
+-                temp_init_distance = self.initial_ooc_r_distance
+-            elif object_name == "frontalis":
+-                temp_init_distance = self.initial_frontalis_distance
+-            else:
+-                temp_init_distance = self.initial_distance
+-                print("warning, unknown tissue and initial distance!")  
+-                
+-            load_e12_version = 0
+-            if load_e12_version == 1:
+-                temp_init_distance = self.initial_distance                                 
+-
+-
+-            # print("object_name", object_name)
+-            # print("distance_remain", distance_remain)
+-            normalized_distance = distance_remain / (temp_init_distance)
+-
+-
+-            manually_debug_V1 = 0
+-            if manually_debug_V1 == 1 and object_name == "oor":
+-                scaling_factor = 9.62e-4 # 9.62e-4
+-                enlarge_contribution_factor = 10e2
+-                if not hasattr(self, 'distance_debug_count'):
+-                    self.distance_debug_count = 0
+-                    self.max_distance_debug_iterations = 20000 #200
+-                    
+-                    # Create debug file header (ONLY ONCE)
+-                    debug_path = os.path.join(self.save_folder, "distance_convergence_debug.csv")
+-                    with open(debug_path, 'w', newline='') as csvfile:
+-                        writer = csv.writer(csvfile)
+-                        writer.writerow([
+-                            'iteration', 'object_name', 'temp_init_distance', 'distance_remain',
+-                            'normalized_distance', 'strain_distance', 'strain_energy', 
+-                            'normalized_strain_energy', 'muscle_forces_avg', 'landmark_displacements_avg',
+-                            'normalized_muscle_work', 'distance_contribution', 'strain_contribution',
+-                            'muscle_contribution', 'total_gradient', 'convergence_status'
+-                        ])
+-                    print(f"Created distance debug file: {debug_path}")
+-
+-                # Store the original temp_init_distance for comparison
+-                original_temp_init_distance = self.initial_distance
+-                current_temp_init_distance = temp_init_distance
+-
+-                # Calculate all the intermediate values for debugging
+-                strain_energy_value = 0.5 * self.k_tissue * (strain_distance * scaling_factor)**2
+-                normalized_strain_energy_value = strain_energy_value / self.max_strain_energy
+-
+-                # Calculate muscle work components
+-                if 1==1: # len(muscle_forces) > 0 and len(landmark_displacements) > 0:
+-                    muscle_forces_avg = np.mean(muscle_forces)
+-                    landmark_displacements_avg = np.mean(landmark_displacements)
+-                    muscle_work_value = np.sum(muscle_forces * landmark_displacements * (enlarge_contribution_factor * scaling_factor / self.max_muscle_work))
+-                else:
+-                    muscle_forces_avg = 0
+-                    landmark_displacements_avg = 0
+-                    muscle_work_value = 0
+-
+-                # Calculate contributions
+-                distance_contribution_value = w1 * normalized_distance
+-                strain_contribution_value = w2 * normalized_strain_energy_value
+-                muscle_contribution_value = w3 * muscle_work_value
+-
+-                # Estimate total gradient magnitude (simplified)
+-                objective = distance_contribution_value + strain_contribution_value + muscle_contribution_value
+-                scale_factor_objective = temp_init_distance
+-                total_gradient_estimate = objective * scale_factor_objective
+-                # Determine convergence status
+-                convergence_status = "converging" if abs(total_gradient_estimate) < 1.0 else "placeholder"
+-
+-                # Print to console for immediate feedback
+-                print(f"\n=== Distance Debug Iteration {self.distance_debug_count} ===")
+-                print(f"Object: {object_name}")
+-                print(f"temp_init_distance: {temp_init_distance:.6e} (original: {original_temp_init_distance:.6e})")
+-                print(f"distance_remain: {distance_remain:.6e}")
+-                print(f"normalized_distance: {normalized_distance:.6e}")
+-                print(f"Ratio (remain/init): {distance_remain/temp_init_distance:.6e}")
+-
+-                print(f"\nStrain energy: {strain_energy_value:.6e}")
+-                print(f"Normalized strain: {normalized_strain_energy_value:.6e}")
+-
+-                print(f"\nMuscle work: {muscle_work_value:.6e}")
+-                print(f"Muscle forces avg: {muscle_forces_avg:.6e}")
+-                print(f"Landmark displacements avg: {landmark_displacements_avg:.6e}")
+-
+-                print(f"\nContributions:")
+-                print(f"Distance: {distance_contribution_value:.6e}")
+-                print(f"Strain: {strain_contribution_value:.6e}")
+-                print(f"Muscle: {muscle_contribution_value:.6e}")
+-                print(f"Total gradient estimate: {total_gradient_estimate:.6e}")
+-                print(f"Status: {convergence_status}")
+-
+-                # Save to CSV file
+-                debug_path = os.path.join(self.save_folder, "distance_convergence_debug.csv")
+-                with open(debug_path, 'a', newline='') as csvfile:
+-                    writer = csv.writer(csvfile)
+-                    writer.writerow([
+-                        self.distance_debug_count, object_name, temp_init_distance, distance_remain,
+-                        normalized_distance, strain_distance, strain_energy_value,
+-                        normalized_strain_energy_value, muscle_forces_avg, landmark_displacements_avg,
+-                        muscle_work_value, distance_contribution_value, strain_contribution_value,
+-                        muscle_contribution_value, total_gradient_estimate, convergence_status
+-                    ])
+-
+-                # Also print the actual initial distances for all objects for comparison
+-                if self.distance_debug_count == 0:
+-                    print(f"\n=== Initial Distances Comparison ===")
+-                    print(f"initial_distance: {self.initial_distance:.6e}")
+-                    print(f"initial_ooc_l_distance: {self.initial_ooc_l_distance:.6e}")
+-                    print(f"initial_ooc_r_distance: {self.initial_ooc_r_distance:.6e}")
+-                    print(f"initial_frontalis_distance: {self.initial_frontalis_distance:.6e}")
+-                    
+-                    # Calculate ratios
+-                    if self.initial_distance > 0:
+-                        print(f"\nRatios compared to initial_distance:")
+-                        print(f"ooc_l ratio: {self.initial_ooc_l_distance/self.initial_distance:.6e}")
+-                        print(f"ooc_r ratio: {self.initial_ooc_r_distance/self.initial_distance:.6e}")
+-                        print(f"frontalis ratio: {self.initial_frontalis_distance/self.initial_distance:.6e}")
+-
+-                # Increment iteration counter
+-                self.distance_debug_count += 1
+-
++        if self.obj_full_version == 1:        
++            # Strain energy term
++            strain_energy = 0.5 * self.k_tissue * strain_distance**2 # np.sum(strain_distance**2).  strain_distance = sqrt (^2 +  ^2 + ... )
++            # k_tissue = 10000  # Stiffness of soft tissues (N/m)
++            # assume the stiffness is same for oor and the softtissue used in elastic energy in jaw rotation.
++            
++            # Muscle work term
++            muscle_work = np.sum(muscle_forces * landmark_displacements)  # For lips
++            # now have changed to, muscle work for only one vertex (or landmark).
++            # calculate the muscle work done, after completing that step, that landmark movement in this step. so the landmark displacement is the total translation. 
++            # and the muscle force is the estimated of the muscle force at this step, but use it to estimate the whole work done by muscle. simplified model.
++            # muscle_work = np.sum(muscle_forces * rotation_angle)  # For jaw
++            
++            # Normalize the distance 
++            normalized_distance = distance_remain / (self.initial_distance )  # * self.scaling_factor
++            
++            # Normalize the accumulated work
++            normalized_strain_energy = strain_energy / self.max_strain_energy
+ 
++            # Normalize the muscle work
+ 
++            normalized_muscle_work = muscle_work / self.max_muscle_work        
+ 
++            # Calculate weighted contributions
++            distance_contribution = w1 * normalized_distance
++            strain_contribution = w2 * normalized_strain_energy
++            muscle_contribution = w3 * normalized_muscle_work
++            
+ 
+-            # normalized_distance = distance_remain / (temp_init_distance)
++            # Calculate the objective
++            objective = w1 * normalized_distance
++                        #w2 * normalized_strain_energy + 
++                        #w3 * normalized_muscle_work)
++            
++        else:
++            # scaling_factor = 9.62e-4
++            normalized_distance = distance_remain / (self.initial_distance)
+ 
+             # Strain energy term
+             scaling_factor = 9.62e-4 # 9.62e-4
+@@ -1233,7 +729,6 @@ class Evaluator:
+ 
+             # Muscle work term
+             enlarge_contribution_factor = 10e2
+-           
+             normalized_muscle_work = np.sum(muscle_forces * landmark_displacements  * (enlarge_contribution_factor * scaling_factor/ self.max_muscle_work))  # For lips
+             
+             muscle_work = normalized_muscle_work
+@@ -1249,60 +744,6 @@ class Evaluator:
+             strain_contribution = w2 * normalized_strain_energy
+             muscle_contribution = w3 * normalized_muscle_work
+             
+-            
+-
+-            
+-            
+-            # trace_and_log_obj_contribution = 1
+-
+-            # if trace_and_log_obj_contribution == 1:
+-            #     # Store contributions for plotting
+-            #     if not hasattr(self, 'term_history_forward'):
+-            #         self.term_history_forward = {
+-            #             'steps': [],
+-            #             'distance': [],
+-            #             'strain': [],
+-            #             'muscle': []
+-            #         }
+-                
+-            #     # Log every 200 steps or at convergence   self.step_t1   self.next_info['step_counter_internal']
+-            #     if (self.step_objective % 4e4 == 0):
+-                    
+-            #         self.term_history_forward['steps'].append(self.step_objective)
+-            #         self.term_history_forward['distance'].append(distance_contribution)
+-            #         self.term_history_forward['strain'].append(strain_contribution)
+-            #         self.term_history_forward['muscle'].append(muscle_contribution/enlarge_contribution_factor)
+-                    
+-            #         # # Write to log file
+-            #         # with open(os.path.join(self.save_folder, "objective_terms_log_forward.txt"), 'a') as f:
+-            #         #     f.write(f"Step: {self.step_objective}\n")
+-            #         #     f.write(f"Distance Contribution: {distance_contribution:.6f}\n")
+-            #         #     f.write(f"Strain Contribution: {strain_contribution:.6f}\n")
+-            #         #     f.write(f"Muscle Contribution: {muscle_contribution:.6f}\n")
+-            #         #     f.write("-"*50 + "\n")
+-                                
+-            #         # Check if file exists to determine if we need headers
+-            #         file_exists = os.path.exists(os.path.join(self.save_folder, "objective_terms_data_forward.csv"))
+-
+-            #         # Open file in append mode
+-            #         with open(os.path.join(self.save_folder, "objective_terms_data_forward.csv"), 'a', newline='') as csvfile:
+-            #             writer = csv.writer(csvfile)
+-                        
+-            #             # Write header only if file doesn't exist
+-            #             if not file_exists:
+-            #                 writer.writerow(["Step", "Distance Contribution", "Strain Contribution", "Muscle Contribution", "muscle_forces", "landmark_displacements", "muscle_work"])
+-                        
+-            #             # Always write the data row
+-            #             writer.writerow([
+-            #                 self.step_objective,
+-            #                 f"{distance_contribution:.6f}",
+-            #                 f"{strain_contribution:.6f}", 
+-            #                 f"{muscle_contribution:.6f}",
+-            #                 f"{muscle_forces:.12f}",
+-            #                 f"{landmark_displacements:.12f}",
+-            #                 f"{muscle_work:.12f}"
+-            #             ])
+-                        
+ 
+             # In phase 1 evaluation:
+             self.log_forward_objective_terms(
+@@ -1316,21 +757,10 @@ class Evaluator:
+                 enlarge_contribution_factor=enlarge_contribution_factor
+             )
+ 
+-            # In phase 2 evaluation:
+-            # self.log_forward_objective_terms(
+-            #     phase_2_flag=1,
+-            #     distance_contribution=distance_contribution,
+-            #     strain_contribution=strain_contribution,
+-            #     muscle_contribution=muscle_contribution,
+-            #     muscle_forces=muscle_forces,
+-            #     landmark_displacements=landmark_displacements,
+-            #     muscle_work=muscle_work,
+-            #     enlarge_contribution_factor=enlarge_contribution_factor
+-            # )
+ 
+             objective = distance_contribution + strain_contribution + muscle_contribution   # may only use several of them.
+ 
+-            scale_factor_objective = temp_init_distance
++            scale_factor_objective = self.initial_distance
+             scaled_objective = objective * scale_factor_objective
+             
+         # return objective
+@@ -1359,7 +789,7 @@ class Evaluator:
+             
+         return reward, distance_contribution, strain_contribution, muscle_contribution
+ 
+-    def translation_reward_function_backward(self, current_position, target, landmark_displacements, landmark_velocities, muscle_forces, strain_distance, distance_remain, object_name, w1=1.0, w2=0.1, w3=0.1):
++    def translation_reward_function_backward(self, current_position, target, landmark_displacements, landmark_velocities, muscle_forces, strain_distance, distance_remain, w1=1.0, w2=0.1, w3=0.1):
+ 
+ 
+         """
+@@ -1376,63 +806,49 @@ class Evaluator:
+         Returns:
+             Objective value.
+         """
+-
+-        ablation_mode = "none"
+-        total_w = w1 + w2 + w3
+-        if ablation_mode == "1":
+-            w1, w2, w3 = total_w, 0.0, 0.0
+-        elif ablation_mode == "2":
+-            sub_total = w2 + w3
+-            if sub_total > 0:
+-                w2, w3 = (w2 / sub_total) * total_w, (w3 / sub_total) * total_w
+-            else:
+-                w2, w3 = 0.0, 0.0
+-            w1 = 0.0
+-        elif ablation_mode == "3":
+-            sub_total = w1 + w2
+-            if sub_total > 0:
+-                w1, w2 = (w1 / sub_total) * total_w, (w2 / sub_total) * total_w
+-            else:
+-                w1, w2 = 0.0, 0.0
+-            w3 = 0.0
+-        elif ablation_mode == "4":
+-            sub_total = w1 + w3
+-            if sub_total > 0:
+-                w1, w3 = (w1 / sub_total) * total_w, (w3 / sub_total) * total_w
+-            else:
+-                w1, w3 = 0.0, 0.0
+-            w2 = 0.0
+-
+         # Distance term
+         # distance = self.euclidean_distance(current_position, target)
+ 
+         # obj_full_version = 0
+-        if False and self.obj_full_version == 1:        
+-            pass
++        if self.obj_full_version == 1:        
++            # Strain energy term
++            strain_energy = 0.5 * self.k_tissue * strain_distance**2 # np.sum(strain_distance**2).  strain_distance = sqrt (^2 +  ^2 + ... )
++            # k_tissue = 10000  # Stiffness of soft tissues (N/m)
++            # assume the stiffness is same for oor and the softtissue used in elastic energy in jaw rotation.
+             
+-        else:
++            # Muscle work term
++            muscle_work = np.sum(muscle_forces * landmark_displacements)  # For lips
++            # calculate the muscle work done, after completing that step, that landmark movement in this step. so the landmark displacement is the total translation. 
++            # and the muscle force is the estimated of the muscle force at this step, but use it to estimate the whole work done by muscle. simplified model.
++            # muscle_work = np.sum(muscle_forces * rotation_angle)  # For jaw
++            
++            # Normalize the distance 
++            normalized_distance = distance_remain / (self.initial_distance )  # * self.scaling_factor
++            
++            
++            # Normalize the accumulated work
++            normalized_strain_energy = strain_energy / self.max_strain_energy
+ 
++            # Normalize the muscle work
++
++            normalized_muscle_work = muscle_work / self.max_muscle_work        
++
++            # Calculate weighted contributions
++            distance_contribution = w1 * normalized_distance
++            strain_contribution = w2 * normalized_strain_energy
++            muscle_contribution = w3 * normalized_muscle_work
++            
++
++            # Calculate the objective
++            objective = w1 * normalized_distance
++                        #w2 * normalized_strain_energy + 
++                        #w3 * normalized_muscle_work)
++            
++        else:
+ 
+-            # # scaling_factor = 9.62e-4
+-            # normalized_distance = distance_remain / (self.initial_distance)
+-            # scaling_factor = 9.62e-4   "ooc_l" "frontalis"
+-            if object_name == "oor":
+-                temp_init_distance = self.initial_distance
+-            elif object_name == "ooc_l":
+-                temp_init_distance = self.initial_ooc_l_distance
+-            elif object_name == "ooc_r":
+-                temp_init_distance = self.initial_ooc_r_distance
+-            elif object_name == "frontalis":
+-                temp_init_distance = self.initial_frontalis_distance
+-            else:
+-                temp_init_distance = self.initial_distance
+-                print("warning, unknown tissue and initial distance!")  
+-                
+-            load_e12_version = 0
+-            if load_e12_version == 1:
+-                temp_init_distance = self.initial_distance                                 
+ 
+-            normalized_distance = distance_remain / (temp_init_distance)
++            # scaling_factor = 9.62e-4
++            normalized_distance = distance_remain / (self.initial_distance)
+ 
+             # Strain energy term
+             scaling_factor = 9.62e-4 # 9.62e-4
+@@ -1484,40 +900,14 @@ class Evaluator:
+                     self.term_history_backward['strain'].append(strain_contribution)
+                     self.term_history_backward['muscle'].append(muscle_contribution/enlarge_contribution_factor)
+                     
+-                    # # Write to log file
+-                    # with open(os.path.join(self.save_folder, "objective_terms_log_backward.txt"), 'a') as f:
+-                    #     f.write(f"Step: {self.step_objective}\n")
+-                    #     f.write(f"Distance Contribution: {distance_contribution:.6f}\n")
+-                    #     f.write(f"Strain Contribution: {strain_contribution:.6f}\n")
+-                    #     f.write(f"Muscle Contribution: {muscle_contribution:.6f}\n")
+-                    #     f.write("-"*50 + "\n")
+-
+                                 
+                     # Check if file exists to determine if we need headers
+                     file_exists = os.path.exists(os.path.join(self.save_folder, "objective_terms_log_backward.csv"))
+ 
+-                    # Open file in append mode
+-                    # with open(os.path.join(self.save_folder, "objective_terms_log_backward.csv"), 'a', newline='') as csvfile:
+-                    #     writer = csv.writer(csvfile)
+-                        
+-                    #     # Write header only if file doesn't exist
+-                    #     if not file_exists:
+-                    #         writer.writerow(["Step", "Distance Contribution", "Strain Contribution", "Muscle Contribution", "muscle_forces", "landmark_displacements", "muscle_work"])
+-                        
+-                    #     # Always write the data row
+-                    #     writer.writerow([
+-                    #         self.step_objective,
+-                    #         f"{distance_contribution:.6f}",
+-                    #         f"{strain_contribution:.6f}", 
+-                    #         f"{muscle_contribution:.6f}",
+-                    #         f"{muscle_forces:.12f}",
+-                    #         f"{landmark_displacements:.12f}",
+-                    #         f"{muscle_work:.12f}"
+-                    #     ])                           
+ 
+             objective = distance_contribution  + strain_contribution  + muscle_contribution # + strain_contribution + muscle_contribution
+ 
+-            scale_factor_objective = temp_init_distance
++            scale_factor_objective = self.initial_distance
+             scaled_objective = objective * scale_factor_objective
+             
+         # return objective
+@@ -1543,8 +933,6 @@ class Evaluator:
+         return reward, distance_contribution, strain_contribution, muscle_contribution
+ 
+ 
+-
+-
+     def rotation_reward_function(self, current_position, target, accumulated_work, w1=1.0, w2=0.1):
+         """
+         Reward function that balances distance and accumulated work.
+@@ -1573,166 +961,20 @@ class Evaluator:
+         
+         return reward
+ 
+-    # adam
+-    def compute_analytical_gradient(self, positions_lip_joint, targets, initial_distance, position, calculator):    
+-            # note that "positions_lip_joint" can be other joints, (i.e. landmarks) for other muscles
+-            import torch
+-
+-            # 1. Convert inputs to PyTorch Tensors
+-            translations = torch.tensor(positions_lip_joint, dtype=torch.float32).view(-1, 3)
+-            translations.requires_grad_(True)
+-            targets_tensor = torch.tensor(targets, dtype=torch.float32).view(-1, 3)
+-            positions_tensor = torch.tensor(position, dtype=torch.float32).view(-1, 3)
+-
+-            # 2. Forward pass USING THE PASSED CALCULATOR
+-            y_e = calculator.maya_lbs(translations, positions_tensor)
+-
+-            # 3. Compute Distance (geometric vertex distance to target in Maya units)
+-            # Added a small epsilon (1e-12) to prevent NaN gradients at zero distance
+-            distance_remain = torch.sqrt(torch.sum((targets_tensor - y_e)**2) + 1e-12)
+-
+-            # 4. Compute Strain Energy matching refence.py formulation
+-            scaling_factor = 9.62e-4
+-            k_tissue = getattr(calculator, 'k_tissue', 10000.0)
+-            strain_energy = 0.5 * k_tissue * ((distance_remain * scaling_factor) ** 2)
+-
+-            # 5. Compute Muscle Work matching refence.py formulation
+-            temp_joint_num = translations.shape[0]
+-            # enlarge_contribution_factor = 10e2
+-            enlarge_contribution_factor = 0.1
+-            
+-            # Pull parameters dynamically or fall back to defaults
+-            max_muscle = getattr(calculator, 'max_muscle_work', 10.0)
+-            max_strain = getattr(calculator, 'max_strain_energy', 1.0)
+-            w1 = getattr(calculator, 'w1', self.w1)
+-            w2 = getattr(calculator, 'w2', self.w2)
+-            w3 = getattr(calculator, 'w3', self.w3)
+-
+-            # Physiologically constrained parameters
+-            F_max_new = 17.0 / 300.0
+-            expected_total_steps = 5500.0
+-            v_max_new = 1.0 / ((35.0 / 30.0) / expected_total_steps) * 9.62e-4 * 100.0
+-            K_new = 0.18
+-            a_new = 0.12
+-            b_new = v_max_new * a_new / (F_max_new * K_new)
+-
+-            activation = 0.8
+-            original_length = 2.0e-2
+-            l_0 = 2.0e-2
+-            sigma = 0.4
+-            k_PEE = 0.5
+-            k_SEE = 0.3
+-            l_tendon = 0.05
+-
+-            # Compute translations per vertex for the muscle model
+-            landmark_displacements = torch.sqrt(torch.sum(translations**2, dim=1) + 1e-12) * scaling_factor
+-            distance_remain_per_vertex = distance_remain / temp_joint_num
+-            trans_cm = distance_remain_per_vertex * 9.62e-4 * 100.0
+-
+-            # Epsilon-based velocity conversion from refence.py
+-            epsilon = 1e-3
+-            vel = epsilon / ((35.0 / 30.0) / expected_total_steps)
+-            vel_cm = vel * 9.62e-4 * 100.0
+-
+-            # Hill Muscle Length Calculation
+-            l = (original_length * 100.0) + trans_cm
+-            l_0_cm = l_0 * 100.0
+-            normalized_length_diff = (l - l_0_cm) / l_0_cm
+-            exponent = -(normalized_length_diff ** 2) / (2.0 * (sigma ** 2))
+-            F_length = F_max_new * torch.exp(exponent)
+-
+-            # Force-velocity Relationship
+-            if vel_cm >= 0:
+-                F_velocity = ((F_max_new + a_new) * b_new) / (vel_cm + b_new) - a_new
+-            else:
+-                F_velocity = 1.4 - 0.4 * (vel_cm / v_max_new)
+-
+-            # Passive Forces (torch.clamp prevents negative stretch values)
+-            F_PEE = k_PEE * torch.clamp(l - l_0_cm, min=0.0)
+-            F_SEE = k_SEE * l_tendon
+-
+-            # Total force generation (clamped to physiological maximum)
+-            active_force = activation * F_length * F_velocity + F_PEE + F_SEE
+-            muscle_force = torch.clamp(active_force, max=F_max_new)
+-
+-            # 6. Normalize Components
+-            init_dist = initial_distance if (initial_distance is not None and initial_distance > 0) else 1.0
+-            normalized_distance = distance_remain / init_dist
+-            normalized_strain_energy = strain_energy / (max_strain if max_strain > 0 else 1.0)
+-
+-            # Sum muscle work over all landmarks utilizing the computed muscle_force tensor
+-            muscle_work_term = muscle_force * landmark_displacements * (enlarge_contribution_factor * scaling_factor / (max_muscle if max_muscle > 0 else 10.0))
+-            normalized_muscle_work = torch.sum(muscle_work_term)
+-
+-            # Calculate final contributions
+-            distance_contrib = w1 * normalized_distance
+-            strain_contrib = w2 * normalized_strain_energy
+-            muscle_contrib = w3 * normalized_muscle_work
+-
+-            # Store term contributions on calculator for logging
+-            calculator.dist_grad_mag = distance_contrib.item()
+-            calculator.strain_grad_mag = strain_contrib.item()
+-            calculator.muscle_grad_mag = muscle_contrib.item()
+-            calculator.total_grad_mag = distance_remain.item()
+-
+-            # 7. Compute weighted scaled loss matching reference.py
+-            objective = distance_contrib + strain_contrib + muscle_contrib
+-            scaled_objective = objective * init_dist
+-            
+-            # # Formulate as negative objective for reward maximization
+-            # reward = -scaled_objective
+-
+-            # --- THE FIX: GLOBAL SPEED BOOST ---
+-            # We scaled down the muscle term by ~10,000x to balance the terms, 
+-            # which shrank the overall gradients. We multiply the final reward 
+-            # to restore the gradient magnitude the optimizer expects.
+-            global_speed_boost = 3000.0 
+-            
+-            # Formulate as negative objective for reward maximization
+-            reward = -scaled_objective * global_speed_boost
+-
+-            reward.backward()
+-
+-            # gradients_flat = translations.grad.view(-1).detach().numpy()
+-
+-            # return gradients_flat * self.analytical_gradient_scale
+-
+-            # --- Adam Optimizer Implementation ---
+-            # We store the Adam state on the calculator object to ensure 
+-            # independent momentum tracking for each muscle/landmark group.
+-            
+-            # NOTE: Adam normalizes gradients, making it invariant to 'global_speed_boost'.
+-            # The 'adam_lr' here becomes the new primary speed controller.
+-            # If the optimization is too slow, increase adam_lr (e.g., to 10.0, 50.0, or 100.0).
+-            adam_lr = 5.0
+-            
+-            if not hasattr(calculator, '_adam_param') or calculator._adam_param.shape != translations.view(-1).shape:
+-                calculator._adam_param = torch.nn.Parameter(torch.zeros_like(translations.view(-1)))
+-                calculator._adam_opt = torch.optim.Adam([calculator._adam_param], lr=adam_lr)
+-            else:
+-                # Update learning rate in case you change it dynamically
+-                for param_group in calculator._adam_opt.param_groups:
+-                    param_group['lr'] = adam_lr
+-                    
+-            calculator._adam_opt.zero_grad()
+-            
+-            # Adam minimizes by default, but we want to maximize the reward.
+-            # Setting grad to -translations.grad makes Adam step towards the maximum.
+-            calculator._adam_param.grad = -translations.grad.view(-1).clone()
+-            
+-            old_param = calculator._adam_param.data.clone()
+-            calculator._adam_opt.step()
+-            
+-            # The difference is our Adam-adjusted gradient step
+-            adam_step = (calculator._adam_param.data - old_param).detach().numpy()
+-
+-            return adam_step * self.analytical_gradient_scale
+-
+-    def compute_single_gradient(self, joints, target, initial_distance, observed_position, calculator, object_name):                                
++"""
++Discovery: In main branch (newest version), the analytical gradient is used whereas here we use a numerical gradient
++I have to use the analytical gradient in the functions below to match the main branch.
++
++Copilot input:
++Swap the gradient computation while preserving the deprecated branch’s phase transitions and payload format. 
++Keep recording the trajectories, but consider plotting them after a transition completes rather than repeatedly during optimization. 
++That separates visualization cost from gradient cost and preserves the plots you care about.
++"""
++    def compute_single_gradient(self, position, target, positions_lip_joint, step_t1, 
++                                object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
+         # Initialize a cumulative gradient to sum over all steps
+-        cumulative_gradient = np.zeros_like(observed_position, dtype=np.float32)        
+-
+-
++        cumulative_gradient = np.zeros_like(position, dtype=np.float32)        
++        # Get current phase
+         current_phase = self.phase_manager.current_phase
+         # Ensure the gradient_magnitudes dictionary has the object_name key
+         phase_gradients = self.phase_manager.phase_data[current_phase]['gradient_magnitudes']
+@@ -1743,9 +985,8 @@ class Evaluator:
+             self.gradient_magnitudes[self.phase_manager.current_phase][object_name] = []
+ 
+         # get previous gradient of full 
+-        def get_full_gradient(position, target, positions_lip_joint, object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
++        def get_full_gradient(position, target, positions_lip_joint, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
+             # position here is the chosen indexed vertices, not landmark's position. but is one-one mapping related.
+-            
+             gradient = np.zeros_like(position, dtype=np.float32)
+             for i in range(len(position)):
+ 
+@@ -1759,7 +1000,21 @@ class Evaluator:
+ 
+                 method = 'euclidean'
+                 scaling_factor = 1 # 9.62e-4  # 1 # 9.62e-4
++                """
++                assume the velocity is the current step's this current landmark's velocity, not the average from the past.
++                final unit: m/s
++                scaling_factor = 0.0962  # 1 Maya unit = 0.0962 cm   = 0.000962 m
++
++                originally, strain_distance = ... this equation is to calculate AA to rest process. In this case, target pose is "neutral pose".
++                so when the current pose is at the begining status, the strain distance is maximum. and distance_remain = strain_distance.
++                at the end, the strain distance is minimum.
+ 
++                after some exploration, we assume, strain energy at all of the target pose, be it "neutral pose", "smile", or any other pose, is the minimum strain energy.
++                this allows the gradient, 3 composnents of the gradient, work together to converge, in a general way.
++
++                Case study 2: from neutral pose to smile. The strain energy, we assume it is very large at the neutral pose. and when it deforms to the target pose,
++                the strain energy reaches the minimum. So "distance_remain = strain_distance" still holds.
++                """
+                 strain_distance = self.distance_calculator.calculate_distance(method, target, pos_forward)  * scaling_factor         
+                 strain_distance_back = self.distance_calculator.calculate_distance(method, target, pos_backward)   * scaling_factor        
+                 
+@@ -1769,76 +1024,74 @@ class Evaluator:
+                 scaling_factor_adhoc = 1 # 9.62e-4
+                 landmark_velocities = epsilon * scaling_factor_adhoc / (  (35/30) /self.expected_total_steps)   #  epsilon per step.  convert to epsilon per s , 
+ 
+-                if False and self.obj_full_version == 1:   
+-                    # landmark_displacements = strain_distance
+-                    pass
+-
++                if self.obj_full_version == 1:   
++                    landmark_displacements = self.distance_calculator.calculate_distance(method, self.x_bar_j_selected[i], pos_forward[i])   * scaling_factor         
++                    landmark_displacements_back = self.distance_calculator.calculate_distance(method, self.x_bar_j_selected[i], pos_backward[i])  * scaling_factor         
++                    scale_factor_reward = 1e8
+ 
+                 else:
+-
+-
+                     landmark_displacements= abs( epsilon )  * scaling_factor  
+                     landmark_displacements_back= abs( epsilon )  * scaling_factor  
+-
+-
+-                    # landmark_displacements = 0
+-                    # landmark_displacements_back = 0          
+                     scale_factor_reward = 1      
+ 
++                    
+                 def calculate_muscle_force(activation, original_length, landmark_translations, landmark_velocities, 
+                                         F_max, l_0, sigma, v_max, K, a, b, k_PEE, k_SEE, l_tendon):
+-                    # Debug file setup
+-                    # debug_file = os.path.join(self.save_folder, "muscle_force_debug.txt")
+-                    
+-                    # with open(debug_file, 'a') as f:
+-                    #     f.write(f"\n=== Muscle Force Calculation Debug ===\n")
+-                    #     f.write(f"self.step_objective: {self.step_objective}\n")
+-                        
+-                    #     # Original debug info
+-                    #     f.write(f"Original landmark_translations (before scaling): {landmark_translations}\n")
+-                    #     f.write(f"Type: {type(landmark_translations)}, Shape: {np.array(landmark_translations).shape if hasattr(landmark_translations, 'shape') else 'N/A'}\n")
+-                        
+-                    #     # Convert all units to cm
+-                    #     scaling_factor_adhoc = 9.62e-4
+-                    #     landmark_translations = np.array(landmark_translations) * scaling_factor_adhoc * 100  
+-                    #     landmark_velocities = np.array(landmark_velocities) * scaling_factor_adhoc * 100  
+-                    #     original_length = original_length * 100 # m to cm
+-                    #     l_0 = l_0 * 100
+-
+-                    #     # Debug scaled values
+-                    #     f.write(f"Scaled landmark_translations: {landmark_translations}\n")
++
++                    # Viktor: This was commented out but it may be useful?
++                    if self.debug_mode_vsCode == 1:
++                        # Debug file setup
++                        debug_file = os.path.join(self.save_folder, "muscle_force_debug.txt")
+                         
+-                    #     # Try both approaches and compare
+-                    #     try:
+-                    #         # Original approach with np.mean()
+-                    #         avg_with_mean = np.mean(landmark_translations)
+-                    #         f.write(f"Average with np.mean(): {avg_with_mean}\n")
++                        with open(debug_file, 'a') as f:
++                            f.write(f"\n=== Muscle Force Calculation Debug ===\n")
++                            f.write(f"self.step_objective: {self.step_objective}\n")
+                             
+-                    #         # Direct approach (assuming scalar)
+-                    #         avg_direct = landmark_translations # landmark_translations[0] if len(landmark_translations) == 1 else landmark_translations
+-                    #         f.write(f"Average direct access: {avg_direct}\n")
+-                            
+-                    #         # Compare results
+-                    #         if np.allclose(avg_with_mean, avg_direct):
+-                    #             f.write("Results MATCH - safe to remove np.mean()\n")
+-                    #             avg_translation = avg_direct  # Use the faster approach
+-                    #         else:
+-                    #             f.write("Results DIFFER - keep np.mean()\n")
+-                    #             avg_translation = avg_with_mean
+-                                
+-                    #     except Exception as e:
+-                    #         f.write(f"Error during comparison: {str(e)}\n")
+-                    #         avg_translation = np.mean(landmark_translations)  # Fallback to original
++                            # Original debug info
++                            f.write(f"Original landmark_translations (before scaling): {landmark_translations}\n")
++                            f.write(f"Type: {type(landmark_translations)}, Shape: {np.array(landmark_translations).shape if hasattr(landmark_translations, 'shape') else 'N/A'}\n")
+                             
+-                    #     # Continue with velocity calculation
+-                    #     try:
+-                    #         avg_velocity = landmark_velocities  # landmark_velocities[0] if len(landmark_velocities) == 1 else np.mean(landmark_velocities)
+-                    #         f.write(f"Velocity average: {avg_velocity}\n")
+-                    #     except Exception as e:
+-                    #         f.write(f"Error in velocity calculation: {str(e)}\n")
+-                    #         avg_velocity = np.mean(landmark_velocities)
++                            # Convert all units to cm
++                            scaling_factor_adhoc = 9.62e-4
++                            landmark_translations = np.array(landmark_translations) * scaling_factor_adhoc * 100  
++                            landmark_velocities = np.array(landmark_velocities) * scaling_factor_adhoc * 100  
++                            original_length = original_length * 100 # m to cm
++                            l_0 = l_0 * 100
++
++                            # Debug scaled values
++                            f.write(f"Scaled landmark_translations: {landmark_translations}\n")
+                             
+-                    #     f.write("------------------------\n")
++                            # Try both approaches and compare
++                            try:
++                                # Original approach with np.mean()
++                                avg_with_mean = np.mean(landmark_translations)
++                                f.write(f"Average with np.mean(): {avg_with_mean}\n")
++                                
++                                # Direct approach (assuming scalar)
++                                avg_direct = landmark_translations # landmark_translations[0] if len(landmark_translations) == 1 else landmark_translations
++                                f.write(f"Average direct access: {avg_direct}\n")
++                                
++                                # Compare results
++                                if np.allclose(avg_with_mean, avg_direct):
++                                    f.write("Results MATCH - safe to remove np.mean()\n")
++                                    avg_translation = avg_direct  # Use the faster approach
++                                else:
++                                    f.write("Results DIFFER - keep np.mean()\n")
++                                    avg_translation = avg_with_mean
++                                    
++                            except Exception as e:
++                                f.write(f"Error during comparison: {str(e)}\n")
++                                avg_translation = np.mean(landmark_translations)  # Fallback to original
++                                
++                            # Continue with velocity calculation
++                            try:
++                                avg_velocity = landmark_velocities  # landmark_velocities[0] if len(landmark_velocities) == 1 else np.mean(landmark_velocities)
++                                f.write(f"Velocity average: {avg_velocity}\n")
++                            except Exception as e:
++                                f.write(f"Error in velocity calculation: {str(e)}\n")
++                                avg_velocity = np.mean(landmark_velocities)
++                                
++                            f.write("------------------------\n")
+                             
+ 
+                     # Convert all units to cm
+@@ -1896,16 +1149,6 @@ class Evaluator:
+                     
+                     # Total force (clamped to not exceed F_max)
+                     muscle_force = min(activation * F_length * F_velocity + F_PEE + F_SEE, F_max)
+-                    
+-                    # return {
+-                    #     'muscle_force': muscle_force,
+-                    #     'F_length': F_length,
+-                    #     'F_velocity': F_velocity,
+-                    #     'F_PEE': F_PEE,
+-                    #     'F_SEE': F_SEE,
+-                    #     'active_force': activation * F_length * F_velocity
+-                    # }
+-
+ 
+                     log_muscle_force_flag = 0
+                     if log_muscle_force_flag == 1:                    
+@@ -1913,11 +1156,6 @@ class Evaluator:
+                         # Log the important variables
+                         if save_folder:
+                             with open(os.path.join(save_folder, "muscle_force_log.txt"), 'a') as f:
+-                                # f.write(f"Activation: {activation:.4f}\n")
+-                                # f.write(f"Original Length: {original_length:.4f} cm\n")
+-                                # f.write(f"Average Translation: {average_translation:.4f} cm\n")
+-                                # f.write(f"Average Velocity: {average_velocity:.4f} cm/s\n")
+-                                f.write(f"Current Muscle Length (l): {l:.4f} cm\n")
+                                 f.write(f"Force-Length (F_length): {F_length:.4f} N\n")
+                                 f.write(f"Force-Velocity (F_velocity): {F_velocity:.4f}\n")
+                                 f.write(f"Passive Parallel Elastic Force (F_PEE): {F_PEE:.4f} N\n")
+@@ -1930,26 +1168,13 @@ class Evaluator:
+ 
+                 # Inputs
+ 
+-                if object_name == "oor":
+-                    temp_joint_num = self.joint_num
+-                elif object_name == "ooc_l":
+-                    temp_joint_num = self.joint_ooc_l_num
+-                elif object_name == "ooc_r":
+-                    temp_joint_num = self.joint_ooc_r_num
+-                elif object_name == "frontalis":
+-                    temp_joint_num = self.joint_frontalis_num
+-                else:
+-                    temp_joint_num = self.joint_num
+-                    print("warning, unknown tissue and joint_num!")  
+-                    
+-
+                 landmark_translations_per_vertax = landmark_displacements / 1 # self.joint_num
+-                distance_remain_per_vertax = distance_remain / temp_joint_num
++                distance_remain_per_vertax = distance_remain / self.joint_num
+                 #  landmark_displacements is all landmark translation sum.
+                 # landmark_translations is each landmark translation value.
+ 
+-                distance_remain_back_per_vertax = distance_remain_back  / temp_joint_num
+-                landmark_translations_back_per_vertax = landmark_displacements_back  / 1 # temp_joint_num
++                distance_remain_back_per_vertax = distance_remain_back  / self.joint_num
++                landmark_translations_back_per_vertax = landmark_displacements_back  / 1 # self.joint_num
+                 
+                 # New parameters (physiologically constrained)
+                 # make the output muscle force below 17 / 300 newton (because I have 300 landmarks, and the whole lip can generate 17 N accourding to literature)
+@@ -1977,14 +1202,11 @@ class Evaluator:
+                 k_SEE = 0.3    # empirical value.
+                 l_tendon = 0.05  # Smaller tendon stretch  empirical value.
+ 
+-                if False and self.obj_full_version == 1:   
+-                    pass
+-                    
++                if self.obj_full_version == 1:   
++                    muscle_forces = calculate_muscle_force(activation, original_length, distance_remain_per_vertax, landmark_velocities)
++                    muscle_forces_back = calculate_muscle_force(activation, original_length, distance_remain_back_per_vertax, landmark_velocities)
+                 # print(f"Computed Muscle Force: {muscle_forces:.2f} N")
+                 else:
+-                    # muscle_forces = calculate_muscle_force(activation, original_length, distance_remain_per_vertax, landmark_velocities)
+-
+-
+                     # Here is the second strong assumption, coresponding to line 1590. We assume, the big idea is, that the remaining distance = the translated muscle distance.
+                     # This assumption is correct in "AA to neutral" task. At AA pose, the lip has maximum muscle force. At neutral pose, the lip has minimum muscle force.
+                     # and remaining distance = the translated muscle distance.
+@@ -1993,7 +1215,6 @@ class Evaluator:
+                     # at AA pose, the lip has minimum muscle force. 
+                     # and assume remaining distance = the translated muscle distance. So we used the "full distance - translated distance" as the computing "translated distance".
+                     # Same reason with line 1590's.
+-                    
+ 
+                     # the remaining distance per vertax 
+                     trans = distance_remain_per_vertax
+@@ -2002,16 +1223,6 @@ class Evaluator:
+                                                             F_max_new, l_0, sigma, v_max_new, K_new, a_new, b_new, 
+                                                             k_PEE, k_SEE, l_tendon
+                                                             )
+-                    
+-                    # strain_distance = self.distance_calculator.calculate_distance(method, target, pos_forward)  * scaling_factor     
+-                    # distance_remain = strain_distance
+-                    # distance_remain_per_vertax = distance_remain / temp_joint_num . 
+-                    # so distance_remain_per_vertax is the 'only' changing variable value here.
+-                    # this is already the most simplified model model.
+-                    # landmark_velocities = epsilon * scaling_factor_adhoc / (  (35/30) /self.expected_total_steps)   #  epsilon per step.  convert to epsilon per s , 
+-                    # the landmark_velocities only changes when the "self.expected_total_steps" increases. but does not affact the reward_diff or the contribution to gradient.
+-                    
+-
+ 
+                     # muscle_forces_back = calculate_muscle_force(activation, original_length, distance_remain_back_per_vertax, landmark_velocities)        
+                     trans = distance_remain_back_per_vertax
+@@ -2019,186 +1230,31 @@ class Evaluator:
+                                                             F_max_new, l_0, sigma, v_max_new, K_new, a_new, b_new, 
+                                                             k_PEE, k_SEE, l_tendon
+                                                             )           
+-                    # muscle_forces = 0
+-                    # muscle_forces_back = 0
+-
+-
+ 
+                 # Calculate muscle force
+                 # muscle_force = calculate_muscle_force(activation, original_length, landmark_displacements, landmark_velocities)
+ 
+-                reward_forward, distance_contribution_f, strain_contribution_f, muscle_contribution_f = self.translation_reward_function_forward(pos_forward, target, landmark_translations_per_vertax, landmark_velocities, muscle_forces, strain_distance , distance_remain, object_name, w1=self.w1, w2=self.w2, w3=self.w3)
+-                reward_backward, distance_contribution_b, strain_contribution_b, muscle_contribution_b  = self.translation_reward_function_backward(pos_backward, target, landmark_translations_back_per_vertax, landmark_velocities, muscle_forces_back, strain_distance_back, distance_remain_back, object_name, w1=self.w1, w2=self.w2, w3=self.w3)
++                reward_forward, distance_contribution_f, strain_contribution_f, muscle_contribution_f = self.translation_reward_function_forward(pos_forward, target, landmark_translations_per_vertax, landmark_velocities, muscle_forces, strain_distance , distance_remain, w1=self.w1, w2=self.w2, w3=self.w3)
++                reward_backward, distance_contribution_b, strain_contribution_b, muscle_contribution_b  = self.translation_reward_function_backward(pos_backward, target, landmark_translations_back_per_vertax, landmark_velocities, muscle_forces_back, strain_distance_back, distance_remain_back, w1=self.w1, w2=self.w2, w3=self.w3)
+                 # reward_backward = self.reward_function(pos_backward, target)
+ 
+-                
+-
+-
+                 reward_diff = reward_forward - reward_backward
+-                # reward_diff = reward_diff * scale_factor_reward
+-
+-
+-
+-                # reward_forward = - strain_distance
+-                # reward_backward = - strain_distance_back
+-                
+-                debug_manually = 0
+-                use_b17_model_distance_only = 0
+-                if debug_manually == 1 and object_name == "oor":
+-                    # Initialize debug iteration counter if it doesn't exist
+-                    if not hasattr(self, 'debug_iteration'):
+-                        self.debug_iteration = 0
+-                        self.max_debug_iterations = 2000
+-                        
+-                        # Create debug file header (ONLY ONCE)
+-                        debug_file_path = os.path.join(self.save_folder, "reward_debug_comparison.csv")
+-                        with open(debug_file_path, 'w', newline='') as csvfile:
+-                            writer = csv.writer(csvfile)
+-                            writer.writerow([
+-                                'iteration', 'target', 'pos_forward', 'pos_backward', 
+-                                'reward_forward', 'reward_backward', 'reward_diff',
+-                                'positions_equal', 'rewards_equal', 'position_difference'
+-                            ])
+-                        print(f"Created debug file: {debug_file_path}")
+-
+-                    # Calculate rewards
+-                    reward_forward = self.reward_function(pos_forward, target)
+-                    reward_backward = self.reward_function(pos_backward, target)
+-                    reward_diff = reward_forward - reward_backward
+-
+-                    # Save to CSV for first 20 iterations
+-                    if self.debug_iteration < self.max_debug_iterations:
+-                        # Check if positions are equal
+-                        positions_equal = np.array_equal(pos_forward, pos_backward)
+-                        rewards_equal = (reward_forward == reward_backward)
+-                        
+-                        # Calculate position difference (handle both scalar and array cases)
+-                        if hasattr(pos_forward, '__len__') and hasattr(pos_backward, '__len__'):
+-                            position_difference = np.linalg.norm(np.array(pos_forward) - np.array(pos_backward))
+-                        else:
+-                            position_difference = abs(float(pos_forward) - float(pos_backward))
+-                        
+-                        # Write to CSV (APPEND mode)
+-                        debug_file_path = os.path.join(self.save_folder, "reward_debug_comparison.csv")
+-                        with open(debug_file_path, 'a', newline='') as csvfile:
+-                            writer = csv.writer(csvfile)
+-                            writer.writerow([
+-                                self.debug_iteration,
+-                                str(target[0:10]),
+-                                str(pos_forward[0:10]),
+-                                str(pos_backward[0:10]),
+-                                reward_forward,
+-                                reward_backward,
+-                                reward_diff,
+-                                positions_equal,
+-                                rewards_equal,
+-                                position_difference
+-                            ])
+-                        
+-                        # Also print to console for immediate feedback
+-                        print(f"\n=== Iteration {self.debug_iteration} ===")
+-                        # print(f"target: {target}")
+-                        # print(f"pos_forward: {pos_forward}")
+-                        # print(f"pos_backward: {pos_backward}")
+-                        # print(f"reward_forward: {reward_forward}")
+-                        # print(f"reward_backward: {reward_backward}")
+-                        # print(f"reward_diff: {reward_diff}")
+-                        # print(f"positions_equal: {positions_equal}")
+-                        # print(f"position_difference: {position_difference}")
+-                        
+-                        self.debug_iteration += 1     
+ 
+-                    else:
+-                        # print("passed the test, now quit.")
+-                        # import sys
+-                        # sys.exit(0)  # Exit with status code 0                          
+-                        pass
++                reward_diff = reward_diff * scale_factor_reward
+ 
+-                else:
+-                    if use_b17_model_distance_only == 1:
+-                        reward_forward = self.reward_function(pos_forward, target)
+-                        reward_backward = self.reward_function(pos_backward, target)
+-                        reward_diff = reward_forward - reward_backward
+-                    else:
+-                        pass
+-                                
+-                
+                 scale_factor_objective = self.initial_distance
+ 
+-
+                 reward_diff_distance_contribution = ( distance_contribution_f * scale_factor_objective - distance_contribution_b * scale_factor_objective  ) *  scale_factor_reward
+                 reward_diff_strain_contribution = ( strain_contribution_f * scale_factor_objective - strain_contribution_b * scale_factor_objective  ) *  scale_factor_reward
+                 reward_diff_muscle_contribution = ( muscle_contribution_f * scale_factor_objective - muscle_contribution_b * scale_factor_objective  ) *  scale_factor_reward                
+             
+ 
+-                self.log_objective_terms(self.phase_manager.current_phase, object_name, reward_diff=reward_diff,
++                self.log_objective_terms(self.phase_manager.current_phase, reward_diff=reward_diff, 
+                        reward_diff_distance_contribution=reward_diff_distance_contribution,
+                        reward_diff_strain_contribution=reward_diff_strain_contribution,
+                        reward_diff_muscle_contribution=reward_diff_muscle_contribution,
+                        muscle_contribution_f=muscle_contribution_f,
+                        muscle_contribution_b=muscle_contribution_b)
+-      
+-                
+-                # trace_and_log_obj_contribution = 1
+-
+-                # if trace_and_log_obj_contribution == 1:
+-                #     # Store contributions for plotting
+-                #     if not hasattr(self, 'term_history_diff'):
+-                #         self.term_history_diff = {
+-                #             'steps': [],
+-                #             'distance': [],
+-                #             'strain': [],
+-                #             'muscle': []
+-                #         }
+-                    
+-                #     # Log every 200 steps or at convergence   self.step_t1   self.next_info['step_counter_internal']
+-                #     # check_interval = math.floor(40_000 / 6)  # Explicitly shows we're dividing 40,000 by 6
+-                #     check_interval = math.floor(1500)
+-                #     if abs(reward_diff) >= threshold: # self.step_objective % check_interval == 0 or 
+-                #         if self.count_diff_log % check_interval == 0:
+-                            
+-                #             self.term_history_diff['steps'].append(self.step_objective)
+-                #             self.term_history_diff['distance'].append(reward_diff_distance_contribution)
+-                #             self.term_history_diff['strain'].append(reward_diff_strain_contribution)
+-                #             self.term_history_diff['muscle'].append(reward_diff_muscle_contribution)
+-                            
+-                #             # # Write to log file
+-                #             # with open(os.path.join(self.save_folder, "objective_terms_log_forward.txt"), 'a') as f:
+-                #             #     f.write(f"Step: {self.step_objective}\n")
+-                #             #     f.write(f"Distance Contribution: {distance_contribution:.6f}\n")
+-                #             #     f.write(f"Strain Contribution: {strain_contribution:.6f}\n")
+-                #             #     f.write(f"Muscle Contribution: {muscle_contribution:.6f}\n")
+-                #             #     f.write("-"*50 + "\n")
+-                                        
+-                #             # Check if file exists to determine if we need headers
+-                #             file_exists = os.path.exists(os.path.join(self.save_folder, "objective_terms_data_diff.csv"))
+-
+-                #             # Open file in append mode
+-                #             with open(os.path.join(self.save_folder, "objective_terms_data_diff.csv"), 'a', newline='') as csvfile:
+-                #                 writer = csv.writer(csvfile)
+-                                
+-                #                 # Write header only if file doesn't exist
+-                #                 if not file_exists:
+-                #                     writer.writerow(["Step", "Distance Contribution", "Strain Contribution", "Muscle Contribution", "muscle_contribution_f", "muscle_contribution_b", ])
+-                                
+-                #                 # Always write the data row
+-                #                 writer.writerow([
+-                #                     self.step_objective,
+-                #                     f"{reward_diff_distance_contribution:.6f}",
+-                #                     f"{reward_diff_strain_contribution:.6f}", 
+-                #                     f"{reward_diff_muscle_contribution:.6f}",
+-                #                     f"{muscle_contribution_f:.6f}",
+-                #                     f"{muscle_contribution_b:.6f}"
+-                #                 ])
+-
+-                
+-
+-
+-                # print(f"Muscle forces sum: {np.sum(muscle_forces):.3e}")
+-                # print(f"Displacements sum: {np.sum(landmark_displacements):.3e}")
+-                # print(f"Raw work: {np.sum(muscle_forces * landmark_displacements):.3e}")
+-
+-
+                 # reward_diff = round(reward_forward - reward_backward, 4) 
+                 if abs(reward_diff) < threshold:
+                     gradient[i] = 0.0
+@@ -2209,13 +1265,6 @@ class Evaluator:
+                 
+                 gradient[i] = np.clip(gradient[i], -clip_value, clip_value)
+                 
+-                # Print pos_forward[i], pos_backward[i], and gradient[i] to the log file
+-                # with open(self.save_folder + "/log" + str(self.i_func) + ".txt", 'a') as f:
+-                #     print(f"pos_forward[{i}]: {pos_forward[i]}, pos_backward[{i}]: {pos_backward[i]}, gradient[{i}]: {gradient[i]}", file=f)
+-                #     print(f"reward_diff", reward_diff, file = f)
+-                #     print(f"reward_forward", reward_forward, file = f)
+-                #     print(f"reward_backward", reward_backward, file = f)
+-
+             # Reshape the gradient to have shape (number_of_landmarks, 3)
+             num_landmarks = len(position) // 3
+             gradient = gradient.reshape((num_landmarks, 3))
+@@ -2225,92 +1274,47 @@ class Evaluator:
+ 
+             return flattened_gradient           
+         
+-        """
+-        A clean, generic interface. It receives exactly what it needs to execute.
+-        """
+-        if object_name in ["oor", "ooc_l", "ooc_r", "frontalis"]:
+-
+-            # Set properties on the calculator to compute full objective analytically
+-            calculator.w1 = getattr(self, 'w1', 0.34)
+-            calculator.w2 = getattr(self, 'w2', 0.33)
+-            calculator.w3 = getattr(self, 'w3', 0.33)
+-            calculator.k_tissue = getattr(self, 'k_tissue', 10000.0)
+-            calculator.max_strain_energy = getattr(self, 'max_strain_energy', 1.0)
+-            calculator.max_muscle_work = getattr(self, 'max_muscle_work', 1.0)
+-            calculator.expected_total_steps = getattr(self, 'expected_total_steps', 5500)
+-            calculator.object_name = object_name
+-                        
+-            # Call your core analytical logic passing down the specific calculator instance
+-            ana_grad = self.compute_analytical_gradient(
+-                positions_lip_joint=joints, 
+-                targets=target, 
+-                initial_distance=initial_distance, 
+-                position=observed_position,
+-                calculator=calculator
+-            )
++        
++        self.prev_gradients = get_full_gradient(position, target, positions_lip_joint)        
++        
++        num_params = len(position)
++        self.num_params = num_params
++        gradient = np.zeros_like(position, dtype=np.float32)
+ 
+-            # Retrieve gradient contribution components for logging
+-            grad_norm = float(np.linalg.norm(ana_grad)) if (ana_grad is not None and hasattr(ana_grad, '__len__') and len(ana_grad) > 0) else 0.0
++        def select_indices(batch_size):
++            # Record the gradients
+             
+-            # Check calculator attributes with fallback to gradient magnitude
+-            reward_diff = getattr(calculator, 'total_grad_mag', grad_norm)
+-            if reward_diff == 0.0 and grad_norm > 0.0:
+-                reward_diff = grad_norm
+-
+-            reward_diff_dist = getattr(calculator, 'dist_grad_mag', grad_norm)
+-            reward_diff_strain = getattr(calculator, 'strain_grad_mag', 0.0)
+-            reward_diff_muscle = getattr(calculator, 'muscle_grad_mag', 0.0)
+-
+-            # print(f"[DEBUG compute_single_gradient] object='{object_name}', grad_norm={grad_norm:.6e}, dist={reward_diff_dist:.6e}, strain={reward_diff_strain:.6e}, muscle={reward_diff_muscle:.6e}")
++            # Calculate indices to avoid
++            avoid_indices = set(self.recent_indices)
+             
+-            # Log the analytical objective terms
+-            if hasattr(self, 'log_objective_terms') and hasattr(self, 'phase_manager'):
+-                self.log_objective_terms(
+-                    self.phase_manager.current_phase, 
+-                    object_name, 
+-                    reward_diff=reward_diff,
+-                    reward_diff_distance_contribution=reward_diff_dist,
+-                    reward_diff_strain_contribution=reward_diff_strain,
+-                    reward_diff_muscle_contribution=reward_diff_muscle,
+-                    muscle_contribution_f=0.0,
+-                    muscle_contribution_b=0.0
+-                )
+-
+-# --- DEBUG COUNTER & EXIT AT 200 ---
+-                if not hasattr(self, '_debug_log_count'):
+-                    self._debug_log_count = 0
+-                self._debug_log_count += 1
+-
+-                # if self._debug_log_count >= 200:
+-                #     import sys
+-                #     print("=" * 60)
+-                #     print(f"[DEBUG] Collection reached {self._debug_log_count} calls.")
+-                #     print(f"  Last object processed:        '{object_name}'")
+-                #     print(f"  Phase:                       {getattr(self.phase_manager, 'current_phase', 'N/A')}")
+-                #     print(f"  Total Grad Mag (reward_diff): {reward_diff}")
+-                #     print(f"  Distance Contribution:        {reward_diff_dist}")
+-                #     print(f"  Strain Contribution:          {reward_diff_strain}")
+-                #     print(f"  Muscle Contribution:          {reward_diff_muscle}")
+-                #     print(f"  Analytical Gradient Shape:    {getattr(ana_grad, 'shape', type(ana_grad))}")
+-                #     print("=" * 60)
+-                #     print("passed the test, now quit.")
+-                    
+-                #     sys.stdout.flush()  # Force console to output text immediately
+-                #     sys.exit(0)  # Exit cleanly with status code 0
++            # Choose indices based on exploration probability
++            if np.random.rand() < self.exploration_prob:
++                # Exploration: Select random indices not recently chosen
++                available_indices = list(set(range(self.num_params)) - avoid_indices)
++                selected_indices = np.random.choice(available_indices, batch_size, replace=False)
++            else:
++                # Exploitation: Choose largest gradients, avoiding recent ones
++                sorted_indices = np.argsort(np.abs(self.prev_gradients))
++                selected_indices = [idx for idx in sorted_indices if idx not in avoid_indices][-batch_size:]
++            
++            # Update recent indices history
++            self.recent_indices.extend(selected_indices)
++            if len(self.recent_indices) > self.history_size:
++                self.recent_indices = self.recent_indices[-self.history_size:]
++            
++            return selected_indices 
+ 
++        selected_indices = select_indices(batch_size)       
+ 
+-            self.prev_gradients = ana_grad
+-            return ana_grad
+-        else:
+-            # Fallback for other objects if necessary
+-            return get_full_gradient(observed_position, target, joints, object_name)
+ 
+-            num_params = len(position)
+-            self.num_params = num_params
++        for idx in selected_indices:
++            gradient[idx] = self.prev_gradients[idx]
+         
+-        # Bypassed sparse selection: assign the full gradient directly
+-        flattened_gradient = np.copy(self.prev_gradients)
+-        idx = 0  # Dummy index for tracking variables
++        num_landmarks = len(position) // 3
++        gradient = gradient.reshape((num_landmarks, 3))
++
++        # Flatten the gradient array
++        flattened_gradient = gradient.flatten()
+ 
+         # Add the current step's gradient to the cumulative gradient
+         cumulative_gradient += flattened_gradient
+@@ -2339,75 +1343,70 @@ class Evaluator:
+             (step_t1, gradient_magnitude)
+         )
+ 
+-        # Store the gradient magnitude with respect to step_t1
+-        # self.gradient_magnitudes.append((step_t1, gradient_magnitude))
++        self.gradients_over_iterations.append(flattened_gradient[idx])
++        
++        return flattened_gradient
+ 
+-        # You can also log the magnitude to the log file
+-        # with open(self.save_folder + "/log" + str(self.i_func) + ".txt", 'a') as f:
+-        #     print(f"Gradient Magnitude after step {step_t1}: {gradient_magnitude}", file=f)
+ 
+ 
+-        # Print pos_forward[i], pos_backward[i], and gradient[i] to the log file
+-        # with open(self.save_folder + "/log" + str(self.i_func) + ".txt", 'a') as f:
+-        #     print(f"pos_forward[{idx}]: {pos_forward[idx]}, "
+-        #           f"pos_backward[{idx}]: {pos_backward[idx]}, "
+-        #           f"gradient[{idx}]: {gradient[idx]}", file=f)
+-
+-        # Store full gradient over iterations for plotting
+-        if not hasattr(self, 'gradients_over_iterations_dict'):
+-            self.gradients_over_iterations_dict = {}
+-        if self.phase_manager.current_phase not in self.gradients_over_iterations_dict:
+-            self.gradients_over_iterations_dict[self.phase_manager.current_phase] = {}
+-        if object_name not in self.gradients_over_iterations_dict[self.phase_manager.current_phase]:
+-            self.gradients_over_iterations_dict[self.phase_manager.current_phase][object_name] = []
+-        
+-        self.gradients_over_iterations_dict[self.phase_manager.current_phase][object_name].append(
+-            (step_t1, np.copy(flattened_gradient))
+-        )
++    def compute_gradient_rotation(self, rotation_values, target, epsilon=1e-3, threshold=1e-4):
++        gradient = np.zeros_like(rotation_values, dtype=np.float32)
+ 
+-        self.gradients_over_iterations.append(flattened_gradient[idx])
+-        
+-        return flattened_gradient
++        for i in range(len(rotation_values)):
++            rot_forward = np.copy(rotation_values)
++            rot_backward = np.copy(rotation_values)
+ 
++            rot_forward[i] += epsilon
++            rot_backward[i] -= epsilon
+ 
+-    def compute_analytical_gradient_jaw(self, rotation_values, target, obs):
+-        import torch
+-        
+-        # Get current observed positions for the jaw from the obs array directly
+-        start_idx = 3*self.joint_rotate_num + 3*self.joint_num + 3*self.vertices_num
+-        end_idx = start_idx + 3*self.vertices_jaw_num
+-        current_coords_jaw = obs[start_idx : end_idx]
+-        
+-        # 1. Convert inputs to PyTorch Tensors
+-        rotations = torch.tensor(rotation_values, dtype=torch.float32).view(self.joint_rotate_num, 3)
+-        rotations.requires_grad_(True)
+-        
+-        targets_tensor = torch.tensor(target, dtype=torch.float32).view(-1, 3)
+-        positions_tensor = torch.tensor(current_coords_jaw, dtype=torch.float32).view(-1, 3)
+-        
+-        # 2. Forward pass: LBS
+-        # Note: We assume self.analytical_calculator_jaw is initialized with jaw bind pose and weights
+-        y_e = self.analytical_calculator_jaw.maya_lbs(translations=None, positions=positions_tensor, rotations=rotations)
+-        
+-        # 3. Compute Distance / Reward
+-        distance = torch.sqrt(torch.sum((targets_tensor - y_e)**2))
+-        
+-        # Objective: In the numerical gradient, reward is negative distance
+-        # We compute the gradient of the reward w.r.t rotations
+-        reward = -distance
+-        
+-        # If energy objective is enabled, we fallback to numerical gradient for the energy part, 
+-        # or log a warning if it's not fully handled analytically.
+-        if self.add_energy_to_jaw_objective_flag == 1:
+-            print("[Warning] Analytical gradient does not currently compute energy derivatives. Using distance only.")
+-            
+-        reward.backward()
+-        
+-        # 4. Extract gradients
+-        gradients_flat = rotations.grad.view(-1).detach().numpy()
+-        
+-        return gradients_flat    
+ 
++            # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
++            # if self.phase_manager.current_phase == 3:
++            #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
++            #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
++            #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
++            #     method = 'euclidean'
++            #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
++            #     print("e1 line 2741, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
++
++            new_coords_jaw_forward, accumulated_work_at_last_forward = self.env.return_coordinates_adhoc(rot_forward, self.phase_manager.current_phase)
++
++            # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
++            # if self.phase_manager.current_phase == 3:
++            #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
++            #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
++            #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
++            #     method = 'euclidean'
++            #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
++            #     print("e1 line 2751, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
++
++            new_coords_jaw_backward, accumulated_work_at_last_backward = self.env.return_coordinates_adhoc(rot_backward, self.phase_manager.current_phase)
++
++            # s_next_full, s_jaw_next_full, s_ooc_l_next_full, s_ooc_r_next_full, s_frontalis_next_full = self.env.suc_position_save()
++            # if self.phase_manager.current_phase == 3:
++            #     x_jaw = getattr(dataV22_phoneme_T, "x_middleres_Jaw" + str(1))
++            #     x_jaw_conca = [item for sublist in x_jaw for item in sublist]
++            #     target_jaw_state_adhoc = np.asarray(x_jaw_conca)
++            #     method = 'euclidean'
++            #     distance_jaw_adhoc = self.distance_calculator.calculate_distance(method, self.control_vertices_slice(target_jaw_state_adhoc, self.vertex_jaw_index), self.control_vertices_slice(s_jaw_next_full, self.vertex_jaw_index))
++            #     print("e1 line 2761, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
++
++
++            if self.add_energy_to_jaw_objective_flag == 1:
++                reward_forward = self.rotation_reward_function(new_coords_jaw_forward, target, accumulated_work_at_last_forward, w1=1.0, w2=0.1)
++                reward_backward = self.rotation_reward_function(new_coords_jaw_backward, target, accumulated_work_at_last_backward, w1=1.0, w2=0.1)
++            else:
++                reward_forward = self.reward_function(new_coords_jaw_forward, target)
++                reward_backward = self.reward_function(new_coords_jaw_backward, target)
++                
++            reward_diff = reward_forward - reward_backward
++            if abs(reward_diff) < threshold:
++                gradient[i] = 0.0
++            else:
++                gradient[i] = reward_diff / (2 * epsilon)
++
++        return gradient.flatten()
++    
+     def plot_gradient_magnitudes(self, object_name, current_phase=1):
+         """Plot gradient magnitudes with professional academic style.
+         
+@@ -2463,20 +1462,6 @@ class Evaluator:
+ 
+         # Add gridlines
+         plt.grid(True, linestyle='--', alpha=0.4)
+-
+-        # # Determine filename based on phase
+-        # filename = f'Gradient_Magnitudes_{object_name}'
+-        # if phase_2_flag == 1:
+-        #     filename += '_phase2'
+-        # filename += '.png'
+-
+-        # # Save with tight layout and high DPI
+-        # plt.tight_layout()
+-        # plt.savefig(os.path.join(self.save_folder, filename), 
+-        #         bbox_inches='tight', 
+-        #         dpi=300,
+-        #         transparent=False)
+-        # plt.close()
+         # Determine filename based on phase
+         filename = f'Gradient_Magnitudes_{object_name}'
+         if current_phase > 1:  # Only add phase suffix if not phase 1 (the default)
+@@ -2491,424 +1476,6 @@ class Evaluator:
+                 transparent=False)
+         plt.close()
+ 
+-    def plot_gradients_over_iterations(self, object_name, current_phase=1, indices=None):
+-        """Plot the chosen flattened_gradient coordinates over optimization steps.
+-        
+-        Args:
+-            object_name (str): Name of the object to plot
+-            current_phase (int): Current phase number (1, 2, 3, etc.)
+-            indices (list, optional): List of specific coordinate indices of the flattened gradient to plot.
+-                                      If None, auto-selects top 5 indices with the highest variance.
+-        """
+-        # Initialize dictionary if not exist
+-        if not hasattr(self, 'gradients_over_iterations_dict'):
+-            self.gradients_over_iterations_dict = {}
+-            
+-        if current_phase not in self.gradients_over_iterations_dict:
+-            self.gradients_over_iterations_dict[current_phase] = {}
+-            
+-        if object_name not in self.gradients_over_iterations_dict[current_phase]:
+-            print(f"No gradient history available to plot for {object_name} in phase {current_phase}")
+-            return
+-            
+-        data = self.gradients_over_iterations_dict[current_phase][object_name]
+-        if not data:
+-            print(f"Empty gradient history for {object_name} in phase {current_phase}")
+-            return
+-            
+-        # steps, grads = zip(*data)
+-        # grads = np.array(grads) # shape: (num_steps, num_params)
+-# FIX: Directly convert your list of gradients to a 2D numpy array
+-        grads = np.array(data)  # shape: (num_steps, num_params)
+-
+-        num_steps, num_params = grads.shape
+-
+-        # Automatically generate step indices (0, 1, 2, ..., num_steps - 1)
+-        steps = np.arange(num_steps)
+-
+-        if indices is None:
+-            # Dynamically choose the top-5 coordinates with the highest variance
+-            # so we visualize the most active parameters/dimensions
+-            variances = np.var(grads, axis=0)
+-            num_to_pick = min(5, num_params)
+-            indices = np.argsort(variances)[::-1][:num_to_pick].tolist()
+-            
+-        # Set up professional plotting style
+-        plt.figure(figsize=(9, 6), dpi=300)
+-        plt.rcParams['font.family'] = 'serif'
+-        plt.rcParams['font.serif'] = ['Times New Roman']
+-        plt.rcParams['mathtext.fontset'] = 'stix'
+-        plt.rcParams['font.size'] = 12
+-        plt.rcParams['axes.linewidth'] = 1.2
+-
+-        # Plot each selected coordinate
+-        for idx in indices:
+-            if idx < 0 or idx >= num_params:
+-                print(f"Warning: index {idx} is out of bounds for gradient of size {num_params}")
+-                continue
+-            plt.plot(steps, grads[:, idx], 
+-                     linewidth=1.5,
+-                     label=f'Coordinate {idx}')
+-
+-        # Plot the mean absolute gradient as a background reference
+-        mean_abs_grad = np.mean(np.abs(grads), axis=1)
+-        plt.plot(steps, mean_abs_grad,
+-                 color='black',
+-                 linewidth=2.0,
+-                 linestyle='--',
+-                 alpha=0.6,
+-                 label='Mean Absolute Gradient')
+-
+-        # Axis labels with increased font size
+-        plt.xlabel('Optimization step', fontsize=14)
+-        plt.ylabel('Gradient Value', fontsize=14)
+-        
+-        # Remove top and right spines
+-        ax = plt.gca()
+-        ax.spines['top'].set_visible(False)
+-        ax.spines['right'].set_visible(False)
+-        
+-        # Configure tick parameters
+-        ax.tick_params(axis='both', which='major', 
+-                    direction='out', 
+-                    length=6, 
+-                    width=1.2,
+-                    labelsize=12)
+-
+-        # Add gridlines
+-        plt.grid(True, linestyle='--', alpha=0.4)
+-
+-        plt.legend(frameon=True, loc='best', fontsize=10)
+-
+-        # Determine filename based on phase
+-        filename = f'Gradients_Over_Iterations_{object_name}'
+-        if current_phase > 1:
+-            filename += f'_phase{current_phase}'
+-        filename += '.png'
+-
+-        # Save with tight layout and high DPI
+-        plt.tight_layout()
+-        plt.savefig(os.path.join(self.save_folder, filename), 
+-                bbox_inches='tight', 
+-                dpi=300,
+-                transparent=False)
+-        plt.close()
+-
+-    def plot_trajectories(self, landmark_trajectory, vertex_trajectory, current_phase=1):
+-        """Plot the 3D and 2D trajectories of the first landmark and vertex.
+-        
+-        Args:
+-            landmark_trajectory (list): List of 3D coordinates for the landmark.
+-            vertex_trajectory (list): List of 3D coordinates for the vertex.
+-            current_phase (int): The active phase.
+-        """
+-        if not landmark_trajectory or not vertex_trajectory:
+-            print("No trajectory data to plot.")
+-            return
+-
+-        # Local import to ensure 3D plotting is supported
+-        from mpl_toolkits.mplot3d import Axes3D
+-
+-        landmark_trajectory = np.array(landmark_trajectory) # shape: (T, 3)
+-        vertex_trajectory = np.array(vertex_trajectory) # shape: (T, 3)
+-        steps = np.arange(len(landmark_trajectory))
+-
+-        # Set up professional plotting style
+-        fig = plt.figure(figsize=(14, 6), dpi=300)
+-        plt.rcParams['font.family'] = 'serif'
+-        plt.rcParams['font.serif'] = ['Times New Roman']
+-        plt.rcParams['mathtext.fontset'] = 'stix'
+-        plt.rcParams['font.size'] = 11
+-
+-        # Panel 1: 3D Trajectory
+-        ax1 = fig.add_subplot(121, projection='3d')
+-        
+-        # Plot trajectories
+-        ax1.plot(landmark_trajectory[:, 0], landmark_trajectory[:, 1], landmark_trajectory[:, 2],
+-                 color='#1f77b4', linewidth=2, label='1st Landmark')
+-        ax1.plot(vertex_trajectory[:, 0], vertex_trajectory[:, 1], vertex_trajectory[:, 2],
+-                 color='#ff7f0e', linewidth=2, linestyle='--', label='1st Vertex')
+-
+-        # Highlight start and end points
+-        ax1.scatter(landmark_trajectory[0, 0], landmark_trajectory[0, 1], landmark_trajectory[0, 2],
+-                    color='green', marker='o', s=50, label='Start')
+-        ax1.scatter(landmark_trajectory[-1, 0], landmark_trajectory[-1, 1], landmark_trajectory[-1, 2],
+-                    color='red', marker='x', s=50, label='End')
+-        ax1.scatter(vertex_trajectory[0, 0], vertex_trajectory[0, 1], vertex_trajectory[0, 2],
+-                    color='green', marker='o', s=50)
+-        ax1.scatter(vertex_trajectory[-1, 0], vertex_trajectory[-1, 1], vertex_trajectory[-1, 2],
+-                    color='red', marker='x', s=50)
+-
+-        ax1.set_xlabel('X')
+-        ax1.set_ylabel('Y')
+-        ax1.set_zlabel('Z')
+-        ax1.set_title('3D Trajectory Comparison')
+-        ax1.legend(loc='best')
+-        ax1.grid(True, linestyle='--', alpha=0.3)
+-
+-        # Panel 2: 2D Coordinates over steps
+-        ax2 = fig.add_subplot(122)
+-        
+-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+-        labels = ['X', 'Y', 'Z']
+-        
+-        for i in range(3):
+-            ax2.plot(steps, landmark_trajectory[:, i], 
+-                     color=colors[i], linewidth=1.5, label=f'Landmark {labels[i]}')
+-            ax2.plot(steps, vertex_trajectory[:, i], 
+-                     color=colors[i], linewidth=1.5, linestyle='--', label=f'Vertex {labels[i]}')
+-
+-        ax2.set_xlabel('Steps')
+-        ax2.set_ylabel('Coordinate Value')
+-        ax2.set_title('Coordinate Alignment Over Steps')
+-        ax2.legend(loc='best', ncol=2)
+-        ax2.grid(True, linestyle='--', alpha=0.3)
+-        
+-        # Remove top and right spines on 2D plot
+-        ax2.spines['top'].set_visible(False)
+-        ax2.spines['right'].set_visible(False)
+-
+-        # Determine filename based on phase
+-        filename = 'Trajectory_Comparison'
+-        if current_phase > 1:
+-            filename += f'_phase{current_phase}'
+-        filename += '.png'
+-
+-        plt.suptitle(f'Movement Trajectory Analysis (Phase {current_phase})', 
+-                     fontsize=14, fontweight='bold', y=0.98)
+-        plt.tight_layout()
+-        plt.savefig(os.path.join(self.save_folder, filename), 
+-                    bbox_inches='tight', 
+-                    dpi=300,
+-                    transparent=False)
+-        plt.close()
+-
+-    # def plot_objective_terms_forward(self):
+-    #     """
+-    #     Plot the contributions of each objective term over optimization steps.
+-    #     Plots either 20 samples or all samples if fewer than 20 exist.
+-    #     """
+-    #     # Set up the plot with a professional style
+-    #     plt.figure(figsize=(8, 6), dpi=300)
+-    #     plt.rcParams['font.family'] = 'serif'
+-    #     plt.rcParams['font.size'] = 12
+-
+-    #     # Determine sampling strategy
+-    #     total_points = len(self.term_history_forward['steps'])
+-    #     if total_points > 20:
+-    #         sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+-    #         sampled_steps = [self.term_history_forward['steps'][i] for i in sample_indices]
+-    #         sampled_distance = [self.term_history_forward['distance'][i] for i in sample_indices]
+-    #         sampled_strain = [self.term_history_forward['strain'][i] for i in sample_indices]
+-    #         sampled_muscle = [self.term_history_forward['muscle'][i] for i in sample_indices]
+-    #         use_markers = True
+-    #     else:
+-    #         sampled_steps = self.term_history_forward['steps']
+-    #         sampled_distance = self.term_history_forward['distance']
+-    #         sampled_strain = self.term_history_forward['strain']
+-    #         sampled_muscle = self.term_history_forward['muscle']
+-    #         use_markers = False
+-
+-    #     # Plot configuration
+-    #     plot_kwargs = {
+-    #         'linewidth': 2,
+-    #         'linestyle': '-'
+-    #     }
+-    #     if use_markers:
+-    #         plot_kwargs.update({
+-    #             'marker': 'o',
+-    #             'markersize': 5
+-    #         })
+-
+-    #     # Plot each term's contribution
+-    #     plt.plot(sampled_steps, sampled_distance, 
+-    #             label=f'Distance (w1={self.w1:.3f})', 
+-    #             color='blue', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_strain, 
+-    #             label=f'Strain Energy (w2={self.w2:.3f})', 
+-    #             color='green', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_muscle, 
+-    #             label=f'Muscle Work (w3={self.w3:.3f})', 
+-    #             color='red', **plot_kwargs)
+-        
+-    #     # Mark convergence point
+-    #     if hasattr(self, 'step_objective'):
+-    #         conv_step = self.step_objective
+-    #         if conv_step in sampled_steps:
+-    #             conv_idx = sampled_steps.index(conv_step)
+-    #             plt.scatter(conv_step, sampled_distance[conv_idx], 
+-    #                     color='black', marker='o', s=100, zorder=5,
+-    #                     label=f'Convergence (step {conv_step})')
+-
+-    #     # Add labels and styling
+-    #     plt.xlabel('Optimization Steps', fontsize=14)
+-    #     plt.ylabel('Term Contribution Value\nForward Gradient', fontsize=14)
+-    #     plt.gca().spines['top'].set_visible(False)
+-    #     plt.gca().spines['right'].set_visible(False)
+-    #     plt.grid(True, linestyle='--', alpha=0.6)
+-    #     plt.legend(frameon=True, shadow=True, loc='best', fontsize=12)
+-
+-    #     # Save the plot
+-    #     plt.savefig(os.path.join(self.save_folder, 'objective_terms_plot_forward.png'), 
+-    #             bbox_inches='tight', dpi=300)
+-    #     plt.close()
+-
+-    # def plot_objective_terms_forward(self, phase_2_flag=0):
+-    #     """Plot forward gradient objective terms"""
+-    #     data = self._get_term_history(phase_2_flag)
+-    #     phase_suffix = "_phase2" if phase_2_flag == 1 else ""
+-        
+-    #     plt.figure(figsize=(8, 6), dpi=300)
+-    #     plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
+-
+-    #     # Sampling logic
+-    #     total_points = len(data['term_history_forward']['steps'])
+-    #     if total_points > 20:
+-    #         sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+-    #         sampled_steps = [data['term_history_forward']['steps'][i] for i in sample_indices]
+-    #         sampled_distance = [data['term_history_forward']['distance'][i] for i in sample_indices]
+-    #         sampled_strain = [data['term_history_forward']['strain'][i] for i in sample_indices]
+-    #         sampled_muscle = [data['term_history_forward']['muscle'][i] for i in sample_indices]
+-    #         use_markers = True
+-    #     else:
+-    #         sampled_steps = data['term_history_forward']['steps']
+-    #         sampled_distance = data['term_history_forward']['distance']
+-    #         sampled_strain = data['term_history_forward']['strain']
+-    #         sampled_muscle = data['term_history_forward']['muscle']
+-    #         use_markers = False
+-
+-    #     # Plot configuration
+-    #     plot_kwargs = {'linewidth': 2, 'linestyle': '-'}
+-    #     if use_markers:
+-    #         plot_kwargs.update({'marker': 'o', 'markersize': 5})
+-
+-    #     # Plot each term
+-    #     plt.plot(sampled_steps, sampled_distance, 
+-    #             label=f'Distance (w1={self.w1:.3f})', 
+-    #             color='blue', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_strain, 
+-    #             label=f'Strain Energy (w2={self.w2:.3f})', 
+-    #             color='green', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_muscle, 
+-    #             label=f'Muscle Work (w3={self.w3:.3f})', 
+-    #             color='red', **plot_kwargs)
+-        
+-    #     # Mark convergence if applicable
+-    #     if hasattr(self, 'step_objective'):
+-    #         conv_step = self.step_objective
+-    #         if conv_step in sampled_steps:
+-    #             conv_idx = sampled_steps.index(conv_step)
+-    #             plt.scatter(conv_step, sampled_distance[conv_idx], 
+-    #                     color='black', marker='o', s=100, zorder=5,
+-    #                     label=f'Convergence (step {conv_step})')
+-
+-    #     # Styling
+-    #     plt.xlabel('Optimization Steps', fontsize=14)
+-    #     plt.ylabel('Term Contribution Value\nForward Gradient', fontsize=14)
+-    #     plt.gca().spines[['top', 'right']].set_visible(False)
+-    #     plt.grid(True, linestyle='--', alpha=0.6)
+-    #     plt.legend(frameon=True, shadow=True, loc='best', fontsize=12)
+-
+-    #     # Save phase-specific plot
+-    #     plt.savefig(os.path.join(self.save_folder, f'objective_terms_plot_forward{phase_suffix}.png'), 
+-    #             bbox_inches='tight', dpi=300)
+-    #     plt.close()
+-
+-    # def plot_objective_terms_backward(self):
+-    #     """
+-    #     Plot the contributions of each objective term over optimization steps.
+-    #     Plots either 20 samples or all samples if fewer than 20 exist.
+-    #     """
+-    #     # Set up the plot with a professional style
+-    #     plt.figure(figsize=(8, 6), dpi=300)
+-    #     plt.rcParams['font.family'] = 'serif'
+-    #     plt.rcParams['font.size'] = 12
+-
+-    #     # Determine sampling strategy
+-    #     total_points = len(self.term_history_backward['steps'])
+-    #     if total_points > 20:
+-    #         sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+-    #         sampled_steps = [self.term_history_backward['steps'][i] for i in sample_indices]
+-    #         sampled_distance = [self.term_history_backward['distance'][i] for i in sample_indices]
+-    #         sampled_strain = [self.term_history_backward['strain'][i] for i in sample_indices]
+-    #         sampled_muscle = [self.term_history_backward['muscle'][i] for i in sample_indices]
+-    #         use_markers = True
+-    #     else:
+-    #         sampled_steps = self.term_history_backward['steps']
+-    #         sampled_distance = self.term_history_backward['distance']
+-    #         sampled_strain = self.term_history_backward['strain']
+-    #         sampled_muscle = self.term_history_backward['muscle']
+-    #         use_markers = False
+-
+-    #     # Plot configuration
+-    #     plot_kwargs = {
+-    #         'linewidth': 2,
+-    #         'linestyle': '-'
+-    #     }
+-    #     if use_markers:
+-    #         plot_kwargs.update({
+-    #             'marker': 'o',
+-    #             'markersize': 5
+-    #         })
+-
+-    #     # Plot each term's contribution
+-    #     plt.plot(sampled_steps, sampled_distance, 
+-    #             label=f'Distance (w1={self.w1:.3f})', 
+-    #             color='blue', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_strain, 
+-    #             label=f'Strain Energy (w2={self.w2:.3f})', 
+-    #             color='green', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_muscle, 
+-    #             label=f'Muscle Work (w3={self.w3:.3f})', 
+-    #             color='red', **plot_kwargs)
+-        
+-    #     # Mark convergence point
+-    #     if hasattr(self, 'step_objective'):
+-    #         conv_step = self.step_objective
+-    #         if conv_step in sampled_steps:
+-    #             conv_idx = sampled_steps.index(conv_step)
+-    #             plt.scatter(conv_step, sampled_distance[conv_idx], 
+-    #                     color='black', marker='o', s=100, zorder=5,
+-    #                     label=f'Convergence (step {conv_step})')
+-
+-    #     # Add labels and styling
+-    #     plt.xlabel('Optimization Steps', fontsize=14)
+-    #     plt.ylabel('Term Contribution Value\nBackward Gradient', fontsize=14)
+-    #     plt.gca().spines['top'].set_visible(False)
+-    #     plt.gca().spines['right'].set_visible(False)
+-    #     plt.grid(True, linestyle='--', alpha=0.6)
+-    #     plt.legend(frameon=True, shadow=True, loc='best', fontsize=12)
+-
+-    #     # Save the plot
+-    #     plt.savefig(os.path.join(self.save_folder, 'objective_terms_plot_backward.png'), 
+-    #             bbox_inches='tight', dpi=300)
+-    #     plt.close()
+-
+-    # def plot_objective_terms_forward(self, current_phase=1):
+-    #     """Plot forward gradient objective terms"""
+-    #     data = self._get_term_history(current_phase)
+-    #     phase_suffix = f"_phase{current_phase}" if current_phase > 1 else ""
+-        
+-    #     plt.figure(figsize=(8, 6), dpi=300)
+-    #     plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
+-
+-    #     # Sampling logic
+-    #     total_points = len(data['term_history_forward']['steps'])
+-    #     if total_points > 20:
+-    #         sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+-    #         sampled_steps = [data['term_history_forward']['steps'][i] for i in sample_indices]
+-    #         sampled_distance = [data['term_history_forward']['distance'][i] for i in sample_indices]
+-    #         sampled_strain = [data['term_history_forward']['strain'][i] for i in sample_indices]
+-    #         sampled_muscle = [data['term_history_forward']['muscle'][i] for i in sample_indices]
+-    #         use_markers = True
+-    #     else:
+-    #         sampled_steps = data['term_history_forward']['steps']
+-    #         sampled_distance = data['term_history_forward']['distance']
+-    #         sampled_strain = data['term_history_forward']['strain']
+-    #         sampled_muscle = data['term_history_forward']['muscle']
+-    #         use_markers = False
+-
+-
+     def plot_objective_terms_forward(self, current_phase=1):
+         """Plot forward gradient objective terms with error handling"""
+         data = self._get_term_history(current_phase)
+@@ -3059,93 +1626,12 @@ class Evaluator:
+                 bbox_inches='tight', dpi=300)
+         plt.close()
+ 
+-    # def plot_objective_terms_diff(self):
+-    #     """
+-    #     Plot the contributions of each objective term over optimization steps.
+-    #     Plots either 20 samples or all samples if fewer than 20 exist.
+-    #     """
+-    #     # Set up the plot with a professional style
+-    #     plt.figure(figsize=(8, 6), dpi=300)
+-    #     plt.rcParams['font.family'] = 'serif'
+-    #     plt.rcParams['font.size'] = 12
+-
+-    #     # Determine sampling strategy
+-    #     total_points = len(self.term_history_diff['steps'])
+-    #     if total_points > 20:
+-    #         sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+-    #         sampled_steps = [self.term_history_diff['steps'][i] for i in sample_indices]
+-    #         sampled_distance = [self.term_history_diff['distance'][i] for i in sample_indices]
+-    #         sampled_strain = [self.term_history_diff['strain'][i] for i in sample_indices]
+-    #         sampled_muscle = [self.term_history_diff['muscle'][i] for i in sample_indices]
+-    #         use_markers = True
+-    #     else:
+-    #         sampled_steps = self.term_history_diff['steps']
+-    #         sampled_distance = self.term_history_diff['distance']
+-    #         sampled_strain = self.term_history_diff['strain']
+-    #         sampled_muscle = self.term_history_diff['muscle']
+-    #         use_markers = False
+-
+-    #     # Plot configuration
+-    #     plot_kwargs = {
+-    #         'linewidth': 2,
+-    #         'linestyle': '-'
+-    #     }
+-    #     if use_markers:
+-    #         plot_kwargs.update({
+-    #             'marker': 'o',
+-    #             'markersize': 5
+-    #         })
+-
+-    #     # Plot each term's contribution
+-    #     plt.plot(sampled_steps, sampled_distance, 
+-    #             label=f'Distance (w1={self.w1:.3f})', 
+-    #             color='blue', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_strain, 
+-    #             label=f'Strain Energy (w2={self.w2:.3f})', 
+-    #             color='green', **plot_kwargs)
+-    #     plt.plot(sampled_steps, sampled_muscle, 
+-    #             label=f'Muscle Work (w3={self.w3:.3f})', 
+-    #             color='red', **plot_kwargs)
+-        
+-    #     # Mark convergence point
+-    #     if hasattr(self, 'step_objective'):
+-    #         conv_step = self.step_objective
+-    #         if conv_step in sampled_steps:
+-    #             conv_idx = sampled_steps.index(conv_step)
+-    #             plt.scatter(conv_step, sampled_distance[conv_idx], 
+-    #                     color='black', marker='o', s=100, zorder=5,
+-    #                     label=f'Convergence (step {conv_step})')
+-
+-    #     # Add labels and styling
+-    #     plt.xlabel('Optimization Steps', fontsize=14)
+-    #     plt.ylabel('Gradient Term Contribution Value\n Difference Value', fontsize=14)
+-    #     plt.gca().spines['top'].set_visible(False)
+-    #     plt.gca().spines['right'].set_visible(False)
+-    #     plt.grid(True, linestyle='--', alpha=0.6)
+-    #     plt.legend(frameon=True, shadow=True, loc='best', fontsize=12)
+-
+-    #     # Save the plot
+-    #     plt.savefig(os.path.join(self.save_folder, 'objective_terms_plot_diff.png'), 
+-    #             bbox_inches='tight', dpi=300)
+-    #     plt.close()
+-
+-    # def plot_objective_terms_diff(self, phase_2_flag=0):
+-    #     """Plot difference in objective terms"""
+-    #     data = self._get_term_history(phase_2_flag)
+-    #     phase_suffix = "_phase2" if phase_2_flag == 1 else ""
+ 
+     def plot_objective_terms_diff(self, current_phase=1):
+         """Plot difference in objective terms"""
+         data = self._get_term_history(current_phase)
+         phase_suffix = f"_phase{current_phase}" if current_phase > 1 else ""
+                 
+-
+-        # print(f"\n=== DEBUG: Plotting phase {current_phase} ===")
+-        # print(f"Steps: {data['term_history_diff']['steps']}")
+-        # print(f"Distance contributions: {data['term_history_diff']['distance']}")
+-        # print(f"Strain contributions: {data['term_history_diff']['strain']}")
+-        # print(f"Muscle contributions: {data['term_history_diff']['muscle']}")
+-        
+         # Verify lengths match
+         lengths = {
+             'steps': len(data['term_history_diff']['steps']),
+@@ -3153,38 +1639,20 @@ class Evaluator:
+             'strain': len(data['term_history_diff']['strain']),
+             'muscle': len(data['term_history_diff']['muscle'])
+         }
+-        # print(f"Data lengths: {lengths}")
+ 
+-        # plt.figure(figsize=(8, 6), dpi=300)
+-        # plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
++        plt.figure(figsize=(8, 6), dpi=300)
++        plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
+ 
+         # Get the data to plot
+         steps = data['term_history_diff']['steps']
+         distances = data['term_history_diff']['distance']
+         strains = data['term_history_diff']['strain']
+         muscles = data['term_history_diff']['muscle']
+-
+-        # print(f"\n[DEBUG plot_objective_terms_diff] Phase: {current_phase}")
+-        # print(f"  - Total recorded steps: {len(steps)}")
+-        # print(f"  - Recorded steps array: {steps}")
+-        # print(f"  - Term history diff keys: {list(data['term_history_diff'].keys())}")
+-
+-        if len(steps) == 0:
+-            print(f"Warning: No objective term data recorded for phase {current_phase}. Plot will be empty.")
+-
+-        plt.figure(figsize=(8, 6), dpi=300)
+-        plt.rcParams.update({'font.family': 'serif', 'font.size': 12})
+-
+         # Add type verification
+-        # print(f"Type of distance values: {type(distances[0]) if distances else 'N/A'}")
+-        # print(f"Type of strain values: {type(strains[0]) if strains else 'N/A'}")
+-        # print(f"Type of muscle values: {type(muscles[0]) if muscles else 'N/A'}")
+         # Sampling logic
+-        # total_points = len(data['term_history_diff']['steps'])
+-        total_points = len(steps)
++        total_points = len(data['term_history_diff']['steps'])
+         if total_points > 20:
+-            # sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+-            sample_indices = np.linspace(0, total_points - 1, 20, dtype=int)
++            sample_indices = np.linspace(0, total_points-1, 20, dtype=int)
+             sampled_steps = [steps[i] for i in sample_indices]
+             sampled_distance = [distances[i] for i in sample_indices]
+             sampled_strain = [strains[i] for i in sample_indices]
+@@ -3233,81 +1701,12 @@ class Evaluator:
+         # plt.savefig(os.path.join(self.save_folder, f'objective_terms_plot_diff{phase_suffix}.png'), 
+         #         bbox_inches='tight', dpi=300)
+         # plt.close()
+-        # plt.savefig(os.path.join(self.save_folder, 
+-        save_folder = getattr(self, 'save_folder', '.')
+-        plt.savefig(os.path.join(save_folder,         
++        plt.savefig(os.path.join(self.save_folder, 
+                 f'objective_terms_plot_diff{phase_suffix}.png'), 
+                 bbox_inches='tight', dpi=300)
+         plt.close()
+ 
+ 
+-
+-    # def _get_term_history(self, phase_2_flag):
+-    #     """Helper function to get phase-specific term history containers"""
+-    #     if phase_2_flag == 1:
+-    #         return {
+-    #             'term_history_forward': self.term_history_phase2,
+-    #             'term_history_diff': self.term_history_diff_phase2,
+-    #             'count_diff_log': self.count_diff_log_phase2
+-    #         }
+-    #     else:
+-    #         return {
+-    #             'term_history_forward': self.term_history_forward,
+-    #             'term_history_diff': self.term_history_diff,
+-    #             'count_diff_log': self.count_diff_log
+-    #         }        
+-
+-    # def _get_term_history(self, current_phase):
+-    #     """Helper function to get phase-specific term history containers"""
+-    #     # Initialize storage for this phase if it doesn't exist
+-    #     if current_phase not in self.term_histories:
+-    #         self.term_histories[current_phase] = {
+-    #             'forward': {},
+-    #             'diff': {},
+-    #             'count': {}
+-    #         }
+-        
+-    #     # Return the phase-specific containers
+-    #     phase_data = self.term_histories[current_phase]
+-    #     return {
+-    #         'term_history_forward': phase_data['forward'],
+-    #         'term_history_diff': phase_data['diff'],
+-    #         'count_diff_log': phase_data['count']
+-    #     }
+-
+-    # def _get_term_history(self, current_phase):
+-    #     """Unified term history accessor"""
+-    #     if current_phase not in self.term_histories:
+-    #         self.term_histories[current_phase] = {
+-    #             'forward': {},
+-    #             'diff': {},
+-    #             'count': {'value': 0}  # Explicit dictionary structure
+-    #         }
+-    #     return {
+-    #         'term_history_forward': self.term_histories[current_phase]['forward'],
+-    #         'term_history_diff': self.term_histories[current_phase]['diff'],
+-    #         'count_diff_log': self.term_histories[current_phase]['count']['value']  # Access the value
+-    #     }    
+-
+-    # def _get_term_history(self, current_phase):
+-    #     """Unified term history accessor with proper initialization"""
+-    #     if current_phase not in self.term_histories:
+-    #         self.term_histories[current_phase] = {
+-    #             'forward': {
+-    #                 'steps': [],
+-    #                 'distance': [],
+-    #                 'strain': [],
+-    #                 'muscle': []
+-    #             },
+-    #             'diff': {
+-    #                 'steps': [],
+-    #                 'distance': [],
+-    #                 'strain': [],
+-    #                 'muscle': []
+-    #             },
+-    #             'count': {'value': 0}
+-    #         }
+-
+     def _get_term_history(self, current_phase):
+         """Unified term history accessor with guaranteed structure"""
+         if current_phase not in self.term_histories:
+@@ -3338,76 +1737,7 @@ class Evaluator:
+             'count_diff_log': self.term_histories[current_phase]['count']['value']
+         }    
+ 
+-    # def log_objective_terms(self, phase_2_flag=0, reward_diff=None, 
+-    #                     reward_diff_distance_contribution=None,
+-    #                     reward_diff_strain_contribution=None,
+-    #                     reward_diff_muscle_contribution=None,
+-    #                     muscle_contribution_f=None,
+-    #                     muscle_contribution_b=None):
+-        
+-    #     data = self._get_term_history(phase_2_flag)
+-    #     phase_suffix = "_phase2" if phase_2_flag == 1 else ""
+-        
+-    #     trace_and_log_obj_contribution = 1
+-    #     if trace_and_log_obj_contribution == 1:
+-    #         # Store contributions for plotting
+-    #         if not hasattr(self, f'term_history_diff{phase_suffix}'):
+-    #             setattr(self, f'term_history_diff{phase_suffix}', {
+-    #                 'steps': [],
+-    #                 'distance': [],
+-    #                 'strain': [],
+-    #                 'muscle': []
+-    #             })
+-            
+-    #         check_interval = math.floor(self.count_diff_log_interval)  # 1500 default
+-    #         threshold = 1e-6  # Define your threshold here
+-    #         # print("===========debug reward diff plot==============")
+-    #         # print(f"reward_diff: {reward_diff}, abs(reward_diff): {abs(reward_diff)}, threshold: {threshold}")
+-    #         # print(f"count_diff_log: {data['count_diff_log']}, check_interval: {check_interval}")
+-    #         # print(f"Condition: {abs(reward_diff) >= threshold} and {data['count_diff_log'] % check_interval == 0}")
+-            
+-    #         if abs(reward_diff) >= threshold: # and data['count_diff_log'] % check_interval == 0:  #  and data['count_diff_log'] % check_interval == 0:
+-    #             if data['count_diff_log'] % check_interval == 0:
+-    #                 # if True:  # Debugging override
+-    #                 data['term_history_diff']['steps'].append(self.step_objective)
+-    #                 data['term_history_diff']['distance'].append(reward_diff_distance_contribution)
+-    #                 data['term_history_diff']['strain'].append(reward_diff_strain_contribution)
+-    #                 data['term_history_diff']['muscle'].append(reward_diff_muscle_contribution)
+-                    
+-    #                 # Write to phase-specific CSV file
+-    #                 filename = f"objective_terms_data_diff{phase_suffix}.csv"
+-    #                 file_exists = os.path.exists(os.path.join(self.save_folder, filename))
+-    #                 try:
+-    #                     with open(os.path.join(self.save_folder, filename), 'a', newline='') as csvfile:
+-    #                         writer = csv.writer(csvfile)
+-                            
+-    #                         if not file_exists:
+-    #                             writer.writerow(["Step", "Distance Contribution", 
+-    #                                         "Strain Contribution", "Muscle Contribution",
+-    #                                         "muscle_contribution_f", "muscle_contribution_b"])
+-                            
+-    #                         writer.writerow([
+-    #                             self.step_objective,
+-    #                             f"{reward_diff_distance_contribution:.6f}",
+-    #                             f"{reward_diff_strain_contribution:.6f}", 
+-    #                             f"{reward_diff_muscle_contribution:.6f}",
+-    #                             f"{muscle_contribution_f:.6f}",
+-    #                             f"{muscle_contribution_b:.6f}"
+-    #                         ])
+-    #                 except Exception as e:
+-    #                     print(f"Error writing to CSV: {e}")
+-
+-    #             # data['count_diff_log'] += 1
+-    #             if phase_2_flag == 0:
+-    #                 self.count_diff_log = self.count_diff_log + 1
+-    #             else:
+-    #                 self.count_diff_log_phase2 = self.count_diff_log_phase2 + 1
+-
+-            # if data['count_diff_log'] == 5000:
+-            #     sys.exit(0)
+-
+-
+-    def log_objective_terms(self, current_phase, object_name, reward_diff=None, 
++    def log_objective_terms(self, current_phase=1, reward_diff=None, 
+                         reward_diff_distance_contribution=None,
+                         reward_diff_strain_contribution=None,
+                         reward_diff_muscle_contribution=None,
+@@ -3429,125 +1759,43 @@ class Evaluator:
+                     'muscle': []
+                 })
+             
+-            # check_interval = math.floor(self.count_diff_log_interval)  # 1500 default
+-            # threshold = 1e-6  # Define your threshold here
+-            
+-            # print(f"Type of data: {type(data)}")
+-            # print(f"Keys in data: {data.keys()}")
+-            # print(f"Type of count_diff_log: {type(data['count_diff_log'])}")
+-            # print(f"Value of count_diff_log: {data['count_diff_log']}")
+-            # print(f"Type of check_interval: {type(check_interval)}")
+-            # print(f"Value of check_interval: {check_interval}")
+-
+-            # with open(os.path.join(self.save_folder, "reward_diff_debug.txt"), 'a') as f:
+-            #     f.write(f"\n=== Reward Difference Debug ===\n")
+-            #     f.write(f"Step: {self.step_objective}\n")
+-                
+-            #     # Debug the components of the condition
+-            #     count = data['count_diff_log'].get('value', 0) if isinstance(data['count_diff_log'], dict) else data['count_diff_log']
+-            #     f.write(f"Current count: {count}\n")
+-            #     f.write(f"Reward_diff: {reward_diff} (threshold: {threshold})\n")
+-            #     f.write(f"Count % check_interval: {count % check_interval} (check_interval: {check_interval})\n")
+-                
+-            #     # Check why condition is being met
+-            #     condition1 = abs(reward_diff) >= threshold
+-            #     condition2 = count % check_interval == 0
+-            #     f.write(f"Condition1 (|reward_diff| >= threshold): {condition1}\n")
+-            #     f.write(f"Condition2 (count % interval == 0): {condition2}\n")
+-                
+-            #     if condition1 and condition2:
+-            #         f.write("Condition TRIGGERED - storing data\n")
+-            #         # Additional debug for the data being stored
+-            #         f.write(f"Step_objective value: {self.step_objective}\n")
+-            #         f.write(f"Current term_history_diff: {data['term_history_diff']}\n")
+-            #     else:
+-            #         f.write("Condition NOT met\n")
+-                
+-            #     f.write("------------------------\n")
+-
+-
+-
+-
+-            # count = data['count_diff_log'].get('value', 0) if isinstance(data['count_diff_log'], dict) else data['count_diff_log']
+-            # if abs(reward_diff) >= threshold and object_name == "oor": # oor ooc_r
+-        
+-        # Safely fetch interval (defaulting to 1 if not specified)
+-
+-        # is_test_mode = (
+-        #     getattr(self, 'test_then_exit_mode', False)
+-        #     or getattr(self, 'test_mode', False)
+-        #     or os.environ.get('TEST_THEN_EXIT_MODE', '0').lower() in ('1', 'true', 'yes')
+-        # )
+-
+-        # if is_test_mode:
+-        #     check_interval = 1
+-        # else:
+-        #     interval_val = getattr(self, 'count_diff_log_interval', 1)
+-        #     check_interval = max(1, math.floor(interval_val))
+-        
+-
+-        check_interval = 100
+-        
+-        threshold = 1e-6
+-
+-        count = data['count_diff_log'].get('value', 0) if isinstance(data['count_diff_log'], dict) else data['count_diff_log']
+-        
+-        # print(f"[DEBUG log_objective_terms] Called! phase={current_phase}, object_name='{object_name}', reward_diff={reward_diff}, count={count}, check_interval={check_interval}")
+-
+-        # Accept all valid calls regardless of specific muscle name
+-        if count % check_interval == 0:            
+-            step_val = count
+-            data['term_history_diff']['steps'].append(step_val)
+-            data['term_history_diff']['distance'].append(reward_diff_distance_contribution if reward_diff_distance_contribution is not None else 0.0)
+-            data['term_history_diff']['strain'].append(reward_diff_strain_contribution if reward_diff_strain_contribution is not None else 0.0)
+-            data['term_history_diff']['muscle'].append(reward_diff_muscle_contribution if reward_diff_muscle_contribution is not None else 0.0)
+-            
+-            # print(f"[DEBUG log_objective_terms] RECORDED step={step_val} for object='{object_name}'! Total recorded steps now={len(data['term_history_diff']['steps'])}")
+-
+-            # Write to phase-specific CSV file
+-            filename = f"objective_terms_data_diff{phase_suffix}.csv"
+-            save_folder = getattr(self, 'save_folder', '.')
+-            file_path = os.path.join(save_folder, filename)
+-            file_exists = os.path.exists(file_path)
+-            
+-            try:
+-                # with open(file_path, 'a', newline='') as csvfile:
+-                #     writer = csv.writer(csvfile)
+-                    
+-                #     if not file_exists:
+-                #         writer.writerow(["Step", "Distance Contribution", 
+-                #                     "Strain Contribution", "Muscle Contribution",
+-                #                     "muscle_contribution_f", "muscle_contribution_b"])
++            check_interval = math.floor(self.count_diff_log_interval)  # 1500 default
++            threshold = 1e-6  # Define your threshold here
++
++            count = data['count_diff_log'].get('value', 0) if isinstance(data['count_diff_log'], dict) else data['count_diff_log']
++            if abs(reward_diff) >= threshold:
++                if count % check_interval == 0:            
++            # if abs(reward_diff) >= threshold and count % check_interval == 0:
++                # Store the data
++                    data['term_history_diff']['steps'].append(self.step_objective)
++                    data['term_history_diff']['distance'].append(reward_diff_distance_contribution)
++                    data['term_history_diff']['strain'].append(reward_diff_strain_contribution)
++                    data['term_history_diff']['muscle'].append(reward_diff_muscle_contribution)
+                     
+-                #     writer.writerow([
+-                #         step_val,
+-                #         f"{(reward_diff_distance_contribution or 0.0):.6f}",
+-                #         f"{(reward_diff_strain_contribution or 0.0):.12f}", 
+-                #         f"{(reward_diff_muscle_contribution or 0.0):.12f}",
+-                #         f"{(muscle_contribution_f or 0.0):.6f}",
+-                #         f"{(muscle_contribution_b or 0.0):.6f}"                                
+-                #     ])
+-
+-                with open(file_path, 'a', newline='') as csvfile:
+-                    writer = csv.writer(csvfile)
+-                    
+-                    if not file_exists:
+-                        writer.writerow(["Step", "Distance Contribution", 
+-                                    "Strain Contribution", "Muscle Contribution"])
+-                    
+-                    writer.writerow([
+-                        step_val,
+-                        f"{(reward_diff_distance_contribution or 0.0):.6f}",
+-                        f"{(reward_diff_strain_contribution or 0.0):.12f}", 
+-                        f"{(reward_diff_muscle_contribution or 0.0):.12f}"
+-                    ])
+-
+-            except Exception as e:
+-                print(f"Error writing to CSV: {e}")
++                    # Write to phase-specific CSV file
++                    filename = f"objective_terms_data_diff{phase_suffix}.csv"
++                    file_exists = os.path.exists(os.path.join(self.save_folder, filename))
++                    try:
++                        with open(os.path.join(self.save_folder, filename), 'a', newline='') as csvfile:
++                            writer = csv.writer(csvfile)
++                            
++                            if not file_exists:
++                                writer.writerow(["Step", "Distance Contribution", 
++                                            "Strain Contribution", "Muscle Contribution",
++                                            "muscle_contribution_f", "muscle_contribution_b"])
++                            
++                            writer.writerow([
++                                self.step_objective,
++                                f"{reward_diff_distance_contribution:.6f}",
++                                f"{reward_diff_strain_contribution:.6f}", 
++                                f"{reward_diff_muscle_contribution:.6f}",
++                                f"{muscle_contribution_f:.6f}",
++                                f"{muscle_contribution_b:.6f}"
++                            ])
++                    except Exception as e:
++                        print(f"Error writing to CSV: {e}")
+ 
+-        # Increment count ONCE per log attempt
+-        self.term_histories[current_phase]['count']['value'] = count + 1
+-                
++                self.term_histories[current_phase]['count']['value'] = count + 1
+ 
+     def log_forward_objective_terms(self, phase=None, 
+                                 distance_contribution=None,
+@@ -3584,19 +1832,8 @@ class Evaluator:
+             if key not in data['term_history_forward']:
+                 data['term_history_forward'][key] = []
+ 
+-        # if 'forward' not in data:
+-        #     print("ERROR: 'forward' key missing in data!")
+-        # else:
+-        #     print(f"Forward keys: {data['forward'].keys()}")
+-
+         phase_suffix = f"_phase{phase}" if phase > 1 else ""
+         
+-        # if self.step_objective % 4e4 == 0:
+-        #     data['forward']['steps'].append(self.step_objective)
+-        #     data['forward']['distance'].append(distance_contribution)
+-        #     data['forward']['strain'].append(strain_contribution)
+-        #     data['forward']['muscle'].append(muscle_contribution/enlarge_contribution_factor)
+-            
+         # fowrad_gradient_log_interval = 4e3
+         if self.step_objective % self.fowrad_gradient_log_interval == 0:
+             try:
+@@ -3631,59 +1868,24 @@ class Evaluator:
+                     f"{muscle_work:.12f}"
+                 ])
+ 
+-    # def _get_log_filename(self, phase_2_flag):
+-    #     """Helper function to get phase-specific log filename"""
+-    #     phase_suffix = "_phase2" if phase_2_flag == 1 else ""
+-    #     return f"{self.save_folder}/log{str(self.i_func)}{phase_suffix}.txt"
+     def _get_log_filename(self, current_phase):
+         """Helper function to get phase-specific log filename"""
+         phase_suffix = f"_phase{current_phase}" if current_phase > 1 else ""
+         return f"{self.save_folder}/log{str(self.i_func)}{phase_suffix}.txt"
+     
+-    # def log_episode_info(self, phase_2_flag=0, running_reward=None, next_info=None):
+-    #     """Log episode information"""
+-    #     with open(self._get_log_filename(phase_2_flag), 'a') as f:
+-    #         print(f"** evaluator episode: reward: {running_reward}, done at No. {next_info['step_counter_internal']} step, success flag {next_info['success_flag']}", file=f)
+-
+     def log_episode_info(self, current_phase=1, running_reward=None, next_info=None):
+         """Log episode information"""
+         with open(self._get_log_filename(current_phase), 'a') as f:
+             print(f"** evaluator phase {current_phase} episode: reward: {running_reward}, done at No. {next_info['step_counter_internal']} step, success flag {next_info['success_flag']}", file=f)
+ 
+-    # def log_delta_b0(self, phase_2_flag=0, delta_b0=None):
+-    #     """Log delta_b0 values"""
+-    #     # with open(self._get_log_filename(phase_2_flag), 'a') as f:
+-    #     #     print("delta_b0 is", file=f)
+-    #     #     for i in range(len(delta_b0)):
+-    #     #         print(delta_b0[i:i+1][0], file=f)
+-    #     pass
+-
+     def log_delta_b0(self, current_phase=1, delta_b0=None):
+         """Log delta_b0 values"""
+         pass  # Implementation remains the same, just uses current_phase
+ 
+-    # def log_maya_distance(self, phase_2_flag=0, distance_in_MayaFile=None):
+-    #     """Log Maya distance information"""
+-    #     with open(self._get_log_filename(phase_2_flag), 'a') as f:
+-    #         print(f"\n\ndistance_in_MayaFile: {distance_in_MayaFile}\n\n", file=f)
+     def log_maya_distance(self, current_phase=1, distance_in_MayaFile=None):
+         """Log Maya distance information"""
+         with open(self._get_log_filename(current_phase), 'a') as f:
+             print(f"\n\ndistance_in_MayaFile: {distance_in_MayaFile}\n\n", file=f)    
+-
+-    # def log_action_list(self, phase_2_flag=0, final_epoch_action_list=None):
+-    #     """Log action list information"""
+-    #     with open(self._get_log_filename(phase_2_flag), 'a') as f:
+-    #         # print(f"final_epoch_action_list[0]: {final_epoch_action_list[0]}", file=f)
+-    #         # print(f"final_epoch_action_list: {final_epoch_action_list}", file=f)
+-    #         # print("final_epoch_action_list: ", final_epoch_action_list, file = f)
+-    #         print(f"final_epoch_action_list length: {len(final_epoch_action_list)}", file=f)
+-
+-    #     phase_suffix = "_phase2" if phase_2_flag == 1 else ""
+-    #     filename = f"final_epoch_action_list{phase_suffix}.pkl"
+-    #     with open(os.path.join(self.save_folder, filename), 'wb') as f:
+-    #         pickle.dump({'final_epoch_action_list': final_epoch_action_list,
+-    #                     }, f, protocol=pickle.HIGHEST_PROTOCOL)
+                                                     
+     def log_action_list(self, current_phase=1, final_epoch_action_list=None):
+         """Log action list information"""
+@@ -3708,22 +1910,6 @@ class Evaluator:
+             't_limit_sigmoid_1000_endList': getattr(self, 't_limit_sigmoid_1000_endList', None)
+         }
+         
+-        # Phase 2+ specific parameters
+-        # if phase >= 2:
+-        #     phase_params = {
+-        #         'target_state': self.target_state,
+-        #         'target_jaw_state': self.target_jaw_state,
+-        #         'x_bar_j': self.x_bar_j,
+-        #         'x_jaw_bar_j': self.x_jaw_bar_j,
+-        #         'distance_threshold_percentage': self.distance_threshold_percentage,
+-        #         'distance_jaw_threshold_percentage': self.distance_jaw_threshold_percentage,
+-        #         'distance_min': self.distance_min,
+-        #         'distance_jaw_min': self.distance_jaw_min,
+-        #         'expected_total_steps': self.expected_total_steps,
+-        #         'this_task': self.this_task,
+-        #         'action_previous': getattr(self, 'action_previous', None),
+-        #         'elements': getattr(self, 'elements', None)
+-        #     }
+         params = {}
+             
+         if phase >= 2 and payload is not None:
+@@ -3754,92 +1940,15 @@ class Evaluator:
+             base_params['previous_payload'] = payload
+         
+         return base_params
+-
+-    # def _run_phase_logic(self, phase, params):
+-    #     """Contains phase-specific computation logic"""
+-    #     """
+-    #     Executes phase-specific logic and returns results
+-        
+-    #     Args:
+-    #         phase: Current phase number
+-    #         params: Dictionary containing all necessary parameters
+-            
+-    #     Returns:
+-    #         Dictionary containing phase-specific results
+-    #     """
+-    #     # Common logic that applies to all phases
+-    #     common_results = {
+-    #         'next_obs': None,
+-    #         'reward': 0,
+-    #         'done': False,
+-    #         'next_info': {},
+-    #         'r_limit_sigmoid_1000_endList': [],
+-    #         't_limit_sigmoid_1000_endList': []
+-    #     }
+-
+-    #     if phase == 1:
+-    #         # Phase 1 specific logic
+-    #         pass
+-    #     elif phase == 2:
+-    #         # Phase 2 specific calculations
+-    #         if 'target_state' in params:
+-    #             common_results['target_state'] = params['target_state']
+-    #         if 'target_jaw_state' in params:
+-    #             common_results['target_jaw_state'] = params['target_jaw_state']
+-
+-    #     # ... additional phases
+-
+-    #     # common_results = self.env.unwrapped.step(**params)
+-        
+-    #     return common_results
+-
++    
+     def get_phase_filename(self, base_name, phase):
+         """Generate phase-specific filenames"""
+         if phase == 1:
+             return f"/{base_name}.pkl"
+         return f"/{base_name}_phase{phase}.pkl"
+ 
+-    def record_gradient_step(self, object_name, gradient_array, current_phase):
+-        """Saves the flat gradient array at the current iteration for plotting later."""
+-        if not hasattr(self, 'gradients_over_iterations_dict'):
+-            self.gradients_over_iterations_dict = {}
+-            
+-        if current_phase not in self.gradients_over_iterations_dict:
+-            self.gradients_over_iterations_dict[current_phase] = {}
+-            
+-        if object_name not in self.gradients_over_iterations_dict[current_phase]:
+-            self.gradients_over_iterations_dict[current_phase][object_name] = []
+-            
+-        # Append a copy of the flat numpy array gradient
+-        self.gradients_over_iterations_dict[current_phase][object_name].append(np.copy(gradient_array))
+-
+-    def record_gradient_magnitude_step(self, object_name, gradient_array, current_phase):
+-        """Computes the L2 norm (magnitude) of the gradient and saves it with the current step."""
+-        if not hasattr(self, 'gradient_magnitudes'):
+-            self.gradient_magnitudes = {}
+-            
+-        if current_phase not in self.gradient_magnitudes:
+-            self.gradient_magnitudes[current_phase] = {}
+-            
+-        if object_name not in self.gradient_magnitudes[current_phase]:
+-            self.gradient_magnitudes[current_phase][object_name] = []
+-            
+-        # Calculate the magnitude (L2 norm) of the gradient array
+-        magnitude = float(np.linalg.norm(gradient_array))
+-        
+-        # Save as a tuple of (step, magnitude) so zip(*gradient_data) can unpack it safely
+-        current_step = self.action_iteration_count
+-        self.gradient_magnitudes[current_phase][object_name].append((current_step, magnitude))
+-
+-
+-# def create_evaluator(**kwargs):
+-#     evaluator = Evaluator(**kwargs)
+ def create_evaluator(phase_manager=None, **kwargs):
+     evaluator = Evaluator(phase_manager=phase_manager, **kwargs)
+     print("Create evaluator successfully!")
+     return evaluator
+ 
+-    evaluator = Evaluator(phase_manager=phase_manager, **kwargs)
+-    print("Create evaluator successfully!")
+-    return evaluator
+-
