@@ -24,8 +24,10 @@ sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_t
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
+sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "training"/ "analysic_gradient"))
 
 import importlib
+from pytorch_analytical_gradient import AnalyticalGradientCalculator
 
 import dataV22
 importlib.reload(dataV22)
@@ -155,6 +157,37 @@ class Evaluator:
         self.next_info = {}
         # self.phase_2_flag = 0
         self.phase_manager.current_phase = phase  # Set the current phase        
+        """this is from main branch. WIll use as minimal viable product to test the analytical gradient calculator"""
+        # 1. Instantiate the specific analytical calculators for all tissues
+        self.analytical_calculator = AnalyticalGradientCalculator(
+            str(a3_stochastic_relative_path / "automation"/ "oor_bind_pose.json"),
+            str(a3_stochastic_relative_path / "automation"/ "oor_skin_weights.json"),
+            vertex_index=self.vertex_index
+        )
+        """Save these for later"""
+        # self.analytical_calculator_jaw = AnalyticalGradientCalculator(
+        #     bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_bind_pose.json"), 
+        #     skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_skin_weights.json"), 
+        #     vertex_index=self.vertex_jaw_index,
+        #     joint_pivots_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_joint_pivots.json")
+        # )
+        # self.analytical_calculator_ooc_l = AnalyticalGradientCalculator(
+        #     bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_bind_pose.json"),
+        #     skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_l_skin_weights.json"),
+        #     vertex_index=self.vertex_ooc_l_index
+        # )
+        # self.analytical_calculator_ooc_r = AnalyticalGradientCalculator(
+        #     bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_bind_pose.json"),
+        #     skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "ooc_r_skin_weights.json"),
+        #     vertex_index=self.vertex_ooc_r_index
+        # )
+        # self.analytical_calculator_frontalis = AnalyticalGradientCalculator(
+        #     bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_bind_pose.json"),
+        #     skin_weights_json_path=str(a3_stochastic_relative_path / "automation"/ "frontalis_skin_weights.json"),
+        #     vertex_index=self.vertex_frontalis_index
+        # )
+
+        self.analytical_gradient_scale = 0.022
 
         self.next_info.update({
 
@@ -180,9 +213,6 @@ class Evaluator:
         self.r_limit_sigmoid_1000_endList = []
         self.t_limit_sigmoid_1000_endList = []
 
-        # self.w1 = 0.95
-        # self.w2 = 0.025
-        # self.w3 = 0.025
 
         self.w1 = 0.34
         self.w2 = 0.33
@@ -347,6 +377,9 @@ class Evaluator:
         abc_execution_count = 0
         MAX_ABC_EXECUTIONS = self.overlapping_length
 
+        landmark_trajectory = []
+        vertex_trajectory = []
+
         while not (done or info["TimeLimit.truncated"]):
             self.step_t1 += 1
             if self.step_t1 % 3*self.joint_num == 0:
@@ -356,6 +389,9 @@ class Evaluator:
             positions = obs[3*self.joint_num + 3*self.joint_rotate_num : 3*self.joint_rotate_num + 3*self.joint_num + 3*self.vertices_num]
             positions_jaw = obs[3*self.joint_rotate_num + 3*self.joint_num + 3*self.vertices_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
             positions_lip_joint = obs[0 : 3*self.joint_num]
+            """ From main branch"""
+            # landmark_trajectory.append(np.copy(positions_lip_joint[0:3]))
+            # vertex_trajectory.append(np.copy(positions[0:3]))
             positions_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
                                                 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num : 
                                                 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
@@ -384,14 +420,82 @@ class Evaluator:
             targets_jaw = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
                             3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
             
+            """ save for later """
+            # targets_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num]
+
+            # targets_ooc_r = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num]
+
+            # positions_frontalis = obs[3*self.joint_num + 
+            #                                     3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num : 3*self.joint_num + 
+            #                                     3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num + 3*self.vertices_frontalis_num]  # this is for jaw
+
+            # targets_frontalis = obs[3*self.joint_num + 
+            #                                     3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num + 3*self.vertices_frontalis_num : 3*self.joint_num + 
+            #                                     3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num  + 3*self.vertices_ooc_r_num + 3*self.joint_frontalis_num  + 3*self.vertices_frontalis_num  + 3*self.vertices_frontalis_num]
+
+
+
+            # # 2. Extract joints and vertices dynamically based on the exact offset in `obs`
+
+            # # Base offset (skipping lip/jaw joints and target states)
+            # offset = 3*self.joint_num + 3*self.joint_rotate_num + 6*self.vertices_num + 6*self.vertices_jaw_num
+
+            # # --- OOC_L ---
+            # positions_ooc_l_joint = obs[offset : offset + 3*self.joint_ooc_l_num]
+            # offset += 3*self.joint_ooc_l_num
+
+            # # --- OOC_R ---
+            # positions_ooc_r_joint = obs[offset : offset + 3*self.joint_ooc_r_num]
+            # offset += 3*self.joint_ooc_r_num
+
+            # # --- OOC_L Vertices ---
+            # positions_ooc_l_vertex = obs[offset : offset + 3*self.vertices_ooc_l_num]
+            # offset += 3*self.vertices_ooc_l_num
+
+            # # --- OOC_R Vertices ---
+            # positions_ooc_r_vertex = obs[offset : offset + 3*self.vertices_ooc_r_num]
+            # offset += 3*self.vertices_ooc_r_num
+
+            # # Skip OOC_L and OOC_R target states
+            # offset += 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num
+
+            # # --- Frontalis ---
+            # positions_frontalis_joint = obs[offset : offset + 3*self.joint_frontalis_num]
+            # offset += 3*self.joint_frontalis_num
+
+            # positions_frontalis_vertex = obs[offset : offset + 3*self.vertices_frontalis_num]
+
+
             # For phase 2, get previous targets
             if phase >= 2:
                 targets_previous = payload["next_obs"][3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num : 
                                                     3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num]
                 targets_jaw_previous = payload["next_obs"][3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
                                                         3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
-
-
 
             # Compute gradients
             object_name = "oor"
@@ -960,18 +1064,192 @@ class Evaluator:
         reward = -w1 * normalized_distance - w2 * normalized_work
         
         return reward
+    
+    def compute_analytical_gradient(self, positions_lip_joint, targets, initial_distance, position, calculator):    
+            # note that "positions_lip_joint" can be other joints, (i.e. landmarks) for other muscles
+            import torch
 
-"""
-Discovery: In main branch (newest version), the analytical gradient is used whereas here we use a numerical gradient
-I have to use the analytical gradient in the functions below to match the main branch.
+            # 1. Convert inputs to PyTorch Tensors
+            translations = torch.tensor(positions_lip_joint, dtype=torch.float32).view(-1, 3)
+            translations.requires_grad_(True)
+            targets_tensor = torch.tensor(targets, dtype=torch.float32).view(-1, 3)
+            positions_tensor = torch.tensor(position, dtype=torch.float32).view(-1, 3)
 
-Copilot input:
-Swap the gradient computation while preserving the deprecated branch’s phase transitions and payload format. 
-Keep recording the trajectories, but consider plotting them after a transition completes rather than repeatedly during optimization. 
-That separates visualization cost from gradient cost and preserves the plots you care about.
-"""
+            # 2. Forward pass USING THE PASSED CALCULATOR
+            y_e = calculator.maya_lbs(translations, positions_tensor)
+
+            # 3. Compute Distance (geometric vertex distance to target in Maya units)
+            # Added a small epsilon (1e-12) to prevent NaN gradients at zero distance
+            distance_remain = torch.sqrt(torch.sum((targets_tensor - y_e)**2) + 1e-12)
+
+            # 4. Compute Strain Energy matching refence.py formulation
+            scaling_factor = 9.62e-4
+            k_tissue = getattr(calculator, 'k_tissue', 10000.0)
+            strain_energy = 0.5 * k_tissue * ((distance_remain * scaling_factor) ** 2)
+
+            # 5. Compute Muscle Work matching refence.py formulation
+            temp_joint_num = translations.shape[0]
+            # enlarge_contribution_factor = 10e2
+            enlarge_contribution_factor = 0.1
+
+            # Pull parameters dynamically or fall back to defaults
+            max_muscle = getattr(calculator, 'max_muscle_work', 10.0)
+            max_strain = getattr(calculator, 'max_strain_energy', 1.0)
+            w1 = getattr(calculator, 'w1', self.w1)
+            w2 = getattr(calculator, 'w2', self.w2)
+            w3 = getattr(calculator, 'w3', self.w3)
+
+            # Physiologically constrained parameters
+            F_max_new = 17.0 / 300.0
+            expected_total_steps = 5500.0
+            v_max_new = 1.0 / ((35.0 / 30.0) / expected_total_steps) * 9.62e-4 * 100.0
+            K_new = 0.18
+            a_new = 0.12
+            b_new = v_max_new * a_new / (F_max_new * K_new)
+
+            activation = 0.8
+            original_length = 2.0e-2
+            l_0 = 2.0e-2
+            sigma = 0.4
+            k_PEE = 0.5
+            k_SEE = 0.3
+            l_tendon = 0.05
+
+            # Compute translations per vertex for the muscle model
+            landmark_displacements = torch.sqrt(torch.sum(translations**2, dim=1) + 1e-12) * scaling_factor
+            distance_remain_per_vertex = distance_remain / temp_joint_num
+            trans_cm = distance_remain_per_vertex * 9.62e-4 * 100.0
+
+            # Epsilon-based velocity conversion from refence.py
+            epsilon = 1e-3
+            vel = epsilon / ((35.0 / 30.0) / expected_total_steps)
+            vel_cm = vel * 9.62e-4 * 100.0
+
+            # Hill Muscle Length Calculation
+            l = (original_length * 100.0) + trans_cm
+            l_0_cm = l_0 * 100.0
+            normalized_length_diff = (l - l_0_cm) / l_0_cm
+            exponent = -(normalized_length_diff ** 2) / (2.0 * (sigma ** 2))
+            F_length = F_max_new * torch.exp(exponent)
+
+            # Force-velocity Relationship
+            if vel_cm >= 0:
+                F_velocity = ((F_max_new + a_new) * b_new) / (vel_cm + b_new) - a_new
+            else:
+                F_velocity = 1.4 - 0.4 * (vel_cm / v_max_new)
+
+            # Passive Forces (torch.clamp prevents negative stretch values)
+            F_PEE = k_PEE * torch.clamp(l - l_0_cm, min=0.0)
+            F_SEE = k_SEE * l_tendon
+
+            # Total force generation (clamped to physiological maximum)
+            active_force = activation * F_length * F_velocity + F_PEE + F_SEE
+            muscle_force = torch.clamp(active_force, max=F_max_new)
+
+            # 6. Normalize Components
+            init_dist = initial_distance if (initial_distance is not None and initial_distance > 0) else 1.0
+            normalized_distance = distance_remain / init_dist
+            normalized_strain_energy = strain_energy / (max_strain if max_strain > 0 else 1.0)
+
+            # Sum muscle work over all landmarks utilizing the computed muscle_force tensor
+            muscle_work_term = muscle_force * landmark_displacements * (enlarge_contribution_factor * scaling_factor / (max_muscle if max_muscle > 0 else 10.0))
+            normalized_muscle_work = torch.sum(muscle_work_term)
+
+            # Calculate final contributions
+            distance_contrib = w1 * normalized_distance
+            strain_contrib = w2 * normalized_strain_energy
+            muscle_contrib = w3 * normalized_muscle_work
+
+            # Store term contributions on calculator for logging
+            calculator.dist_grad_mag = distance_contrib.item()
+            calculator.strain_grad_mag = strain_contrib.item()
+            calculator.muscle_grad_mag = muscle_contrib.item()
+            calculator.total_grad_mag = distance_remain.item()
+
+            # 7. Compute weighted scaled loss matching reference.py
+            objective = distance_contrib + strain_contrib + muscle_contrib
+            scaled_objective = objective * init_dist
+
+            # # Formulate as negative objective for reward maximization
+            # reward = -scaled_objective
+
+            # --- THE FIX: GLOBAL SPEED BOOST ---
+            # We scaled down the muscle term by ~10,000x to balance the terms, 
+            # which shrank the overall gradients. We multiply the final reward 
+            # to restore the gradient magnitude the optimizer expects.
+            global_speed_boost = 3000.0 
+
+            # Formulate as negative objective for reward maximization
+            reward = -scaled_objective * global_speed_boost
+
+            reward.backward()
+
+            # gradients_flat = translations.grad.view(-1).detach().numpy()
+
+            # return gradients_flat * self.analytical_gradient_scale
+
+            # --- Adam Optimizer Implementation ---
+            # We store the Adam state on the calculator object to ensure 
+            # independent momentum tracking for each muscle/landmark group.
+
+            # NOTE: Adam normalizes gradients, making it invariant to 'global_speed_boost'.
+            # The 'adam_lr' here becomes the new primary speed controller.
+            # If the optimization is too slow, increase adam_lr (e.g., to 10.0, 50.0, or 100.0).
+            adam_lr = 5.0
+
+            if not hasattr(calculator, '_adam_param') or calculator._adam_param.shape != translations.view(-1).shape:
+                calculator._adam_param = torch.nn.Parameter(torch.zeros_like(translations.view(-1)))
+                calculator._adam_opt = torch.optim.Adam([calculator._adam_param], lr=adam_lr)
+            else:
+                # Update learning rate in case you change it dynamically
+                for param_group in calculator._adam_opt.param_groups:
+                    param_group['lr'] = adam_lr
+
+            calculator._adam_opt.zero_grad()
+
+            # Adam minimizes by default, but we want to maximize the reward.
+            # Setting grad to -translations.grad makes Adam step towards the maximum.
+            calculator._adam_param.grad = -translations.grad.view(-1).clone()
+
+            old_param = calculator._adam_param.data.clone()
+            calculator._adam_opt.step()
+
+            # The difference is our Adam-adjusted gradient step
+            adam_step = (calculator._adam_param.data - old_param).detach().numpy()
+
+            return adam_step * self.analytical_gradient_scale
+
+    """
+    Discovery: In main branch (newest version), the analytical gradient is used whereas here we use a numerical gradient
+    I have to use the analytical gradient in the functions below to match the main branch.
+
+    This will become fallback function if the analytical gradient fails to compute.
+    """
     def compute_single_gradient(self, position, target, positions_lip_joint, step_t1, 
                                 object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
+        # TEST: early return with analytical gradient
+        if object_name == "oor":
+            calculator = self.distance_calculator
+            calculator.w1 = getattr(self, "w1", 0.34)
+            calculator.w2 = getattr(self, "w2", 0.33)
+            calculator.w3 = getattr(self, "w3", 0.33)
+            calculator.k_tissue = getattr(self, "k_tissue", 10000.0)
+            calculator.max_strain_energy = getattr(self, "max_strain_energy", 1.0)
+            calculator.max_muscle_work = getattr(self, "max_muscle_work", 1.0)
+            calculator.expected_total_steps = getattr(self, "expected_total_steps", 5500)
+            calculator.object_name = object_name
+
+            gradient = self.compute_analytical_gradient(
+                positions_lip_joint=positions_lip_joint,
+                targets=target,
+                initial_distance=self.initial_distance,
+                position=position,
+                calculator=calculator,
+            )
+
+            self.prev_gradients = gradient
+            return gradient
+
         # Initialize a cumulative gradient to sum over all steps
         cumulative_gradient = np.zeros_like(position, dtype=np.float32)        
         # Get current phase
@@ -1347,8 +1625,7 @@ That separates visualization cost from gradient cost and preserves the plots you
         
         return flattened_gradient
 
-
-
+    # adam
     def compute_gradient_rotation(self, rotation_values, target, epsilon=1e-3, threshold=1e-4):
         gradient = np.zeros_like(rotation_values, dtype=np.float32)
 
