@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -17,3 +17,6 @@ results/**/*.mb
 results/**/*.pkl
 !results/**/.gitkeep
 debug_results/
+results/**/computingTime_analysis
+results/**/tasks pipeline report
+a3-stochastic-V1/b99-frame1to4-get-b1to3/d4 interactive interface of animation/h96-debug-dissipating-error

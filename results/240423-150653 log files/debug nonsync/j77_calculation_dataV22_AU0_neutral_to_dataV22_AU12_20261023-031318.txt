@@ -1,0 +1,20 @@
+Task: dataV22_AU0_neutral to dataV22_AU12
+From Pose: dataV22_AU0_neutral
+To Pose: dataV22_AU12
+Timestamp: 20261023-031318
+Maya File: C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb
+
+============================================================
+CALCULATION RESULTS
+============================================================
+
+                        'degree': 9.499999999999999e-07, # rotation angle
+                        'expected_steps': 483,
+                        'rotation_limit': 0.00000000,
+                        'translation_limit': 0.01400000,
+                        'ooc_l_translation_limit': 0.00000000,
+                        'ooc_r_translation_limit': 0.00000000,
+                        'frontalis_translation_limit': 0.00000000,
+
+Estimated OOC_L completion steps: 0
+Estimated OOC_R completion steps: 0

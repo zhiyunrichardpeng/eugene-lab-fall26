@@ -25,10 +25,11 @@ manual_task = True
 if manual_task == True:
 
     PIPELINE_TASKS = [
-        'dataV22_AU0_neutral to dataV22_phoneme_N',    
+        # 'dataV22_AU0_neutral to dataV22_phoneme_N',    
         # 'dataV22_AU0_neutral to dataV22_AU7',  
         # 'dataV22_AU7 to dataV22_AU0_neutral', 
         # 'dataV22_AU12L to dataV22_AU1'    
+        'dataV22_AU0_neutral to dataV22_AU12'
     ]
 
 
@@ -517,7 +518,7 @@ def main():
 
     MAYAPY_EXE_PATH = "C:/Program Files/Autodesk/Maya2023/bin/mayapy.exe"
     SOURCE_REST_MODEL_MB_FILE = "C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb"
-    RESULTS_BASE_PATH = "C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/results/DSAC_V2_m1_vertexMove_Va003"
+    RESULTS_BASE_PATH = str(results_path) #"C:/keyLabLocal_D/a3-stochastic-V1-backup-and-results/results/DSAC_V2_m1_vertexMove_Va003"
     
     EXPECTED_STEPS_OVER_30K = False
     TARGET_TISSUE_OBJECT_NAME = "oor"

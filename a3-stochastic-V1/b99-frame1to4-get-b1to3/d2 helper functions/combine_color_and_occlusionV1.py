@@ -1,5 +1,15 @@
 # press f5 in antigravity
 
+import sys
+from pathlib import Path
+
+# Add repository root containing paths.py to sys.path
+for parent in Path(__file__).resolve().parents:
+    if (parent / "paths.py").is_file():
+        if str(parent) not in sys.path:
+            sys.path.insert(0, str(parent))
+        break
+
 import cv2
 import glob
 import os
@@ -13,7 +23,7 @@ from paths import results_path
 # ==========================================
 # Add your base names to this list.
 BASE_NAMES = [
-    "teaser_headshake_full_V14", 
+    "test_10pct_render_250_V1", 
     # "another_sequence_name",
 ]
 
@@ -23,24 +33,29 @@ AO_OPACITY = 0.65
 # ==========================================
 # 2. PATH DEFINITIONS
 # ==========================================
-# PNG_BASE_PATH =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/face_closeup")
-# PNG_BASE_PATH =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/fig15_view_sideV2")
-PNG_BASE_PATH =str(results_path / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/muscle_closeup")
+# Results directory where render outputs live
+RESULTS_DIR = Path(r"C:\keyLabLocal_D\a3-stochastic-V1-backup-and-results\results\DSAC_V2_m1_vertexMove_Va003")
+if not RESULTS_DIR.exists():
+    RESULTS_DIR = results_path
+
+# PNG_BASE_PATH = str(RESULTS_DIR / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/face_closeup")
+# PNG_BASE_PATH = str(RESULTS_DIR / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/fig15_view_sideV2")
+PNG_BASE_PATH = str(RESULTS_DIR / "maya_render_output_hub/temp_rendered_png_hub/masterLayer/muscle_closeup")
 
 AO_DIR = os.path.join(PNG_BASE_PATH, "A0_Pass")
 COLOR_DIR = os.path.join(PNG_BASE_PATH, "beauty")
 OUTPUT_DIR = os.path.join(PNG_BASE_PATH, "composited_output")
 
 # FFMPEG Video Output Path
-MP4_OUTPUT_BASE_PATH =str(results_path / "maya_render_output_hub")
+MP4_OUTPUT_BASE_PATH = str(RESULTS_DIR / "maya_render_output_hub")
 OUTPUT_SUBFOLDER = "composited_videos"
 
 # ==========================================
 # 3. FFMPEG PARAMETERS
 # ==========================================
 START_FRAME = 15
-END_FRAME = 60
-DESIRED_VIDEO_LENGTH_SECONDS = 5
+END_FRAME = 172
+DESIRED_VIDEO_LENGTH_SECONDS = 0.516 # standard is 5 seconds
 VIDEO_CODEC = "libx264"
 PIXEL_FORMAT = "yuv420p"
 CRF = 23
