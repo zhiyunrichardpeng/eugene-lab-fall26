@@ -1,0 +1,109 @@
+{
+    "step_counter_internal_max": 500000,
+    "keyframe_num": 2,
+    "keyframe_translation_num": 2,
+    "distance_threshold_percentage": 0.11,
+    "distance_jaw_threshold_percentage": 0.1,
+    "distance_ooc_l_threshold_percentage": 0.1092,
+    "distance_ooc_r_threshold_percentage": 0.1,
+    "distance_frontalis_threshold_percentage": 0.1,
+    "unit_denominator": 10.0,
+    "env_id": "m1_vertexMove_Va003",
+    "algorithm": "DSAC_V2",
+    "enable_cuda": true,
+    "seed": 528243501,
+    "reward_scale": 1,
+    "action_type": "continu",
+    "is_render": false,
+    "is_adversary": false,
+    "value_func_name": "ActionValueDistri",
+    "value_func_type": "MLP",
+    "value_hidden_sizes": [
+        256,
+        256,
+        256
+    ],
+    "value_hidden_activation": "gelu",
+    "value_output_activation": "linear",
+    "value_min_log_std": -8,
+    "value_max_log_std": 8,
+    "policy_func_name": "StochaPolicy",
+    "policy_func_type": "MLP",
+    "policy_act_distribution": "TanhGaussDistribution",
+    "policy_hidden_sizes": [
+        256,
+        256,
+        256
+    ],
+    "policy_hidden_activation": "gelu",
+    "policy_output_activation": "linear",
+    "policy_min_log_std": -20,
+    "policy_max_log_std": 0.5,
+    "value_learning_rate": 0.0001,
+    "policy_learning_rate": 0.0001,
+    "alpha_learning_rate": 0.0003,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "auto_alpha": false,
+    "alpha": 0.2,
+    "delay_update": 2,
+    "TD_bound": 1,
+    "bound": true,
+    "trainer": "off_serial_trainer",
+    "max_iteration": 1,
+    "ini_network_dir": "None",
+    "buffer_name": "replay_buffer",
+    "buffer_warm_size": 200,
+    "buffer_max_size": 1000,
+    "replay_batch_size": 256,
+    "sample_interval": 1,
+    "sampler_name": "off_sampler",
+    "sample_batch_size": 1,
+    "noise_params": null,
+    "evaluator_name": "evaluator",
+    "num_eval_episode": 1,
+    "eval_interval": 1,
+    "eval_save": false,
+    "save_folder": "C:\\keyLabLocal_D\\a3-stochastic-V1-backup-and-results/results/DSAC_V2_m1_vertexMove_Va003\\job_261019-205321\\261019-205330",
+    "apprfunc_save_interval": 5000,
+    "log_save_interval": 1,
+    "joint_num": 300,
+    "joint_rotate_num": 1,
+    "joint_ooc_l_num": 300,
+    "joint_ooc_r_num": 300,
+    "joint_frontalis_num": 300,
+    "vertices_num": 300,
+    "vertices_jaw_num": 3,
+    "vertices_ooc_l_num": 300,
+    "vertices_ooc_r_num": 300,
+    "vertices_frontalis_num": 300,
+    "action_mode": "both",
+    "UNIT_PRIME": 0.014000000000000002,
+    "phase_params": {
+        "expected_total_steps_for_jaw": {
+            "1": 490
+        },
+        "rotation_anatomy_limit": {
+            "1": 7.502e-05
+        },
+        "ooc_l_translation_limit": {
+            "1": 0.0001
+        },
+        "ooc_r_translation_limit": {
+            "1": 0.0001
+        },
+        "frontalis_translation_limit": {
+            "1": 0.0001
+        },
+        "unit_prime_jaw_translate": {},
+        "translation_anatomy_limit": {
+            "1": 0.014
+        },
+        "degrees": {
+            "1": 9.499999999999999e-07
+        }
+    },
+    "initial_distance": 43.29346395412421,
+    "initial_jaw_distance": 0.0,
+    "initial_ooc_l_distance": 7.98675613760188e-06
+}

@@ -1,0 +1,1493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beneath the Skin Validation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,600&display=swap">
+<style>
+/* Layout: long-form research plan on a cool paper ground; a sticky contents rail beside one reading column; wide tables scroll inside their own frames */
+:root {
+  --paper: #f2f4f6;
+  --sheet: #ffffff;
+  --ink: #17202a;
+  --muted: #566271;
+  --rule: #d5dce3;
+  --code-bg: #e7ebef;
+  --accent: #992338;        /* madder: muscle, driven tissue */
+  --accent-soft: #f6e5e9;
+  --passive: #2c6b80;       /* slate teal: passive tissue, imaging */
+  --passive-soft: #e1edf1;
+  --good: #2b7a4b;
+  --good-soft: #e1f0e7;
+  --warn: #8f5508;
+  --warn-soft: #f8ecd8;
+  --none: #7d8794;
+  --none-soft: #eceff2;
+  --font-display: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.55rem;
+  --step-3: clamp(1.9rem, 1.3rem + 2.4vw, 2.75rem);
+  --radius: 6px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f141a;
+    --sheet: #161d25;
+    --ink: #e5eaef;
+    --muted: #9aa5b2;
+    --rule: #2a3441;
+    --code-bg: #1f2832;
+    --accent: #e3808f;
+    --accent-soft: #3a1d25;
+    --passive: #74bbd0;
+    --passive-soft: #16303a;
+    --good: #6cc493;
+    --good-soft: #15301f;
+    --warn: #e2a650;
+    --warn-soft: #382912;
+    --none: #7f8a97;
+    --none-soft: #1d252e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f141a;
+  --sheet: #161d25;
+  --ink: #e5eaef;
+  --muted: #9aa5b2;
+  --rule: #2a3441;
+  --code-bg: #1f2832;
+  --accent: #e3808f;
+  --accent-soft: #3a1d25;
+  --passive: #74bbd0;
+  --passive-soft: #16303a;
+  --good: #6cc493;
+  --good-soft: #15301f;
+  --warn: #e2a650;
+  --warn-soft: #382912;
+  --none: #7f8a97;
+  --none-soft: #1d252e;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 1.5rem; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+}
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+p { margin: 0; }
+ul, ol { margin: 0; padding-left: 1.2rem; }
+li + li { margin-top: 0.3rem; }
+code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  background: var(--code-bg);
+  padding: 0.08em 0.35em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+strong { font-weight: 600; }
+
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; margin: 0; font-weight: 600; }
+h1 { font-size: var(--step-3); font-weight: 700; letter-spacing: -0.01em; }
+h1 em { font-style: italic; font-weight: 600; color: var(--accent); }
+h2 { font-size: var(--step-2); display: flex; align-items: baseline; gap: 0.65rem; }
+h2 .num {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  min-width: 1.4rem;
+}
+h3 { font-size: var(--step-1); }
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* page frame */
+.page {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding-inline: clamp(16px, 4vw, 44px);
+  padding-block: 2.5rem 4rem;
+}
+.masthead { display: grid; gap: 1rem; padding-block: 0.5rem 2.25rem; max-width: 64rem; }
+.lede { font-size: 1.125rem; max-width: 64ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 0.6rem 2.25rem; margin: 0; font-size: var(--step--1); }
+.meta div { min-width: 0; }
+.meta dt { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 0; }
+
+.layout { display: grid; gap: 1.75rem; }
+.rail { font-size: var(--step--1); }
+.rail .label { margin-bottom: 0.5rem; display: block; }
+.rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
+.rail li + li { margin-top: 0; }
+.rail a { display: flex; gap: 0.6rem; padding: 0.28rem 0.5rem; border-radius: 4px; color: var(--ink); text-decoration: none; }
+.rail a:hover { background: var(--sheet); }
+.rail .n { font-family: var(--font-mono); color: var(--muted); min-width: 1.4rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 1079px) {
+  .rail { border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.9rem 1rem; background: var(--sheet); }
+  .rail ol { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
+  .rail a:hover { background: var(--paper); }
+}
+@media (min-width: 1080px) {
+  .layout { grid-template-columns: 13.5rem minmax(0, 1fr); gap: 3rem; }
+  .rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1.25rem); align-self: start; max-height: calc(100vh - 2.5rem); overflow: auto; }
+}
+
+main { min-width: 0; }
+main > section { padding-block: 2.5rem; border-top: 1px solid var(--rule); display: grid; gap: 1.25rem; }
+main > section:first-child { border-top: 0; padding-top: 0.25rem; }
+.prose { max-width: 70ch; display: grid; gap: 0.85rem; }
+.note { font-size: var(--step--1); color: var(--muted); max-width: 78ch; }
+.sub-h { font-family: var(--font-display); font-size: 1.12rem; font-weight: 600; margin-top: 0.5rem; }
+
+/* chips */
+.chip {
+  display: inline-flex; align-items: center; gap: 0.38em;
+  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500; line-height: 1.25;
+  padding: 0.2em 0.6em; border-radius: 999px; white-space: nowrap;
+  border: 1px solid transparent;
+}
+.chip::before { content: ""; width: 0.5em; height: 0.5em; border-radius: 50%; background: currentColor; flex: none; }
+.chip.good { color: var(--good); background: var(--good-soft); }
+.chip.warn { color: var(--warn); background: var(--warn-soft); }
+.chip.none { color: var(--none); background: var(--none-soft); }
+.chip.driven { color: var(--accent); background: var(--accent-soft); }
+.chip.passive { color: var(--passive); background: var(--passive-soft); }
+.chip.absent { color: var(--none); background: transparent; border-color: var(--rule); }
+.chip.now { color: var(--paper); background: var(--accent); }
+.chip.now::before { background: var(--paper); }
+.dash { color: var(--none); font-family: var(--font-mono); }
+
+/* summary */
+.summary-grid { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; }
+@media (min-width: 720px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+.point { background: var(--sheet); padding: 1.1rem 1.25rem; display: grid; gap: 0.45rem; align-content: start; }
+.point h3 { font-size: 1.08rem; }
+.point.recommend { background: var(--accent-soft); }
+.point.recommend h3 { color: var(--accent); }
+.verdicts { display: flex; flex-wrap: wrap; gap: 0.45rem 0.55rem; align-items: center; font-size: var(--step--1); }
+.verdicts .label { margin-right: 0.25rem; }
+
+/* tables */
+.table-frame { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; font-size: var(--step--1); line-height: 1.45; }
+.table-frame table { min-width: 46rem; }
+.table-frame.narrow table { min-width: 38rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--rule); }
+thead th { font-family: var(--font-mono); font-weight: 500; font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+tbody th { font-weight: 600; }
+td .chip, th .chip { margin-block: 0.05rem; }
+td code { overflow-wrap: break-word; }
+tr.highlight th, tr.highlight td { background: var(--accent-soft); }
+.matrix td, .matrix th { text-align: center; vertical-align: middle; }
+.matrix tbody th, .matrix thead th:first-child { text-align: left; }
+.matrix tbody th small { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; }
+.matrix thead th { white-space: normal; min-width: 6.5rem; }
+.matrix tr.gap-row th, .matrix tr.gap-row td { background: var(--warn-soft); }
+
+/* gaps */
+.gaps { display: grid; gap: 1.25rem; }
+@media (min-width: 780px) { .gaps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.gap { border-top: 2px solid var(--accent); padding-top: 0.75rem; display: grid; gap: 0.4rem; align-content: start; }
+.gap .label { color: var(--accent); }
+.gap h3 { font-size: 1.05rem; }
+.gap p { font-size: 0.95rem; }
+
+/* schematic */
+figure.schematic { margin: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 1rem 1.1rem 1.1rem; display: grid; gap: 0.8rem; }
+.lanes { display: grid; gap: 0.55rem; }
+.lane { display: grid; gap: 0.2rem 1rem; align-items: center; }
+@media (min-width: 680px) { .lane { grid-template-columns: 13rem minmax(0, 1fr); } }
+.lane-label { font-size: 0.82rem; line-height: 1.35; }
+.lane-label b { display: block; font-weight: 600; }
+.lane-label span { color: var(--muted); }
+.lane svg { width: 100%; height: 4.6rem; display: block; overflow: visible; }
+.trace { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.t-base { stroke: var(--rule); stroke-width: 1; }
+.t-raw { stroke: var(--muted); stroke-width: 1; opacity: 0.55; }
+.t-env { stroke: var(--accent); stroke-width: 2; }
+.t-motion { stroke: var(--passive); stroke-width: 2.25; }
+.t-sim { stroke: var(--ink); stroke-width: 2; }
+.t-alpha { stroke: var(--accent); stroke-width: 1.75; stroke-dasharray: 7 6; }
+.mk-emg { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.85; }
+.mk-move { stroke: var(--passive); stroke-width: 1.25; stroke-dasharray: 1 4; }
+.axis { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+.fig-key { display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.8rem; color: var(--muted); }
+.fig-key span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.fig-key i { display: inline-block; width: 1.4rem; height: 0; border-top: 2px solid var(--accent); }
+.fig-key i.k-move { border-top: 2px dotted var(--passive); }
+.fig-key i.k-emg { border-top: 2px dashed var(--accent); }
+figcaption { font-size: 0.85rem; color: var(--muted); max-width: 78ch; }
+
+/* questions */
+.qs { display: grid; border-top: 1px solid var(--rule); }
+.q { display: grid; gap: 0.6rem; padding-block: 1.15rem; border-bottom: 1px solid var(--rule); }
+.q-head { display: flex; gap: 0.75rem; align-items: baseline; flex-wrap: wrap; }
+.qid { font-family: var(--font-mono); font-weight: 500; font-size: 0.82rem; color: var(--accent); background: var(--accent-soft); padding: 0.08rem 0.45rem; border-radius: 4px; }
+.q h3 { font-size: 1.1rem; flex: 1 1 18rem; min-width: 0; }
+.q .claim { font-size: var(--step--1); color: var(--muted); }
+.facts { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0.4rem 0.9rem; margin: 0; font-size: 0.92rem; max-width: 82ch; }
+.facts dt { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 0.22rem; }
+.facts dd { margin: 0; min-width: 0; }
+@media (max-width: 460px) { .facts { grid-template-columns: 1fr; gap: 0.1rem; } .facts dt { padding-top: 0.55rem; } }
+
+/* dataset cards */
+.cards { display: grid; gap: 1rem; }
+@media (min-width: 900px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 1.1rem 1.2rem 1.2rem; display: grid; gap: 0.7rem; align-content: start; }
+.card-head { display: grid; gap: 0.35rem; }
+.card-title { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; align-items: baseline; justify-content: space-between; }
+.card h3 { font-size: 1.06rem; min-width: 0; }
+.card .sub { font-size: 0.8rem; color: var(--muted); }
+.card .facts { font-size: 0.875rem; grid-template-columns: 6.6rem minmax(0, 1fr); }
+@media (max-width: 460px) { .card .facts { grid-template-columns: 1fr; } }
+
+/* split verdict */
+.split { display: grid; gap: 1.25rem; }
+@media (min-width: 780px) { .split { grid-template-columns: 1fr 1fr; } }
+.split > div { display: grid; gap: 0.55rem; align-content: start; }
+.split h3 { font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; }
+
+/* plan */
+.checklist { list-style: none; padding: 0; display: grid; gap: 0.5rem; max-width: 80ch; }
+.checklist li + li { margin-top: 0; }
+.checklist label { display: flex; gap: 0.65rem; align-items: flex-start; cursor: pointer; }
+.checklist input { margin-top: 0.32rem; accent-color: var(--accent); width: 1rem; height: 1rem; flex: none; }
+.checklist input:checked + span { color: var(--muted); text-decoration: line-through; }
+.this-week { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 1.1rem 1.25rem; display: grid; gap: 0.75rem; }
+.this-week .title { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
+.weeks { display: grid; border-top: 1px solid var(--rule); }
+.week { display: grid; gap: 0.45rem 1.5rem; padding-block: 1.05rem; border-bottom: 1px solid var(--rule); }
+@media (min-width: 740px) { .week { grid-template-columns: 9.5rem minmax(0, 1fr); } }
+.when { display: grid; gap: 0.1rem; align-content: start; }
+.when b { font-size: 0.95rem; font-weight: 600; }
+.when span { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.week-body { display: grid; gap: 0.5rem; min-width: 0; }
+.week-body h3 { font-size: 1.05rem; display: flex; flex-wrap: wrap; gap: 0.35rem 0.6rem; align-items: baseline; }
+.week-body ul { font-size: 0.93rem; }
+.qtags { display: inline-flex; gap: 0.3rem; flex-wrap: wrap; }
+.qtags span { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); border: 1px solid var(--accent-soft); background: var(--accent-soft); border-radius: 4px; padding: 0 0.35rem; font-weight: 500; }
+.deliv, .gate { font-size: 0.9rem; }
+.deliv b, .gate b { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500; margin-right: 0.45rem; }
+.deliv b { color: var(--good); }
+.gate b { color: var(--warn); }
+.scope { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; font-size: 0.92rem; }
+@media (min-width: 720px) { .scope { grid-template-columns: 1fr 1fr; } }
+.scope > div { background: var(--sheet); padding: 0.9rem 1.1rem; display: grid; gap: 0.35rem; align-content: start; }
+
+/* meeting + methods + sources */
+.questions { display: grid; gap: 0.6rem; max-width: 80ch; padding-left: 1.4rem; }
+.questions li + li { margin-top: 0; }
+.questions li::marker { font-family: var(--font-mono); color: var(--accent); font-size: 0.85em; }
+.methods { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: 0.75rem 1.25rem; margin: 0; max-width: 90ch; }
+.methods dt { font-weight: 600; font-size: 0.95rem; }
+.methods dd { margin: 0; min-width: 0; font-size: 0.95rem; }
+@media (max-width: 620px) { .methods { grid-template-columns: 1fr; gap: 0.2rem; } .methods dd { margin-bottom: 0.65rem; } }
+.sources { display: grid; gap: 1.25rem; }
+@media (min-width: 860px) { .sources { grid-template-columns: 1fr 1fr; } }
+.sources h3 { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 0.4rem; }
+.sources ul { font-size: 0.86rem; display: grid; gap: 0.35rem; padding-left: 1rem; }
+.sources li + li { margin-top: 0; }
+.sources a { overflow-wrap: anywhere; }
+footer.colophon { border-top: 1px solid var(--rule); margin-top: 1rem; padding-top: 1.25rem; font-size: 0.82rem; color: var(--muted); max-width: 90ch; }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <p class="label">proj-b1 · Eugene lab · Fall 2026</p>
+  <h1>Validating <em>Beneath the Skin</em> against human biology</h1>
+  <p class="lede">The project's question has changed. It now asks whether the simulator's internal muscle activations and tissue trajectories match measurements from real people, and surface plausibility is no longer the target. This plan reassesses the earlier ideas, checks what the datasets on the Ziva machine and the public MRI and articulography corpora can actually test, and lays out the work week by week through December.</p>
+  <dl class="meta">
+    <div><dt>Prepared</dt><dd>Oct 7, 2026 (week 3)</dd></div>
+    <div><dt>For</dt><dd>Oleh, ahead of the next group meeting</dd></div>
+    <div><dt>Built from</dt><dd>the pivot note, the 26-9-23 paper draft, the <code>a3-stochastic-V1</code> code, Viktor's dataset list</dd></div>
+  </dl>
+</header>
+
+<div class="layout">
+  <nav class="rail" aria-label="Contents">
+    <span class="label">Contents</span>
+    <ol>
+      <li><a href="#summary"><span class="n">1</span>The short version</a></li>
+      <li><a href="#ideas"><span class="n">2</span>Earlier ideas, reassessed</a></li>
+      <li><a href="#outputs"><span class="n">3</span>What the simulator outputs</a></li>
+      <li><a href="#questions"><span class="n">4</span>Validation questions</a></li>
+      <li><a href="#datasets"><span class="n">5</span>Datasets and feasibility</a></li>
+      <li><a href="#mapping"><span class="n">6</span>Correspondence map</a></li>
+      <li><a href="#options"><span class="n">7</span>Research options</a></li>
+      <li><a href="#plan"><span class="n">8</span>Plan through December</a></li>
+      <li><a href="#protocol"><span class="n">9</span>In-vivo protocol outline</a></li>
+      <li><a href="#meeting"><span class="n">10</span>For the group meeting</a></li>
+      <li><a href="#methods"><span class="n">11</span>Methods notes</a></li>
+      <li><a href="#sources"><span class="n">12</span>Sources</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+<!-- 1 -->
+<section id="summary">
+  <h2><span class="num">1</span>The short version</h2>
+  <div class="summary-grid">
+    <div class="point">
+      <h3>The simulator has no activation signal yet</h3>
+      <p>The solver drives five structures: the jaw, the orbicularis oris, both orbicularis oculi and the frontalis. Its Hill-type muscle model runs with a fixed activation of 0.8. Zygomaticus major, levator labii, the depressors, mentalis and the other modeled muscles move only passively through Ziva attachments. Comparing activations with EMG therefore starts with defining what counts as activation in the model.</p>
+    </div>
+    <div class="point">
+      <h3>Existing data covers most of the questions</h3>
+      <p>Public and on-machine data can test which muscles each expression recruits, how the lips and jaw move in speech, how far people coarticulate, and how much the zygomaticus major shortens and thickens in a smile.</p>
+    </div>
+    <div class="point">
+      <h3>It cannot cover the central one</h3>
+      <p>No dataset records muscle activity, internal muscle deformation and 3D surface motion on the same people performing the simulator's own poses and sentences. That is the gap an in-vivo study has to close.</p>
+    </div>
+    <div class="point recommend">
+      <h3>Recommendation</h3>
+      <p>Run a validation audit on existing data in weeks 4 to 10. Draft the in-vivo protocol alongside it, because ethics review takes weeks. Propose making activation explicit in the solver as the follow-on contribution, once the audit shows where the model departs from biology.</p>
+    </div>
+  </div>
+  <div class="verdicts">
+    <span class="label">Preliminary verdict</span>
+    <span class="chip good">Q1 recruitment: yes</span>
+    <span class="chip warn">Q2 muscle paths: partly</span>
+    <span class="chip good">Q3 kinematics: yes</span>
+    <span class="chip good">Q4 jaw-lip timing: yes</span>
+    <span class="chip warn">Q5 coarticulation: likely</span>
+    <span class="chip warn">Q6 effort: partly</span>
+    <span class="chip none">Same-subject multimodal: no</span>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="ideas">
+  <h2><span class="num">2</span>Earlier ideas, reassessed</h2>
+  <div class="prose">
+    <p>The six ideas in <code>RESEARCH_IDEAS.md</code> were written for surface imitation and RL control. Measured against the new question, one stays, one is reframed, and the rest stop or pause.</p>
+  </div>
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr><th>Earlier idea</th><th>Verdict</th><th>Why</th><th>What carries over</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">1. Learned co-expression synchronizer (DSAC replaces the L-BFGS-B solve)</th>
+          <td><span class="chip warn">Pause</span></td>
+          <td>It makes the solver faster. It says nothing about whether the result is biological.</td>
+          <td>Nothing needed now. Revisit if solver speed limits the in-vivo comparisons.</td>
+        </tr>
+        <tr>
+          <th scope="row">2. VOCASET phoneme imitation</th>
+          <td><span class="chip none">Stop as main track</span></td>
+          <td>VOCASET has FLAME surface meshes only. Matching them improves the surface and tells you nothing about muscles, which is why the supervisor ruled it out.</td>
+          <td>Forced alignment, FLAME-to-rig mapping, position and velocity metrics, the pytest setup (listed below). Keep the branches local.</td>
+        </tr>
+        <tr>
+          <th scope="row">3. Reimplement Poisson-disk sampling and the SDF collision proxy</th>
+          <td><span class="chip none">Drop for now</span></td>
+          <td>Reproducibility work with no bearing on biological validity.</td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">4. Physiological-plausibility reward from sEMG atlases</th>
+          <td><span class="chip passive">Reframe</span></td>
+          <td>Turning EMG into a reward before measuring the gap would hide the gap. Measure first (option A), then use the same mapping as a model constraint (option C).</td>
+          <td>Its muscle-name mapping becomes the correspondence map in section 6.</td>
+        </tr>
+        <tr>
+          <th scope="row">5. Document and test the co-expression math</th>
+          <td><span class="chip good">Keep, scoped down</span></td>
+          <td>The audit needs trustworthy exports of the controller envelopes, the 85% jaw rule and the Hill terms.</td>
+          <td>Document only what the export layer touches, including the fixed activation.</td>
+        </tr>
+        <tr>
+          <th scope="row">6. Cross-topology benchmark (ScanTalk, Multiface)</th>
+          <td><span class="chip none">Drop</span></td>
+          <td>Surface generalization is outside the new question.</td>
+          <td><span class="dash">-</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose">
+    <p class="sub-h">The VOCASET work carries over</p>
+    <p>Three pieces on the local <code>vocaset-phoneme-imitation</code> branch (under <code>a3-stochastic-V1-algo/</code>) transfer directly:</p>
+    <ul>
+      <li><code>scripts/vocaset_extract_phonemes.py</code> and <code>scripts/VOCASET_ALIGNMENT_REPRODUCIBILITY.md</code>: the Montreal Forced Aligner pipeline. It aligns speech EMG audio and real-time MRI audio to phones for Q5 and Q6.</li>
+      <li><code>utils/flame_correspondence.py</code> and <code>scripts/build_flame_rig_mapping.py</code>: the FLAME-to-rig mapping. The Jena EIFER pipeline reconstructs FLAME expressions from the Mimics and Muscles videos, so this lets you compare human surface motion with the simulator's skin on one topology.</li>
+      <li><code>tests/</code> with its stub modules: the pattern for testing the new loaders and metrics without Maya.</li>
+    </ul>
+    <p class="note">One reference in <code>DATASETS_NEW.md</code>, the 2025 npj Flexible Electronics conformal sEMG atlas, could not be found in any search. Confirm it exists before citing it.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="outputs">
+  <h2><span class="num">3</span>What the simulator actually outputs</h2>
+  <div class="prose">
+    <p>Validation has to start from quantities the model produces. This is what the paper and the code show.</p>
+  </div>
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr><th>Simulator output</th><th>Where it lives</th><th>Biological counterpart</th><th>Measured by</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Driven-tissue trajectories: 300 orbicularis oris landmarks, orbicularis oculi L/R, frontalis, jaw rotation</th>
+          <td>Maya caches per transition, indexed in <code>automation/<wbr>deformation_path_db.json</code></td>
+          <td>Lip tissue shape and jaw position over time</td>
+          <td>Real-time MRI (lips, jaw), EMA lip and lower-incisor sensors</td>
+        </tr>
+        <tr>
+          <th scope="row">Passive-muscle deformation: zygomaticus major and minor, levator labii superioris, depressor labii inferioris, mentalis, procerus, depressor supercilii, masseter, temporalis</th>
+          <td>Ziva tissues in the Maya scene; not exported today</td>
+          <td>Muscle length, thickness and angle change</td>
+          <td>Static and real-time MRI, ultrasound</td>
+        </tr>
+        <tr>
+          <th scope="row">Controller timing: ease-in and ease-out overlap (10%, 40%), sigmoid lip cap, bell-shaped jaw cap, 85% jaw slowdown</th>
+          <td><code>d2 helper functions/<wbr>j82-plan-synchronize-t1-t2-done.py</code>, <code>j83-plan-expected-steps-using-opt.py</code>, the solver loop</td>
+          <td>Timing of neural drive and coarticulation</td>
+          <td>sEMG onsets and offsets against phone boundaries</td>
+        </tr>
+        <tr>
+          <th scope="row">Effort: Hill-model muscle work, Saint Venant-Kirchhoff strain energy, jaw rotational kinetic energy</th>
+          <td><code>training/evaluator.py</code></td>
+          <td>Neural and metabolic effort</td>
+          <td>Integrated EMG normalized to maximum voluntary contraction</td>
+        </tr>
+        <tr>
+          <th scope="row">Muscle activation α</th>
+          <td>Constant 0.8 at <code>training/<wbr>evaluator.py:1948</code>, <code>:2459</code> and <code>training/<wbr>analysic_gradient/<wbr>pytorch_analytical_gradient.py:217</code></td>
+          <td>Neural drive per muscle over time</td>
+          <td>sEMG envelope</td>
+        </tr>
+        <tr>
+          <th scope="row">Skin surface</th>
+          <td>Cloth-registered skin with spring attachments and lip wire deformers</td>
+          <td>Surface motion</td>
+          <td>Video with FLAME fits, 3D capture. Secondary for this project.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="gaps">
+    <div class="gap">
+      <span class="label">Gap 1 · activation</span>
+      <h3>Activation is a constant</h3>
+      <p>Every code path that computes muscle force sets α = 0.8. Force then varies only through the force-length term, which the paper parameterizes by the remaining distance to the target, and it is clamped at 17/300 N per landmark. Muscle work therefore mostly restates how far the landmarks moved.</p>
+    </div>
+    <div class="gap">
+      <span class="label">Gap 2 · prime movers</span>
+      <h3>The muscles that do the work in people are passive here</h3>
+      <p>The scene has about two dozen muscle meshes, but the solver actuates five structures. A smile (AU12) is made by moving orbicularis oris landmarks, and the zygomaticus major follows through the modiolus node. In people the zygomaticus major is the prime mover for AU12.</p>
+    </div>
+    <div class="gap">
+      <span class="label">Gap 3 · time</span>
+      <h3>Time is the optimizer's time</h3>
+      <p>Frames are solver steps played back at 30 fps under velocity caps taken from chewing studies. Order, overlap and trajectory shape can be compared directly. Absolute speeds and durations need the caps checked first.</p>
+    </div>
+  </div>
+
+  <figure class="schematic" aria-labelledby="fig-cap">
+    <div class="lanes" role="img" aria-label="Three schematic traces on one time axis. A human sEMG burst with its envelope starts first. Human tissue motion follows a few tens of milliseconds later. The simulator shows a motion-shaped controller envelope and a flat activation line at 0.8.">
+      <div class="lane">
+        <div class="lane-label"><b>Human sEMG</b><span>zygomaticus major during a smile: raw signal and RMS envelope</span></div>
+        <svg viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
+          <path class="trace t-base" d="M0 50 L1000 50" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace mk-emg" data-mark="emg" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace mk-move" data-mark="move" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace t-raw" id="tr-raw" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace t-env" id="tr-env" d="" vector-effect="non-scaling-stroke" fill="none"/>
+        </svg>
+      </div>
+      <div class="lane">
+        <div class="lane-label"><b>Human tissue motion</b><span>lip-corner displacement or muscle shortening (MRI, EMA, video)</span></div>
+        <svg viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
+          <path class="trace t-base" d="M0 92 L1000 92" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace mk-emg" data-mark="emg" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace mk-move" data-mark="move" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace t-motion" id="tr-motion" d="" vector-effect="non-scaling-stroke" fill="none"/>
+        </svg>
+      </div>
+      <div class="lane">
+        <div class="lane-label"><b>Simulator today</b><span>controller envelope (solid) and Hill activation fixed at 0.8 (dashed); the zygomaticus itself has no drive</span></div>
+        <svg viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
+          <path class="trace t-base" d="M0 92 L1000 92" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace mk-emg" data-mark="emg" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace mk-move" data-mark="move" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace t-alpha" id="tr-alpha" d="" vector-effect="non-scaling-stroke" fill="none"/>
+          <path class="trace t-sim" id="tr-sim" d="" vector-effect="non-scaling-stroke" fill="none"/>
+        </svg>
+      </div>
+      <div class="lane" aria-hidden="true">
+        <div class="lane-label"></div>
+        <div class="axis"><span>0 s</span><span>0.6 s</span><span>1.2 s</span></div>
+      </div>
+    </div>
+    <div class="fig-key" aria-hidden="true">
+      <span><i class="k-emg"></i>EMG onset</span>
+      <span><i class="k-move"></i>movement onset</span>
+    </div>
+    <figcaption id="fig-cap">Schematic, not data. In people, EMG rises tens of milliseconds before tissue moves (electromechanical delay), and its shape differs from the motion it causes. The simulator has a motion-shaped controller envelope and a constant activation, so it has no signal to line up with the EMG trace yet. Q1 to Q6 below compare what can be compared today.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p>One modeling choice helps. The lips are a single volume of muscle, fat and skin. Midsagittal MRI also shows the lip as one block of soft tissue, so real-time MRI of speech is a fair comparison for the lips.</p>
+    <p class="sub-h">Parameters to audit against human data</p>
+  </div>
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Value in model</th><th>Basis in Appendix B or code</th><th>Check against</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Jaw translational speed cap</th>
+          <td>20 mm/s</td>
+          <td>The average chewing speed (Bourne 2002) used as a maximum. The same appendix lists 130 mm/s as the measured maximum (Carossa et al. 2020).</td>
+          <td>Condylar translation and lower-incisor speeds in EMA speech data (Q3)</td>
+        </tr>
+        <tr>
+          <th scope="row">Jaw rotational speed cap</th>
+          <td>31.24 °/s</td>
+          <td>A 25 mm arc, a 17 cm rotation radius and a 0.27 s fast gum-chewing opening</td>
+          <td>Jaw angle in EMA and real-time MRI. A 17 cm radius looks long for an adult mandible (condylion to chin is on the order of 12 cm); a shorter radius raises the cap.</td>
+        </tr>
+        <tr>
+          <th scope="row">Facial muscle shortening cap</th>
+          <td>257.6 mm/s</td>
+          <td>4.6 lengths/s from a general human muscle-fibre study (Ruff and Whittlesey 1991) × a 56 mm muscle (Happak et al. 1997)</td>
+          <td>Whether that fibre rate applies to facial muscle; lip speeds in EMA</td>
+        </tr>
+        <tr>
+          <th scope="row">Lip force</th>
+          <td>17 N total, split over 300 landmarks</td>
+          <td>Maximal lip force in women aged 18 to 25 (McHenry et al. 1999)</td>
+          <td>Fine as an upper bound. Speech uses a small fraction of maximal force.</td>
+        </tr>
+        <tr>
+          <th scope="row">Hill constants</th>
+          <td>σ 0.4, K 0.18, a 0.12, k<sub>PEE</sub> 0.5, k<sub>SEE</sub> 0.3, l<sub>0</sub> 2 cm</td>
+          <td>Marked "empirical value" in <code>training/evaluator.py</code></td>
+          <td>Literature ranges for facial muscle (Q2, Q6)</td>
+        </tr>
+        <tr>
+          <th scope="row">Unit mapping</th>
+          <td>1 Maya unit = 0.0962 cm</td>
+          <td>One author's mandible width (15 cm) against the model's 155.92 units</td>
+          <td>Anthropometric norms for mandible width</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="questions">
+  <h2><span class="num">4</span>Validation questions</h2>
+  <div class="prose">
+    <p>Six questions, each tied to a claim in the paper and to data that can test it. The IDs are used in the plan in section 8.</p>
+    <p>This has been done before at smaller scale. Lucero and Munhall (1999) drove a face model with Hill-type muscles from recorded perioral EMG and compared it with marker kinematics. Eskes et al. (2018) drove a generic finite-element face with person-specific sEMG in six volunteers and reproduced measured 3D marker motion with a median correlation around 0.77 to 0.78. Nazari et al. built a speech face model with muscles for the same purpose. Those studies run forward, from EMG to motion. This project starts at the other end, from a target pose to an implied activation, which is why Q1 compares recruitment patterns instead of driving the model with EMG.</p>
+  </div>
+
+  <div class="qs">
+    <article class="q" id="q1">
+      <div class="q-head"><span class="qid">Q1</span><h3>Recruitment: does the model drive the muscles people use?</h3></div>
+      <p class="claim">Claim tested: the motor controllers translate artistic intent into muscle activations.</p>
+      <dl class="facts">
+        <dt>Compare</dt><dd>For each pose, which structures the solver drives and how much muscle work each does, against normalized sEMG per electrode site.</dd>
+        <dt>Data</dt><dd>Mimics and Muscles (main), Mimetic Interfaces (check), the Jena atlas papers for published group patterns.</dd>
+        <dt>Metrics</dt><dd>Agonist agreement (is the most active human site over a driven structure?), Spearman ρ between the model's effort vector and the EMG vector across sites, and the number of poses whose human prime mover is passive in the model.</dd>
+        <dt>Prediction</dt><dd>Fails for AU12, AU12L and AU6+12+25ii, where the zygomaticus major is passive, and for AU4, where corrugator, procerus and depressor supercilii are passive or absent. Should pass for AU1, AU2 and AU22.</dd>
+        <dt>Effort</dt><dd>About 2 weeks including the EMG pipeline.</dd>
+      </dl>
+    </article>
+
+    <article class="q" id="q2">
+      <div class="q-head"><span class="qid">Q2</span><h3>Muscle paths: do muscle geometry and passive deformation match anatomy?</h3></div>
+      <p class="claim">Claim tested: the model simulates internal anatomy well enough for biomechanical and medical analysis.</p>
+      <dl class="facts">
+        <dt>Compare</dt><dd>Rest geometry of the zygomaticus major and orbicularis oris (origin, insertion, length, angle, thickness) against anatomical and MRI measurements. Zygomaticus major length and thickness change in AU12 against MRI of a held smile.</dd>
+        <dt>Data</dt><dd>The zygomaticus functional MRI study (34 adults; in joy, length 85.6% and thickness 108.4% of rest), Happak et al. 1997 for facial muscle dimensions, real-time MRI lip sections for the lumped orbicularis oris.</dd>
+        <dt>Metrics</dt><dd>Each model value as a z-score within the human distribution. Inside the 95% prediction interval counts as a pass.</dd>
+        <dt>Caveat</dt><dd>Passing Q2 does not establish activation. A passively dragged zygomaticus can shorten and thicken like an active one, and only Q1 can tell them apart. Read Q1 and Q2 together.</dd>
+        <dt>Effort</dt><dd>About 1 week once the export layer exists.</dd>
+      </dl>
+    </article>
+
+    <article class="q" id="q3">
+      <div class="q-head"><span class="qid">Q3</span><h3>Kinematics: do lip and jaw trajectories look like human speech movements?</h3></div>
+      <p class="claim">Claim tested: the trajectories are biomechanically accurate and respect human velocity limits.</p>
+      <dl class="facts">
+        <dt>Compare</dt><dd>Velocity-profile shape (time-to-peak fraction, skew), peak speed against movement amplitude, peak speeds and durations for jaw opening (AA) and lip closure and rounding (V, UW).</dd>
+        <dt>Data</dt><dd>HPRC EMA, USC-TIMIT, the USC 75-speaker real-time MRI with Annot-16 contours, the French real-time MRI set.</dd>
+        <dt>Metrics</dt><dd>Shape distance on normalized time, the model's peak-speed-to-amplitude slope against the human regression, and the share of human movements faster than the model's caps.</dd>
+        <dt>Prediction</dt><dd>Human jaw speeds in speech will sit near or above the caps. Speech runs at roughly 4 to 5 syllables per second, so each opening has about 100 to 125 ms. The rotational cap matters most for speech, and its 17 cm radius assumption keeps it low.</dd>
+        <dt>Effort</dt><dd>About 1 week.</dd>
+      </dl>
+    </article>
+
+    <article class="q" id="q4">
+      <div class="q-head"><span class="qid">Q4</span><h3>Jaw-lip coordination: does the 85% slowdown rule match human timing?</h3></div>
+      <p class="claim">Claim tested: the paper itself says in vivo data is needed to confirm the jaw's synchronized deceleration.</p>
+      <dl class="facts">
+        <dt>Compare</dt><dd>Relative timing of jaw and lip peak velocity and target arrival in bilabial closures and rounding transitions, and the share of jaw movement spent decelerating.</dd>
+        <dt>Data</dt><dd>HPRC EMA. Masapollo et al. 2025 report tight jaw-lip peak-velocity coupling during closing and looser coupling during opening, with a supplement on ASHA figshare. Real-time MRI as a second source.</dd>
+        <dt>Metric</dt><dd>Arrival-time difference, jaw minus lip, for the model against the human distribution.</dd>
+        <dt>Effort</dt><dd>About 1 week, sharing code with Q3.</dd>
+      </dl>
+    </article>
+
+    <article class="q" id="q5">
+      <div class="q-head"><span class="qid">Q5</span><h3>Coarticulation: does controller overlap match human anticipation?</h3></div>
+      <p class="claim">Claim tested: overlapping controllers reproduce human coarticulation (10% and 40% overlaps were shown).</p>
+      <dl class="facts">
+        <dt>Compare</dt><dd>The model's overlap fraction against human anticipatory onset of the next gesture: orbicularis oris EMG onset before rounded vowels (UW in "you" and "new") and lip-protrusion onset in real-time MRI, both relative to phone boundaries.</dd>
+        <dt>Data</dt><dd>The speech EMG set on the Ziva machine if it has English audio and lip channels, otherwise Gowda et al. 2024. Real-time MRI with Annot-16 phone alignment. The classic EMG work on anticipatory lip rounding (Bell-Berti and Harris) for reference values.</dd>
+        <dt>Metric</dt><dd>Onset lead in ms and as a fraction of the preceding segment, compared with the 10% and 40% settings.</dd>
+        <dt>Reuse</dt><dd>The forced-alignment pipeline from the VOCASET branch.</dd>
+        <dt>Effort</dt><dd>About 2 weeks.</dd>
+      </dl>
+    </article>
+
+    <article class="q" id="q6">
+      <div class="q-head"><span class="qid">Q6</span><h3>Effort: does the model's energy ranking match human effort?</h3></div>
+      <p class="claim">Claim tested: the simulation reflects the energy parsimony of speech.</p>
+      <dl class="facts">
+        <dt>Compare</dt><dd>The rank of muscle work and strain energy across the 19 precomputed transitions against the rank of integrated EMG for the same transitions, and whether overlap lowers effort in both.</dd>
+        <dt>Caveat</dt><dd>The model's muscle work is roughly displacement times a near-constant force, so normalize both sides by movement amplitude before comparing.</dd>
+        <dt>Data</dt><dd>Speech EMG with phone alignment.</dd>
+        <dt>Effort</dt><dd>About 1 week. Stretch goal.</dd>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="datasets">
+  <h2><span class="num">5</span>Datasets and feasibility</h2>
+  <p class="sub-h">On the Ziva machine</p>
+  <div class="cards">
+    <article class="card" id="ds-mm">
+      <div class="card-head">
+        <div class="card-title"><h3>Mimics and Muscles</h3><span class="chip good">Strongest for expressions</span></div>
+        <p class="sub">Jena University Hospital and Jena computer vision group · access by agreement</p>
+      </div>
+      <dl class="facts">
+        <dt>Source</dt><dd>Büchner, Anders, Guntinas-Lichius and Denzler, EIFER (CVPR 2025). Same cohort as Mueller et al. 2022.</dd>
+        <dt>People</dt><dd>36 adults, 19 women and 17 men, aged 18 to 67.</dd>
+        <dt>Signals</dt><dd>Bilateral sEMG in two schemes at once. Fridlund: 22 bipolar channels (frontalis F1-F4, glabella F5-F8, levator labii superioris F9-F10, orbicularis oris F11-F12, depressor anguli oris F13-F14, mentalis F15-F16, orbicularis oculi F17-F18, zygomaticus F19-F20, masseter F21-F22). Kuramoto: a monopolar grid. 4096 Hz. Frontal video at 30 fps, trigger-synced.</dd>
+        <dt>Tasks</dt><dd>Rest, forehead raise, gentle and tight eye closure, closed and open smile, nose wrinkle, cheek blow, lip pucker, snarl, lower-lip depression, and six basic emotions. Two sessions with electrodes and one without, two weeks apart.</dd>
+        <dt>Fits poses</dt><dd>AU0, AU1 and AU2, AU6 and AU7, AU12, AU6+12+25ii, AU22. A pucker is closer to AU18, so compare it with the artist's AU22 sculpt before pairing them.</dd>
+        <dt>Limits</dt><dd>Electrodes cover the face, the video is 2D, and there is no speech. Not every participant consented to reuse, so the copy on the Ziva machine may be a subset. EIFER predicted muscle activity from FLAME expression parameters with Spearman ρ ≈ 0.38, a reminder that surface motion predicts muscle activity only loosely.</dd>
+        <dt>Next step</dt><dd>Read the data agreement before copying anything off the Ziva machine. Check the dataset's own channel map: the paper's appendix puts depressor anguli oris on F19-F20, while its Table 3 puts it on F13-F14.</dd>
+      </dl>
+    </article>
+
+    <article class="card" id="ds-mi">
+      <div class="card-head">
+        <div class="card-title"><h3>Mimetic Interfaces: Facial Surface EMG Dataset 2015</h3><span class="chip warn">Clean first pilot</span></div>
+        <p class="sub">Tampere University · CC BY 4.0 · Etsin (Fairdata)</p>
+      </div>
+      <dl class="facts">
+        <dt>Source</dt><dd>Rantanen et al., Tampere University.</dd>
+        <dt>People</dt><dd>15 adults, 8 women and 7 men, aged 26 to 57.</dd>
+        <dt>Signals</dt><dd>Bipolar Ag/AgCl electrodes at Fridlund and Cacioppo sites, right side only: corrugator supercilii, zygomaticus major, orbicularis oris, orbicularis oculi, masseter. NeXus-10 at 2048 Hz with no software filtering. MATLAB files with a processing script.</dd>
+        <dt>Tasks</dt><dd>Phase A: smile, lip pucker and frown, 10 randomized 6 s repetitions each after 1 minute of rest. Phase B: smile and pucker while chewing gum, without the corrugator channel.</dd>
+        <dt>Fits poses</dt><dd>AU12 (smile), AU22 (pucker), AU4 (frown).</dd>
+        <dt>Limits</dt><dd>Five muscles on one side, no kinematics, no released video, no speech.</dd>
+        <dt>Next step</dt><dd>Build the EMG pipeline on this set first. It is small, documented and openly licensed.</dd>
+      </dl>
+    </article>
+
+    <article class="card" id="ds-speech">
+      <div class="card-head">
+        <div class="card-title"><h3>A Dataset of Multi-channel Surface Electromyogram of Facial Muscles During Speech</h3><span class="chip warn">Unconfirmed · key for Q5</span></div>
+        <p class="sub">The title did not match a public record · inventory it with Viktor</p>
+      </div>
+      <dl class="facts">
+        <dt>Record</dt><dd>Language, speakers, electrode sites, sampling rate, audio, prompts, sync method, license.</dd>
+        <dt>Useful if</dt><dd>It has audio with transcripts for forced alignment, upper and lower orbicularis oris channels, and ideally a jaw-opener (anterior digastric) and depressor channels.</dd>
+        <dt>Fits poses</dt><dd>Phonemes N, AA, T, IY, V, Y, UW and EH and the model's sentences, if the language is English.</dd>
+        <dt>Fallbacks</dt><dd>Gowda et al. 2024 (OSF): 22 monopolar sites on neck, chin, jaw, cheek and lips, 38 English phonemes and 36 words at 5 kHz; the authors call it the largest public speech EMG set. AVE Speech: 100 Mandarin speakers, 6 bipolar channels (mentalis, risorius, levator anguli oris, anterior digastric, mylohyoid, platysma) at 1 kHz with audio and 30 fps lip video, on Hugging Face. CSL-EMG_Array (Bremen): 8 speakers, about 9.7 hours, EMG arrays with audio, CC BY 4.0.</dd>
+      </dl>
+    </article>
+
+    <article class="card" id="ds-fer">
+      <div class="card-head">
+        <div class="card-title"><h3>Facial expression recognition using facial sEMG</h3><span class="chip none">Unconfirmed · secondary</span></div>
+        <p class="sub">The title did not match a public record</p>
+      </div>
+      <dl class="facts">
+        <dt>Likely</dt><dd>A small posed-emotion set built for classification.</dd>
+        <dt>Closest match</dt><dd>Shu et al. 2025 (Frontiers in Bioengineering and Biotechnology): 10 adults, 7 muscles (inner and outer frontalis, corrugator, levator labii superioris alaeque nasi, zygomaticus major, depressor anguli oris, mentalis) at 1024 Hz with 25 fps video synced through Lab Streaming Layer, six basic emotions. Data on request.</dd>
+        <dt>Related</dt><dd>The same paper fits a spring-based skin-musculoskeletal model from sEMG to five facial keypoints (R² ≈ 0.77 when combined with regression), a useful baseline for EMG-to-surface mapping.</dd>
+        <dt>Fits poses</dt><dd>Emotions combine several AUs, so the mapping to single-AU poses is loose. Use happiness (AU6+12) as a replication of Q1.</dd>
+        <dt>Next step</dt><dd>Confirm what it is, and skip it if it duplicates the Jena data.</dd>
+      </dl>
+    </article>
+  </div>
+
+  <p class="sub-h">Public MRI, articulography and reference studies</p>
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr><th>Resource</th><th>What it has</th><th>Use for</th><th>Access</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">USC 75-Speaker Speech MRI Database (Lim et al. 2021)</th>
+          <td>75 speakers. Midsagittal real-time MRI with synced audio (about 83 to 86 fps reported; check the release), raw k-space, 3D volumes of sustained sounds, static T2 upper-airway scans.</td>
+          <td>Q3, Q4, Q5: lip aperture, protrusion and thickness and jaw position over time. 3D lip shape for sustained vowels.</td>
+          <td>figshare, free</td>
+        </tr>
+        <tr>
+          <th scope="row">75-Speaker Annot-16 (Shi et al., Interspeech 2025)</th>
+          <td>16 of those speakers with articulator contours and phonetic alignments.</td>
+          <td>Saves building your own MRI segmentation and alignment.</td>
+          <td>Zenodo</td>
+        </tr>
+        <tr>
+          <th scope="row">French real-time MRI (Isaieva et al. 2021)</th>
+          <td>10 speakers, 2D real-time MRI at 20 ms per frame, static 3D for many phonemes, phoneme segmentation.</td>
+          <td>Cross-language check of Q3 and Q5; 3D lip shapes.</td>
+          <td>figshare</td>
+        </tr>
+        <tr>
+          <th scope="row">HPRC EMA (Haskins)</th>
+          <td>8 speakers, 100 Hz, lower incisor, upper and lower lip, three tongue sensors, 720 IEEE sentences at two rates, 44.1 kHz audio.</td>
+          <td>Q3 and Q4: velocity profiles and jaw-lip timing.</td>
+          <td>Public; find the citation through papers that use it</td>
+        </tr>
+        <tr>
+          <th scope="row">USC-TIMIT, mngu0, MOCHA-TIMIT</th>
+          <td>EMA corpora; USC-TIMIT adds real-time MRI.</td>
+          <td>Q3 and Q4 backups.</td>
+          <td>Registration</td>
+        </tr>
+        <tr>
+          <th scope="row">Masapollo et al. 2025 (two JSLHR papers)</th>
+          <td>EMA timing of jaw against lips and tongue tip in VCV sequences across rate and stress.</td>
+          <td>Q4 reference results.</td>
+          <td>Open supplement on ASHA figshare</td>
+        </tr>
+        <tr>
+          <th scope="row">Zygomaticus major functional MRI (Aesthetic Plastic Surgery, 2024)</th>
+          <td>34 adults, 1.5 T, rest plus anger, joy, surprise and sadness, each held in the scanner. In joy, length 85.6% and thickness 108.4% of rest.</td>
+          <td>Q2 target values.</td>
+          <td>Article</td>
+        </tr>
+        <tr>
+          <th scope="row">Jena sEMG papers (Schumann 2021; Mueller 2022; test-retest 2023; six emotions 2023)</th>
+          <td>Group-level sEMG maps for 29 and 11 movements and six emotions; reliability across sessions.</td>
+          <td>Q1 cross-check without raw data.</td>
+          <td>Open access</td>
+        </tr>
+        <tr>
+          <th scope="row">Lapatki et al. 2010 (Psychophysiology)</th>
+          <td>Bipolar electrode positions for the lower face derived from motor-unit maps.</td>
+          <td>Electrode-to-muscle correspondence and crosstalk.</td>
+          <td>Article</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="sub-h">Coverage: which data can answer which question</p>
+  <div class="table-frame">
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th>Mimics and Muscles</th>
+          <th>Mimetic Interfaces</th>
+          <th>Speech EMG (Ziva)</th>
+          <th>FER sEMG (Ziva)</th>
+          <th>Speech real-time MRI</th>
+          <th>EMA corpora</th>
+          <th>Zygomaticus MRI study</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Q1 Recruitment</th>
+          <td><span class="chip good">Strong</span></td>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Q2 Muscle paths</th>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="chip good">Strong</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Q3 Kinematics</th>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="chip good">Strong</span></td>
+          <td><span class="chip good">Strong</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Q4 Jaw-lip timing</th>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="chip good">Strong</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Q5 Coarticulation<small>speech EMG rating assumes audio and lip channels</small></th>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="chip good">Strong</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="chip good">Strong</span></td>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Q6 Effort</th>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="chip warn">Partial</span></td>
+          <td><span class="chip good">Strong</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr class="gap-row">
+          <th scope="row">Same people: muscle activity, internal deformation and 3D surface</th>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="split">
+    <div>
+      <h3><span class="chip good">Enough</span>Public and on-machine data can carry</h3>
+      <ul>
+        <li>Q1 for expressions, with Mimics and Muscles as the main set and Mimetic Interfaces as a check.</li>
+        <li>Q3 and Q4, with EMA and real-time MRI.</li>
+        <li>The zygomaticus part of Q2, from the MRI study's group values.</li>
+        <li>Q5 and Q6, if the speech EMG set has audio and lip channels. Otherwise Gowda et al. or real-time MRI alone.</li>
+      </ul>
+    </div>
+    <div>
+      <h3><span class="chip none">Not enough</span>What still needs in-vivo data</h3>
+      <ul>
+        <li>Muscle activity, internal deformation and 3D surface recorded on the same people.</li>
+        <li>Small or deep muscles (risorius, buccinator, levator anguli oris, depressor labii inferioris), where surface EMG mixes neighbours.</li>
+        <li>3D dynamic deformation of facial muscles. The closest public evidence is static MRI of held expressions.</li>
+        <li>Upright posture. MRI is supine, which flips the gravity direction behind the paper's sag effects.</li>
+        <li>The model's exact 20 poses and sentences. Every dataset has its own task list.</li>
+        <li>Most of what speech MRI images (tongue, velum, larynx) is not actuated in the model. Only the lips and jaw are usable.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="mapping">
+  <h2><span class="num">6</span>Correspondence map</h2>
+  <div class="prose">
+    <p>This table links each structure in the scene to the poses that use it, its human role, the electrode sites that see it and an imaging handle. Prime movers follow the FACS muscle basis. It is the backbone of Q1 and the first thing to fill in properly in week 5.</p>
+  </div>
+  <div class="verdicts">
+    <span class="label">Legend</span>
+    <span class="chip driven">Driven by the solver</span>
+    <span class="chip passive">Passive (moves with attachments)</span>
+    <span class="chip absent">Not modeled or unclear</span>
+  </div>
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr><th>Structure</th><th>In the model</th><th>Model poses using it</th><th>Human prime mover for</th><th>Mimics and Muscles</th><th>Mimetic Interfaces</th><th>Imaging handle</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Frontalis</th>
+          <td><span class="chip driven">Driven</span></td>
+          <td>AU1, AU2, AU2L</td>
+          <td>AU1 (medial), AU2 (lateral)</td>
+          <td>F1-F4</td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Orbicularis oculi L/R</th>
+          <td><span class="chip driven">Driven</span></td>
+          <td>AU6, AU7, AU6+12+25ii</td>
+          <td>AU6 (orbital part), AU7 (palpebral part)</td>
+          <td>F17-F18</td>
+          <td>Orbicularis oculi</td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Orbicularis oris (lip volume with fat and skin)</th>
+          <td><span class="chip driven">Driven, 300 landmarks</span></td>
+          <td>AU22, AU25, AU12 in this model, all phonemes</td>
+          <td>AU22, AU23, AU24, rounding for UW</td>
+          <td>F11-F12</td>
+          <td>Orbicularis oris</td>
+          <td>Lip section in real-time MRI; EMA lip sensors</td>
+        </tr>
+        <tr>
+          <th scope="row">Mandible</th>
+          <td><span class="chip driven">Driven, rigid rotation</span></td>
+          <td>AA, EH, AU25, all phonemes</td>
+          <td>Opening: digastric and lateral pterygoid. Closing: masseter, temporalis.</td>
+          <td>Masseter F21-F22 (closer only)</td>
+          <td>Masseter</td>
+          <td>Jaw in real-time MRI; lower-incisor EMA sensor</td>
+        </tr>
+        <tr>
+          <th scope="row">Zygomaticus major L/R</th>
+          <td><span class="chip passive">Passive</span></td>
+          <td>AU12, AU12L, AU6+12+25ii (moves with the modiolus node)</td>
+          <td>AU12</td>
+          <td>F19-F20</td>
+          <td>Zygomaticus major</td>
+          <td>Functional MRI study (length, thickness)</td>
+        </tr>
+        <tr>
+          <th scope="row">Zygomaticus minor L/R</th>
+          <td><span class="chip passive">Passive</span></td>
+          <td><span class="dash">-</span></td>
+          <td>AU11</td>
+          <td>F19-F20 (shared site)</td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Levator labii superioris L/R</th>
+          <td><span class="chip passive">Passive</span></td>
+          <td><span class="dash">-</span></td>
+          <td>AU10</td>
+          <td>F9-F10</td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Procerus, depressor supercilii L/R</th>
+          <td><span class="chip passive">Passive</span></td>
+          <td>AU4</td>
+          <td>AU4, with the corrugator (not found in the scene's mesh list)</td>
+          <td>Glabella F5-F8</td>
+          <td>Corrugator</td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Depressor labii inferioris L/R</th>
+          <td><span class="chip passive">Passive</span></td>
+          <td>AU25</td>
+          <td>AU16, AU25</td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Mentalis</th>
+          <td><span class="chip passive">Passive</span></td>
+          <td>Likely V and UW</td>
+          <td>AU17</td>
+          <td>F15-F16</td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Masseter, temporalis</th>
+          <td><span class="chip passive">Passive</span></td>
+          <td>Jaw closing in every transition</td>
+          <td>Jaw closing, clenching</td>
+          <td>F21-F22</td>
+          <td>Masseter</td>
+          <td><span class="dash">-</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Depressor anguli oris, risorius, buccinator, platysma</th>
+          <td><span class="chip absent">Named in code, status unclear</span></td>
+          <td><span class="dash">-</span></td>
+          <td>AU15, AU20, AU14</td>
+          <td>Depressor anguli oris F13-F14</td>
+          <td><span class="dash">-</span></td>
+          <td>AVE Speech records risorius and platysma</td>
+        </tr>
+        <tr>
+          <th scope="row">Jaw openers (digastric, mylohyoid)</th>
+          <td><span class="chip absent">Not modeled</span></td>
+          <td>AA (would be the prime movers)</td>
+          <td>AU26, AU27</td>
+          <td><span class="dash">-</span></td>
+          <td><span class="dash">-</span></td>
+          <td>AVE Speech records anterior digastric and mylohyoid</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose">
+    <p><strong>A channel is a site, not a muscle.</strong> Facial muscles are small and overlapping, so each electrode picks up its neighbours. Lapatki et al. (2010) derived better bipolar positions for the lower face from motor-unit maps. Treat each channel as a weighted mix of nearby muscles.</p>
+    <p><strong>Virtual electrodes.</strong> Place the Fridlund sites on the registered skin mesh and compute, for each site, a distance-weighted sum of the simulated activity of nearby muscles. Model and human can then be compared channel by channel with crosstalk included. With today's model every passive muscle contributes zero, which is exactly what Q1 should expose.</p>
+    <p class="note">Muscle list taken from <code>SOFT_TISSUE_MESHES</code> in <code>h99-UI-mayascipt-V1.py</code> and the object names used in the solver code. Confirm the status of the "named in code" muscles in the Maya scene.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="options">
+  <h2><span class="num">7</span>Research options</h2>
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr><th>Option</th><th>What</th><th>Output</th><th>Effort</th><th>Risk</th><th>Depends on</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight">
+          <th scope="row">A. Validation audit on existing data <br><span class="chip now">Recommended now</span></th>
+          <td>Run Q1 to Q6 on the datasets in section 5 against the current model.</td>
+          <td>Validation scorecard, feasibility verdict, ranked list of model changes.</td>
+          <td>6 to 8 weeks at 8 to 10 h/week</td>
+          <td><span class="chip good">Low</span></td>
+          <td>Ziva machine, mayapy export, Python</td>
+        </tr>
+        <tr>
+          <th scope="row">B. In-vivo protocol</th>
+          <td>Design a study that measures what public data cannot, on the model's own tasks.</td>
+          <td>Protocol ready for ethics review, equipment and budget list, pilot plan.</td>
+          <td>2 to 3 weeks of writing now; collection next term</td>
+          <td><span class="chip warn">Medium</span></td>
+          <td>Scope agreed at the group meeting; ethics timeline; MRI access</td>
+        </tr>
+        <tr>
+          <th scope="row">C. Explicit activation in the solver</th>
+          <td>Give each anatomical muscle, including zygomaticus, levator labii, the depressors, mentalis and a jaw opener, a time-varying activation and solve for it, through Ziva fibre excitation or by optimizing a(t) in the Hill model with an EMG-like effort cost.</td>
+          <td>A model whose activations can be compared with EMG directly; before-and-after scores.</td>
+          <td>A term or more</td>
+          <td><span class="chip warn">Medium-high</span></td>
+          <td>Results of A</td>
+        </tr>
+        <tr>
+          <th scope="row">D. Data-driven recalibration</th>
+          <td>Replace guessed parameters with measured ones: jaw caps, controller overlap, the jaw-lip rule, Hill constants.</td>
+          <td>Parameter table with sources; re-run transitions.</td>
+          <td>1 to 2 weeks</td>
+          <td><span class="chip good">Low</span></td>
+          <td>A (Q3 to Q5)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose">
+    <p>Do A now and write B alongside it. D falls out of A at little extra cost and improves the paper directly. Propose C as next term's project: it is the change most likely to make the model biologically defensible, and A will show the group why it is needed.</p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="plan">
+  <h2><span class="num">8</span>Plan through December</h2>
+  <div class="prose">
+    <p>Weeks follow the research log (week 1 = Sep 21 to 27). The plan assumes 8 to 10 hours a week. If time is tighter, drop Q6 first, then the French MRI cross-check.</p>
+  </div>
+
+  <div class="this-week">
+    <div class="title"><span class="chip now">This week</span><h3>Week 3 · Oct 5 to 11 · Align</h3></div>
+    <ul class="checklist">
+      <li><label><input type="checkbox" id="wk3-post"><span>Read the proj-b1 post on the in-vivo protocol and note its constraints.</span></label></li>
+      <li><label><input type="checkbox" id="wk3-viktor"><span>Meet Viktor and fill one data card per dataset: path on the Ziva machine, size, format, people, channels and sites, sampling rate, tasks, audio or video, license or agreement. Ask what he has already run.</span></label></li>
+      <li><label><input type="checkbox" id="wk3-dua"><span>Read the Mimics and Muscles data agreement.</span></label></li>
+      <li><label><input type="checkbox" id="wk3-meeting"><span>Bring sections 1, 5 and 10 to the group meeting and agree on scope and pass criteria.</span></label></li>
+      <li><label><input type="checkbox" id="wk3-log"><span>Update <code>research_log.md</code> for weeks 2 and 3.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="weeks">
+    <div class="week">
+      <div class="when"><b>Week 4</b><span>Oct 12-18</span></div>
+      <div class="week-body">
+        <h3>Export layer and first EMG pipeline</h3>
+        <ul>
+          <li>On the Ziva machine, export per-frame vertices for all driven and passive muscles, controller envelopes and jaw angle for eight transitions: Neutral → AU12, AU22, AU4, AU6, AA and UW; N → AA; V → N. Save as <code>.npz</code> in millimetres.</li>
+          <li>Write muscle metrics: centreline length, thickness, lip aperture, protrusion and thickness from the orbicularis oris mesh, jaw opening at the incisors.</li>
+          <li>Build the EMG pipeline on Mimetic Interfaces: filtering, envelope, onset detection, normalization.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>One notebook from raw <code>.mat</code> to a per-pose activation table, and one from the Maya export to per-muscle metrics.</p>
+      </div>
+    </div>
+
+    <div class="week">
+      <div class="when"><b>Week 5</b><span>Oct 19-25</span></div>
+      <div class="week-body">
+        <h3>Recruitment <span class="qtags"><span>Q1</span></span></h3>
+        <ul>
+          <li>Run the pipeline on Mimics and Muscles and fill the correspondence map for every pose.</li>
+          <li>Compute agonist agreement, rank correlations and the passive-prime-mover count.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>Recruitment scorecard: pose × muscle, model drive against EMG.</p>
+        <p class="gate"><b>Gate</b>If AU12 and AU4 fail as predicted, raise option C with the supervisor now instead of in December.</p>
+      </div>
+    </div>
+
+    <div class="week">
+      <div class="when"><b>Week 6</b><span>Oct 26-Nov 1</span></div>
+      <div class="week-body">
+        <h3>Muscle paths <span class="qtags"><span>Q2</span></span></h3>
+        <ul>
+          <li>Audit rest geometry of the zygomaticus major and orbicularis oris against anatomy.</li>
+          <li>Compare zygomaticus length and thickness change in AU12 with the MRI study.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>A one-page geometry note with z-scores.</p>
+      </div>
+    </div>
+
+    <div class="week">
+      <div class="when"><b>Week 7</b><span>Nov 2-8</span></div>
+      <div class="week-body">
+        <h3>Kinematics and jaw-lip timing <span class="qtags"><span>Q3</span><span>Q4</span></span></h3>
+        <ul>
+          <li>Pull jaw and lip trajectories from EMA (HPRC or USC-TIMIT) and an Annot-16 subset of the USC MRI data.</li>
+          <li>Compute velocity profiles, peak speed against amplitude and jaw-lip arrival times. Test the speed caps and the 85% rule.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>Kinematics figures and the parameter audit table filled with measured values.</p>
+      </div>
+    </div>
+
+    <div class="week">
+      <div class="when"><b>Week 8</b><span>Nov 9-15</span></div>
+      <div class="week-body">
+        <h3>Coarticulation, effort if time allows <span class="qtags"><span>Q5</span><span>Q6</span></span></h3>
+        <ul>
+          <li>Force-align the speech EMG audio with the pipeline from the VOCASET branch.</li>
+          <li>Measure anticipatory onsets for the model's phoneme sequences and compare them with the 10% and 40% overlaps.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>Timing figure and a recommended overlap range.</p>
+        <p class="gate"><b>Gate</b>If the speech EMG set lacks usable audio or lip channels, switch to Gowda et al. or real-time MRI.</p>
+      </div>
+    </div>
+
+    <div class="week">
+      <div class="when"><b>Week 9</b><span>Nov 16-22</span></div>
+      <div class="week-body">
+        <h3>Synthesis</h3>
+        <ul>
+          <li>Assemble the scorecard across Q1 to Q6 and write the feasibility verdict.</li>
+          <li>Rank model changes by expected effect, with option D items first.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>A 10-minute group-meeting presentation.</p>
+      </div>
+    </div>
+
+    <div class="week">
+      <div class="when"><b>Week 10</b><span>Nov 23-29</span></div>
+      <div class="week-body">
+        <h3>In-vivo protocol, first draft</h3>
+        <ul>
+          <li>Write the protocol for the gaps public data could not close (section 9), reconciled with the proj-b1 post.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>Protocol draft for supervisor review.</p>
+      </div>
+    </div>
+
+    <div class="week">
+      <div class="when"><b>Weeks 11-12</b><span>Nov 30-Dec 13</span></div>
+      <div class="week-body">
+        <h3>Write-up and next term</h3>
+        <ul>
+          <li>Technical report: the audit, recalibrated parameters and the protocol.</li>
+          <li>Next-term proposal: option C, the pilot study, or both.</li>
+        </ul>
+        <p class="deliv"><b>Deliverable</b>Report and proposal.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scope">
+    <div><span class="label">Must-have</span><p>Dataset inventory, export layer, Q1, the zygomaticus part of Q2, Q3 and Q4, synthesis, protocol outline.</p></div>
+    <div><span class="label">Stretch</span><p>Q5 if the speech data is weak, Q6, virtual electrodes, the French MRI cross-check.</p></div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="protocol">
+  <h2><span class="num">9</span>In-vivo protocol outline</h2>
+  <div class="prose">
+    <p><strong>Aim.</strong> On the same people, measure muscle activity, internal muscle deformation and surface motion while they perform the model's own poses and sentences. Reconcile this outline with the proj-b1 post before circulating it.</p>
+  </div>
+  <dl class="facts">
+    <dt>People</dt>
+    <dd>12 healthy adults for a pilot, balanced by sex. That sits within comparable studies (6 in Eskes et al. 2018, 34 in the zygomaticus MRI study, 36 in the Jena cohort) and is enough to estimate the between-person spread used as the pass band. Exclude facial neuromuscular disorders, facial surgery and botulinum toxin in the past six months. Clean-shaven at the electrode sites, as in the Jena study. MRI safety screening for the MRI arm.</dd>
+    <dt>Tasks</dt>
+    <dd>The AU poses from the paper's Table 1, cued by video, five repetitions each with a paced 1 s rise, 2 s hold and 1 s release. The eight phonemes in VCV frames, and the model's sentences ("Not even you", "You've not eaten it yet", "New tea, new yacht, new TV") at normal and slow rates. Jaw opening and closing at three speeds, for the velocity caps. Maximum voluntary contractions per muscle, for normalization.</dd>
+  </dl>
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr><th>Tier</th><th>Measures</th><th>Answers</th><th>Cost and complexity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">A. Lab session, about 90 min</th>
+          <td>Bilateral sEMG at Fridlund sites (16 to 22 bipolar channels, optionally a high-density grid around the mouth), synced audio, multi-view or depth video for 3D surface fits, EMA if a partner lab has it.</td>
+          <td>Q1, Q3, Q5 and Q6 on the model's exact tasks.</td>
+          <td><span class="chip good">Low</span> Standard ethics review.</td>
+        </tr>
+        <tr>
+          <th scope="row">B. Ultrasound, about 30 min</th>
+          <td>B-mode ultrasound over the zygomaticus major and orbicularis oris, synced with sEMG: thickness and displacement, upright.</td>
+          <td>Q2 dynamically, and active against passive shortening in the same trial.</td>
+          <td><span class="chip warn">Low-medium</span> Needs an ultrasound with a linear probe and a trained operator.</td>
+        </tr>
+        <tr>
+          <th scope="row">C. MRI session, about 60 min</th>
+          <td>3D T1 and T2 head scans at rest (subject anatomy, not defaced), static 3D holds for AU12, UW and AA, real-time 2D in the midsagittal plane and an oblique plane along the zygomaticus.</td>
+          <td>Q2 in 3D, internal lip and jaw trajectories.</td>
+          <td><span class="chip warn">High</span> MRI time, a physicist for real-time sequences, supine posture.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <dl class="facts">
+    <dt>Sync</dt>
+    <dd>Lab Streaming Layer for EMG, audio and video in the lab session, as in Gowda et al. and Shu et al. Standard EMG cannot run inside the scanner without MR-compatible hardware, so plan MRI and EMG as separate sessions and align them by task and repetition, not by clock.</dd>
+    <dt>Analysis</dt>
+    <dd>Reuse the audit pipelines. Each participant gets a comparison band, and the model is scored per person and for the group.</dd>
+    <dt>Logistics</dt>
+    <dd>
+      <ul>
+        <li>Ethics application: consent for face video and MRI, consent tiers for data sharing (the Jena dataset shows the cost of not having them), an incidental-findings policy for MRI.</li>
+        <li>MRI centre: scan time and a physicist for real-time sequences.</li>
+        <li>Equipment: an EMG amplifier with 16 or more bipolar channels, facial electrodes, an ultrasound with a linear probe, a synced camera rig or depth sensor, a microphone.</li>
+        <li>People: an ultrasound operator and a second rater for MRI measurements.</li>
+        <li>Timing: ethics review can take several weeks, so submit early next term at the latest.</li>
+      </ul>
+    </dd>
+  </dl>
+</section>
+
+<!-- 10 -->
+<section id="meeting">
+  <h2><span class="num">10</span>For the group meeting</h2>
+  <p class="sub-h">Questions to settle</p>
+  <ol class="questions">
+    <li><strong>Priority.</strong> Which matters more for the paper this term: activation validity (EMG) or tissue-trajectory validity (MRI and kinematics)? The week order depends on the answer.</li>
+    <li><strong>Model changes.</strong> May the solver change to output explicit activations (option C), or does this term validate the model as it stands?</li>
+    <li><strong>Pass criteria.</strong> What counts as agreement? Fix thresholds before running comparisons so results cannot be argued after the fact.</li>
+    <li><strong>Split with Viktor.</strong> One natural split: Viktor owns the dataset loaders and EMG preprocessing, and Oleh owns the model export, the correspondence map and the comparisons.</li>
+    <li><strong>In-vivo resources.</strong> Does the lab have EMG hardware, an ultrasound, MRI access, or an ethics protocol that could be amended?</li>
+    <li><strong>Data agreement.</strong> What does the Mimics and Muscles agreement allow: copying off the Ziva machine, showing faces or traces in figures, publishing derived results?</li>
+    <li><strong>Deliverable.</strong> What should exist in December: a report, a paper section, an ethics submission?</li>
+  </ol>
+  <div class="prose">
+    <p><strong>What to show:</strong> three slides are enough. The schematic and the three gaps from section 3, the coverage matrix from section 5, and the week plan from section 8.</p>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="methods">
+  <h2><span class="num">11</span>Methods notes</h2>
+  <dl class="methods">
+    <dt>What sEMG measures</dt>
+    <dd>Surface EMG amplitude reflects the summed activity of many motor units, so recruitment and firing rate are mixed together. Firing rates need high-density decomposition or needle EMG. Envelopes are the right observable here because the model has no motor units.</dd>
+    <dt>Preprocessing</dt>
+    <dd>Band-pass 20 to 450 Hz, a notch at the mains frequency and its harmonics, full-wave rectification, then 125 ms RMS windows (as in Mueller et al. 2022) or a 6 to 10 Hz low-pass envelope. Normalize per person to maximum voluntary contraction, or to the maximum across tasks as EIFER did.</dd>
+    <dt>Onsets</dt>
+    <dd>Envelope above the rest mean plus 3 SD for at least 25 ms, from the Hodges and Bui (1996) family of detectors. Report the detector and its settings.</dd>
+    <dt>Crosstalk</dt>
+    <dd>Compare at the site level, use virtual electrodes for the model side, and check placements against Lapatki et al. (2010).</dd>
+    <dt>Time</dt>
+    <dd>Compare trajectory shapes on normalized time (0 = onset, 1 = target reached). Compare order and overlap directly. Compare absolute speeds only after the velocity caps are checked.</dd>
+    <dt>Statistics</dt>
+    <dd>Use the human between-person spread as the reference band (95% prediction interval). Use mixed models with a random intercept per person for repeated measures, as Mueller et al. (2022) did. Report effect sizes and keep the thresholds agreed in advance.</dd>
+    <dt>Units</dt>
+    <dd>1 Maya unit = 0.0962 cm (Appendix B). Store all exports in millimetres.</dd>
+    <dt>Data handling</dt>
+    <dd>Keep agreement-restricted data on the Ziva machine. Commit loaders and derived, non-identifying tables only. Keep the VOCASET branches local as before.</dd>
+  </dl>
+</section>
+
+<!-- 12 -->
+<section id="sources">
+  <h2><span class="num">12</span>Sources</h2>
+  <div class="sources">
+    <div>
+      <h3>Datasets on the Ziva machine</h3>
+      <ul>
+        <li>Büchner et al. 2025, Electromyography-Informed Facial Expression Reconstruction (EIFER), the Mimics and Muscles dataset: <a href="https://arxiv.org/abs/2503.09556">arXiv 2503.09556</a>, <a href="https://openaccess.thecvf.com/content/CVPR2025/html/Buchner_Electromyography-Informed_Facial_Expression_Reconstruction_for_Physiological-Based_Synthesis_and_Analysis_CVPR_2025_paper.html">CVPR 2025</a></li>
+        <li>Rantanen et al., Mimetic Interfaces: Facial Surface EMG Dataset 2015: <a href="https://research.fi/en/results/dataset/0f24bf09-c5d1-422e-8df5-eb44219f5dec">research.fi record</a>, <a href="https://etsin.fairdata.fi/dataset/0f24bf09-c5d1-422e-8df5-eb44219f5dec">Etsin</a></li>
+        <li>Shu et al. 2025, facial expression recognition through muscle synergies and a skin-musculoskeletal model: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11861201/">PMC11861201</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Speech EMG alternatives</h3>
+      <ul>
+        <li>Gowda et al., Geometry of orofacial neuromuscular signals: <a href="https://arxiv.org/abs/2411.02591">arXiv 2411.02591</a>, data at <a href="https://osf.io/ym5jd">osf.io/ym5jd</a></li>
+        <li>AVE Speech: <a href="https://arxiv.org/abs/2501.16780">arXiv 2501.16780</a>, <a href="https://huggingface.co/datasets/MML-Group/AVE-Speech">Hugging Face</a></li>
+        <li>CSL-EMG_Array Corpus, University of Bremen: <a href="https://www.uni-bremen.de/en/csl/research/silent-speech-communication/csl-emg-array-corpus">project page</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>MRI and articulography</h3>
+      <ul>
+        <li>Lim et al. 2021, USC 75-Speaker Speech MRI Database: <a href="https://sail.usc.edu/span/75speakers/">dataset page</a>, <a href="https://arxiv.org/abs/2102.07896">arXiv 2102.07896</a></li>
+        <li>Shi et al. 2025, 75-Speaker Annot-16: <a href="https://sail.usc.edu/span/75speakers_annot/">dataset page</a>, <a href="https://www.isca-archive.org/interspeech_2025/shi25g_interspeech.pdf">paper</a></li>
+        <li>Isaieva et al. 2021, real-time 2D and static 3D MRI of French speakers: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8486854/">paper</a>, <a href="https://springernature.figshare.com/collections/Multimodal_dataset_of_real-time_2D_and_static_3D_MRI_of_healthy_French_speakers/5270387">figshare</a></li>
+        <li>USC-TIMIT: <a href="https://sail.usc.edu/span/usc-timit/index.html">dataset page</a>; mngu0 and MOCHA-TIMIT via the <a href="https://www.cstr.ed.ac.uk/research/projects/artic">articulatory database registry</a></li>
+        <li>HPRC EMA: listed by <a href="https://scl.umd.edu/?p=43">UMD SCL</a>; used and cited in <a href="https://arxiv.org/abs/2302.06774">arXiv 2302.06774</a></li>
+        <li>Masapollo et al. 2025: <a href="https://doi.org/10.1044/2025_jslhr-24-00535">JSLHR 68(6)</a>, <a href="https://doi.org/10.1044/2024_jslhr-24-00323">JSLHR 68(1)</a>, <a href="https://asha.figshare.com/articles/dataset/Interarticulator_temporal_regularities_Masapollo_et_al_2025_/28791872">supplement</a></li>
+        <li>Zygomaticus major functional MRI study, Aesthetic Plastic Surgery 2024: <a href="https://link.springer.com/article/10.1007/s00266-024-03876-8">article</a>, <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11281949/">PMC11281949</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Facial sEMG references and model precedents</h3>
+      <ul>
+        <li>Schumann et al. 2021, Atlas of voluntary facial muscle activation: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8289121/">PMC8289121</a></li>
+        <li>Mueller et al. 2022, high-resolution sEMG during mimic movements: <a href="https://www.frontiersin.org/articles/10.3389/fnhum.2022.1029415">Frontiers in Human Neuroscience</a></li>
+        <li>Jena group 2023, test-retest reliability: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10040741/">PMC10040741</a>; six basic emotions: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10628297/">PMC10628297</a></li>
+        <li>Lapatki et al. 2010, optimal placement of bipolar surface EMG electrodes in the face: <a href="https://research.vu.nl/en/publications/optimal-placement-of-bipolar-surface-emg-electrodes-in-the-face-b/">record</a></li>
+        <li>Eskes et al. 2018, person-specific sEMG controlling a biomechanical face model: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5754395/">PMC5754395</a>; Eskes et al. 2017, predicting 3D lip movement from sEMG: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5355525/">PMC5355525</a></li>
+        <li>Nazari et al., a biomechanical face model with muscles for speech: <a href="https://arxiv.org/abs/0803.3924">arXiv 0803.3924</a></li>
+        <li>Lucero and Munhall 1999, A model of facial biomechanics for speech production, J. Acoust. Soc. Am. 106(5)</li>
+        <li>Bell-Berti and Harris 1979, Anticipatory coarticulation: some implications from a study of lip rounding, J. Acoust. Soc. Am.</li>
+        <li>Hodges and Bui 1996, computer-based methods for EMG onset detection, Electroencephalography and Clinical Neurophysiology</li>
+      </ul>
+    </div>
+  </div>
+  <footer class="colophon">
+    Draft prepared Oct 7, 2026. The descriptions of the speech EMG and FER sEMG sets are tentative until checked on the Ziva machine. Figures quoted from papers come from their abstracts or available full texts; recheck them before citing. Code references point to <code>a3-stochastic-V1</code> on the <code>myres</code> branch.
+  </footer>
+</section>
+
+  </main>
+</div>
+</div>
+
+<script>
+(function () {
+  // Schematic traces. Deterministic so the figure is identical on every load.
+  var N = 700, T = 1.2;
+  var seed = 20261007;
+  function rnd() {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  function gauss() {
+    var u = 0, v = 0;
+    while (u === 0) u = rnd();
+    while (v === 0) v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function sig(x) { return 1 / (1 + Math.exp(-x)); }
+  function ease(x) { return x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x); }
+  function X(t) { return (t / T) * 1000; }
+
+  var ts = [], i;
+  for (i = 0; i < N; i++) ts.push((i * T) / (N - 1));
+
+  var drive = ts.map(function (t) {
+    var burst = sig((t - 0.31) / 0.012) * (1 - sig((t - 0.86) / 0.02));
+    return (0.04 + 0.96 * burst) * (1 + 0.35 * Math.exp(-Math.pow((t - 0.37) / 0.05, 2)));
+  });
+  var raw = drive.map(function (d) { return d * gauss(); });
+  var W = 14;
+  var env = raw.map(function (_, k) {
+    var acc = 0, n = 0;
+    for (var j = Math.max(0, k - W); j <= Math.min(N - 1, k + W); j++) { acc += raw[j] * raw[j]; n++; }
+    return Math.sqrt(acc / n);
+  });
+  var rawMax = Math.max.apply(null, raw.map(Math.abs));
+  var envMax = Math.max.apply(null, env);
+  var motion = ts.map(function (t) { return sig((t - 0.43) / 0.032) * (1 - sig((t - 0.95) / 0.04)); });
+  var ctrl = ts.map(function (t) { return ease((t - 0.36) / 0.32) * (1 - ease((t - 0.86) / 0.22)); });
+
+  function path(vals, f) {
+    return vals.map(function (v, k) { return (k ? 'L' : 'M') + X(ts[k]).toFixed(1) + ' ' + f(v).toFixed(1); }).join(' ');
+  }
+  function set(id, d) { var el = document.getElementById(id); if (el) el.setAttribute('d', d); }
+
+  set('tr-raw', path(raw, function (v) { return 50 - (v / rawMax) * 44; }));
+  set('tr-env', path(env, function (v) { return 50 - (v / envMax) * 40; }));
+  set('tr-motion', path(motion, function (v) { return 92 - v * 80; }));
+  set('tr-sim', path(ctrl, function (v) { return 92 - v * 80; }));
+  set('tr-alpha', 'M0 ' + (92 - 0.8 * 80).toFixed(1) + ' L1000 ' + (92 - 0.8 * 80).toFixed(1));
+
+  var emgOnset = 0.31, moveOnset = ts[0];
+  for (i = 0; i < N; i++) { if (motion[i] > 0.1) { moveOnset = ts[i]; break; } }
+  var marks = { emg: X(emgOnset), move: X(moveOnset) };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-mark]'), function (el) {
+    var x = marks[el.getAttribute('data-mark')].toFixed(1);
+    el.setAttribute('d', 'M' + x + ' 0 L' + x + ' 100');
+  });
+})();
+
+(function () {
+  // Remember ticked boxes in this browser only.
+  var KEY = 'bts-validation-checklist';
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { state = {}; }
+  Array.prototype.forEach.call(document.querySelectorAll('.checklist input[type="checkbox"]'), function (cb) {
+    if (state[cb.id]) cb.checked = true;
+    cb.addEventListener('change', function () {
+      state[cb.id] = cb.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
+    });
+  });
+})();
+</script>
+</body>
+</html>

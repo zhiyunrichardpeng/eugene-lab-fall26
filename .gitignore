@@ -1,0 +1,5 @@
+# MMM may not be redistributed (MMM/LICENSE.md); keep the release out of the repo.
+MMM/
+MMM.zip
+.DS_Store
+venv/

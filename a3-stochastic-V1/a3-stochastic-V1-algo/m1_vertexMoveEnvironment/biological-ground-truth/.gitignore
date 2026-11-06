@@ -1,0 +1,6 @@
+# MaM is under a data-use agreement: never commit the dataset or anything derived from it.
+MaM/
+MaM_Public/
+visualization/
+__pycache__/
+.pytest_cache/

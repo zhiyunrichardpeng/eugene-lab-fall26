@@ -1,0 +1,313 @@
+The bridge: both are effects of one hidden cause
+
+muscle activation  ──►  EMG amplitude (µV)        what MaM measures
+        │
+        └──►  force  ──►  tissue moves (mm)        what our model outputs
+
+Neither number is the activation itself. Each one only goes up when activation goes up (it is monotone in it), at least roughly. So we can compare the two signals only in ways that don't care about units or scale:
+
+1. Ranking: in Eye-Tight, is orbicularis oculi the most active site in humans, and is its region also the one that moves most in the model? Figs 2 and 3 already do this.
+2. Direction of change: from neutral to pucker, orbicularis oris EMG goes up. Does the model's oris region move more too?
+3. Shape over time: scale each curve to 0-100% of its own peak, then ask whether they rise together and in the same order across sites.
+
+What we can never claim is "X µV corresponds to Y mm." That would need a calibration that MaM doesn't contain.
+
+Why the bridge is weak
+
+- Activity without movement: a muscle can work hard while the skin barely moves (co-contraction, lips pressed together). EMG is high, displacement is near zero.
+- Movement without activity: skin over orbicularis oculi moves in a big smile because zygomaticus pushes the cheek up, not because oculi contracted. Displacement is high, the oculi EMG is low.
+
+So "point moves a lot" is only a loose stand-in for "muscle under it is active." That's why I suggested stretch (local shortening between the two electrode spots) over plain translation. Shortening is closer to "this muscle is contracting here." It is still a stand-in, though.
+
+Two cleaner options: compare like with like
+
+A. Cause vs cause. The model's control effort perr drove that muscle's joints) is the model'sversion of "activation." Comparing that with EMG keeps both sides as causes. This is roughly what compare_ziva_run.py already
+does with joint travel, and it is the defensible
+
+B. Effect vs effect: the one I'd recommend for yoThe MaM video_noelec clips come with MediaPipe face tracking. That gives human skin movement in mm-like units at the same spot as the electrode. Then:
+
+- model landmark 1234 near the oor_r electrode: millimetres over time
+- MaM tracked skin point at the oor_r electrode: er scaling for face size)
+
+These two can be compared directly: same quantitydes. EMG then plays a separate role: it confirmswhich muscle produced that human movement. It is not the thing the model's movement is measured against.
+
+Answering the original question in this framing
+
+- "Where is the electrode on our mesh?" and "Select a landmark or build a virtual one?" still matter. They decide which model
+  point stands for that spot, in both option A an
+- The one-to-one trajectory comparison should be model point vs human tracked point (option B), with EMG as supporting
+  evidence.
+- Comparing model point movement directly against EMG volts only supports claims about ranking, direction and normalized
+  timing. That's the weak bridge, so treat it as
+
+One thing to check on the remote machine: whethernclude per-frame landmark positions or onlyblendshape scores. Locally I only see code that reads blendshapes (mam_data.load_blendshapes), so I can't confirm it from
+here. If they only hold blendshapes, option B neeeo_noelec, which is cheap.
+
+Does option B match what you and your supervisor tory comparison? If so, I'll rewrite the planaround it.
+
+✻ Cogitated for 3m 1s · done Friday 8:15 PM
+
+❯ where in mam does it show MaM tracked skin point at the oor_r electrode: millimetres over time (after scaling for face size)
+
+It doesn't. I overstated that: MaM has no ready-made "skin point at the oor_r electrode, in mm, over time." Here is what it   tually ships and how far that is from such a si
+                                                                                                                              at MaM provides
+                                                                                                                              M_3DMM.csv points each clip to face-tracking ouarams/, from seven methods: DECA, Deep3DFace,EIFER, EMOCAv2, FOCUS, MediaPipe and SMIRK. Those files only exist on the remote machine. Locally we only have the index rows, I haven't seen inside them.
+                                                                                                                              The six 3DMM methods (DECA, EMOCA, SMIRK and thrame model coefficients (expression, jaw, pose),not point positions. To get points you would rebuild the face mesh from those coefficients with the matching model, such as FLAME.
+- MediaPipe: our code only reads blendshape scores from these files (eyeSquintLeft, mouthPucker, ...). Those are 0-1 numbers with no position at all. Whether the files alsoitions is unknown until someone opens one on theremote machine.
+
+What it would take to get that signal                                                                                      
+1. Get points per frame. Either rebuild a mesh from the 3DMM coefficients, or use or re-run MediaPipe landmarks on          video_noelec.
+2. Pick the point at the electrode. These are the no-electrode videos, so the electrode spot has to come from the Fridlund  placement rules or from the electrode videos. n our mesh.
+3. Convert to mm. MediaPipe positions are normalized image coordinates with only relative depth. FLAME meshes come out roug in metres, but monocular reconstruction is unr Either way you would scale by a face measurement(for example the distance between the eye corners), so the result is approximate mm.                                     Accept the accuracy limit. Monocular face tracut small, local movements, such as lip-corner andlower-eyelid detail. That is exactly where oor and ooc sit.                                                             
+What this means for the comparison                                                                                         
+- Option B (model movement vs human movement) is possible, but we would build its human side ourselves from MaM's tracking outputs. It is a derived estimate with its own
+- The only direct measurement MaM has at the electrode is the EMG. So the comparison it supports as shipped is the weak one from my last message: ranking, direction of cha with no unit match.
+
+Before going further, it is worth opening one Med DECA or SMIRK file on the remote machine andlisting the columns. If you paste me the header lines, I can tell you which route is realistic.
+
+✻ Cogitated for 15s · done Friday 8:17 PM
+
+※ recap: We're working out how to compare MaM electrode EMG fairly with our model's landmark movement at the same face spot, and
+  MaM has no tracked skin points ready to use. Nextpen one MediaPipe and one DECA params file andpaste me their column headers. (disable recaps in /config)
+
+❯ this is not formulating a basis for comparison. option a doesnt tell how it will interpret MaM change in voltage. option b
+  doesnt specify anything at all
+
+  Ran 1 shell command
+
+That's fair. Neither option said what the voltageets compared with. Here is an actual basis: onequantity per side, both defined exactly, one assumption linking them, and the tests that assumption allows.
+
+1. What the MaM voltage means
+
+mam_data already turns the raw envelope into this number, for each site s (one electrode channel), task k and participant:
+
+â(s,k) = (hold median − rest median) / ref
+ref    = 95th percentile of that session's schaed
+
+Interpretation: â is how hard the muscle under th k, as a fraction of that same person's strongcontraction at that same site. A value of 0 is rest and 1 is a near-maximal effort.
+
+- It has no units, so µV disappear.
+- It doesn't depend on skin impedance or electrodscale rest and ref equally.
+- It is not force and not movement. It is an estimate of activation.
+
+2. The model quantity that means the same thing
+
+Activation makes a muscle shorten along its fibres. Translation doesn't measure that, because a point can be pushed by a
+neighbouring muscle. So:
+
+- Put the two electrode positions p1 and p2 on ou). Each is a landmark or a virtual landmark, fromthe earlier discussion. Fridlund orients the pair along the fibres, so the p1-p2 axis is the fibre direction.
+- Shortening under the pair is ε(s,k) = 1 − |p1−pneutral.
+  - Positive means shortened, consistent with contraction.
+  - Negative means stretched, a passive pull from
+- Normalize exactly like the human side: ε̂(s,k) = ε(s,k) / ref, where ref is the 95th percentile of ε(s) over all model tasks.
+
+Interpretation: ε̂ is how much the skin over this muscle contracted in task k, as a fraction of its strong contraction in the
+model.
+
+3. The linking assumption, the only one
+
+ε̂(s,k) = g_s( â(s,k) ),   with g_s increasing and
+
+- More activation means more shortening.
+- No activation means no active shortening.
+- The shape of g_s is unknown: tissue stiffness, differences are all unknown. So the tests belowcompare order and sign only, never values. That is what keeps "volts vs points" legitimate.
+
+4. The tests this allows
+
+┌──────────────────┬─────────────────────────────────────────────┬───────────────────────────────────────────────────────┐
+│       Test       │                  Question                 Statistic                       │
+├──────────────────┼─────────────────────────────────────────────┼───────────────────────────────────────────────────────┤
+│ T1, across tasks │ Do the tasks where humans ac ρ between ε̂(s,·) and the participant-median  │
+│  at one site     │ most also shorten the model's oor_r most?   │ â(s,·) over tasks; participant bootstrap for the      │
+│                  │                             certainty                                     │
+├──────────────────┼─────────────────────────────────────────────┼───────────────────────────────────────────────────────┤
+│ T2, across sites │ In Eye-Tight, do sites rank τ over sites                                  │
+│  in one task     │ activation and by shortening?               │                                                       │
+├──────────────────┼───────────────────────────────────────────────────────────────────────────┤
+│                  │ Where â is clearly above rest, does the     │                                                       │
+│ T3, sign         │ model shorten (ε > 0)? Wheret rate over (site, task) cells                │
+│                  │ model passive (ε ≤ 0)?                      │                                                       │
+├──────────────────┼───────────────────────────────────────────────────────────────────────────┤
+│ T4, trajectory   │ During one transition, do â(t) and ε̂(τ)     │ Spearman over matched progress points. Model time is  │
+│ (secondary)      │ rise together, both on 0-1 pizer path, so this tests ordering only        │
+└──────────────────┴─────────────────────────────────────────────┴───────────────────────────────────────────────────────┘
+
+Worked example for oor_r (expected human pattern, not yet checked):
+
+- Lip-Pucker: â is high. The model lip circumference must shorten, so ε̂ > 0.
+- Smile-Closed: â is low. The lips are pulled widetch.
+- Eye-Tight: â is low, so ε̂ should be about 0.
+
+Any other order in the model breaks the assumption at that site, and that is the falsifiable claim.
+
+5. Known cases where the assumption is weak, declared up front                                                               
+- Co-contraction or pressing, as in lip pressing: â is high but ε is about 0. Flag these tasks before running the tests, not after.
+- Crosstalk: a neighbouring muscle adds to â (the oculi electrode picks up zygomaticus in a smile). Report the tests with and without those tasks.
+
+6. What this needs that we don't have yet
+
+- For T1: one model run per MaM task, ideally 6 oay we have only a few transitions (surprised toEye-Tight, the smile chain), so only T2 and T3 can run now.
+- On our mesh: the electrode pair positions for e
+
+Does this give you the basis you were after? If sether to start with T2 and T3 on the existing runs, or first get model runs for more MaM tasks so T1 becomes possible.
+
+✻ Worked for 48s · done Sunday 3:09 AM
+
+※ recap: We're setting a fair basis for comparing MaM EMG with model deformation: normalized activation against muscle
+  shortening at each electrode site, tested by ranke whether to run the rank and sign tests onexisting runs or get model runs for more tasks first. (disable recaps in /config)
+
+❯ this is better. list alternative approaches, and pros/cons
+
+Here are eight alternative bases. Each says which quantity is used on each side and what links them. The first one is the
+current method, as a baseline.
+
+1. Muscle-wide average translation vs normalized
+
+- Model: mean translation, or summed joint travelsh. MaM: â.
+- Pros: already built, and simple to explain.
+- Cons: it compares a whole muscle with one localay regions that move in opposite directions, suchas the upper and lower lip. Translation can come from a neighbouring muscle pushing the skin.
+
+2. Local fibre shortening at the electrode pair, by order only (proposed last turn)
+
+- Model: ε̂ = shortening between the two electrode spots. MaM: â. Link: monotone g_s, tested by rank and sign.
+- Pros: the site matches the electrode, and short of contraction. The only assumption ismonotonicity, which is easy to defend.
+- Cons: it gives only order and sign, no effect slacement on our mesh. It fails for pressing orco-contraction, and crosstalk adds noise. Testing across tasks (T1) needs one model run per task.
+
+3. Cause vs cause: model control effort vs EMG
+
+- Model: joint displacement the solver applied near the electrode (within its pickup radius). MaM: â.
+- Pros: no tissue mechanics in between, since botve." It needs almost no new code.
+- Cons: joint displacement is a kinematic control, not activation. Many different joint solutions give the same shape, so the
+  value depends on the solver's regularization anrtly measures the optimizer, not anatomy.
+
+4. Effect vs effect: model skin motion vs human sr MediaPipe
+
+- Model: landmark trajectory at the site. MaM: a deo_noelec_params at the same site. EMG is not part of the comparison.
+- Pros: same quantity, so magnitudes and real-timared.
+- Cons: the human side is derived, not measured. Monocular trackers smooth out small lip and eyelid motion, and absolute scale
+  is approximate. Above all, the model is fitted ing motion mostly tests the target shape, notmuscle recruitment. It doesn't answer Q1 (which muscles are used).
+
+5. EMG-driven forward simulation
+
+- Model: feed â as the muscle activation input (Ziva activations), simulate, compare the resulting face with the human or target expression.
+- MaM: â is the input, video or target is the reference.
+- Pros: the strongest causal test, and it uses EMs. A good match means the model's muscles plushuman activation reproduce the expression.                                                                              Cons: it needs an activation-driven pipeline peer drives joints kinematically. It needs achannel-to-muscle mapping and a scaling from â to model activation, which is itself a free parameter. It is the largest effort.
+
+6. Calibrated mapping with held-out prediction
+
+- Fit a simple g_s (linear or sigmoid) from â to ict ε̂ for held-out tasks.
+- Pros: gives a quantitative prediction error and an effect size, beyond rank agreement.
+- Cons: needs many tasks per site; we have few moIt assumes a functional form, and with little dataa good fit proves little.
+
+7. Regional strain energy or work vs EMG
+
+- Model: elastic energy or work in the muscle region under the electrode. Runs already log energy and work. MaM: â.
+- Pros: energy is a natural "effort" measure and
+- Cons: energy can't tell shortening from stretching. Passive stretching, for example oris in a smile, raises energy while EMG
+  stays low, so it systematically confuses active
+
+8. Pattern similarity across tasks (representatioSA)
+
+- Build a task × task similarity matrix from the s, and the same from the model's per-site ε̂vectors. Correlate the two matrices.
+- Pros: uses all sites at once, has no per-site st to individual noisy channels. It is a standardmethod in neuroscience.
+- Cons: coarse, since it hides which site is wronout 8 or more) to be meaningful, and is harder toexplain in a figure.
+
+9. Binary recruitment agreement
+
+- Per (site, task) cell: is the muscle active (â above rest noise)? Does the model shorten (ε > threshold)? Agreement is
+  measured with Cohen's κ (chance-corrected agree
+- Pros: simplest and most robust, works with the runs we have now, and is easy to read in a table.
+- Cons: discards graded information, and the thre
+
+Summary
+
+┌──────────────────────────────┬────────────────────────┬─────────────────────────┬─────────────┐
+│                              │ Answers Q1 (recruitment) │      Assumptions      │ Works with current runs │   Effort    │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 1 Muscle average             │ weakly                   │ strong, hidden        │ yes                     │ done        │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 2 Local shortening (ordinal) │ yes                      │ monotone only         │ partly (T2, T3)         │ medium      │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 3 Control effort             │ partly                   │ controls ≈ activation │ yes                     │ low         │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 4 Kinematic vs kinematic     │ no (tests shape)         │ tracker accuracy      │ needs reconstruction    │ medium-high │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 5 EMG-driven simulation      │ yes, causally            │ â → activation scale  │ no                      │ high        │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 6 Calibrated mapping         │ yes                      │ functional form       │ no (too few tasks)      │ medium      │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 7 Strain energy              │ weakly                   │ energy ≈ effort       │ yes                     │ low         │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 8 RSA                        │ yes, globally            │ similarity metric     │ no (too few tasks)      │ low-medium  │
+├──────────────────────────────┼────────────────────────┼─────────────────────────┼─────────────┤
+│ 9 Binary agreement           │ yes, coarsely            │ thresholds            │ yes                     │ low         │
+└──────────────────────────────┴────────────────────────┴─────────────────────────┴─────────────┘
+
+My recommendation: use 2 as the main basis, with  9 is just T3 reported with κ, so it adds almost no work. Add 8 once enough tasks have model runs. Keep 5 as the long-term causal test if the Ziva activation route becomes
+available. Drop 7. Use 4 only as a separate shapeecruitment.
+
+✻ Sautéed for 32s · done Sunday 3:40 AM
+
+❯ new info: we have mri data: something like Screen PM.png in this directory. given this fact listtop 3 best approaches. include their pros and cons. make this as a question to the group which apporach would they like.
+  include what we have now and how accurate is it
+
+  Read 1 file, ran 1 shell command
+
+I looked at the screenshot. It shows one sagittallices 1-33 and more), taken with the face at rest,covering the face and the brain. From one screenshot I can't tell whose head it is, the slice thickness, or whether scans of
+other expressions exist. Those three facts decideible, so the draft asks the group about them first.
+
+I kept this in chat rather than publishing a pageuse agreement. Ready to paste:
+
+---
+
+Question for the group: how should we compare ourodes, now that we have MRI?
+
+Where we are now (Figs 2 and 3)
+- What we compare: the share of total joint travel per model muscle (all ~300 joints averaged) vs each muscle's share of the
+  human EMG change. Code: compare_ziva_run.py, usnels.
+- How accurate it is: we haven't measured it with a number yet, and the method has three built-in errors:
+  a. Site mismatch. An electrode picks up about 1ge covers the whole muscle; orbicularis oris alonespans about 5-6 cm. The upper and lower lip move in opposite directions in a pucker, so averaging can cancel the very
+     motion the electrode sees.
+  b. Wrong quantity. Joint travel is a solver control. It is not activation and not contraction. Different joint solutions
+     give the same face, so the number partly ref
+  c. Thin evidence. Only a few runs, one per transition, with no seed repeats. All we can claim is "same pattern, roughly."
+
+What the MRI can add
+- Real positions, depths and fibre directions of e skin and fat thickness over them.
+- With that we can say which muscle actually lies under each electrode, instead of assuming it.
+
+Top 3 approaches
+
+A. Electrode-pair shortening on an MRI-checked mesh, compared by order
+- How it works:
+  - Place each electrode pair on our mesh using the Fridlund rules.
+  - Use the MRI to check that the pair sits over s along its fibres.
+  - Model side: shortening between the two electrode points, as a fraction of that site's strong contraction.
+  - Human side: normalized EMG, (hold − rest) / r
+  - Compare by rank and sign only: across tasks at one site, across sites within one task, and active vs passive cells.
+- Pros:
+  - Only one assumption: more activation means more shortening.
+  - The site matches the electrode, and the quant
+  - Partly possible with the runs we have now.
+  - The MRI only needs to be a static scan.
+- Cons:                                                                                                                  Gives order and sign, not effect sizes.
+  - Pressing or co-contraction tasks break the assumption.                                                               The full across-task test needs one model run
+  - If the MRI is of someone other than the MaM participants, it checks typical anatomy, not theirs.                    
+B. Virtual electrode: predict what each electrode would record from the model, then compare with EMG                    ow it works:
+  - Use the MRI anatomy to weight how strongly each nearby model muscle region contributes to each electrode. The weight off with distance and fat depth.
+  - Apply those weights to the model's local shortening to get a predicted signal per electrode.                         Compare the predicted signals with the measurank.
+- Pros:                                                                                                                  Deals with crosstalk directly, for example zy orbicularis oculi channel in a smile. Crosstalk is our biggest known noise source.                                                                                      Both sides become "what this electrode sees,"-for-like match to the EMG.
+- Cons:                                                                                                                  The weighting model adds parameters (decay wion) that we take from the literature, not from ourdata.                                                                                                                Needs the facial muscles segmented on MRI. Mud to segment on a standard head scan.
+  - More work than A.                                                                                                   
+C. MRI-measured muscle deformation as ground truth (only if we have scans of several expressions)                       ow it works:
+  - Segment the same muscle in a neutral scan and in an expression scan, for example pucker or eye squeeze.              Measure the real shortening in mm and as stra
+  - Compare it directly with the model's shortening for the same muscle and pose, in the same units.                     EMG then only confirms which muscle was activM.
+- Pros:                                                                                                                  The only option that compares like with like er than ranks.
+  - The strongest claim we could make about the deformation itself.                                                     ons:
+  - Impossible with a single neutral scan.                                                                               People can't hold an expression perfectly for
+  - Segmenting the muscles twice per expression is a lot of work.                                                        One subject only, so the result is a case stu
+                                                                                                                        ore we choose, please answer:
+1. Whose MRI is it: the person our model is based on, a MaM participant, or someone else?                               Is it only the neutral face, or are there scan only neutral, C is not possible.
+3. What are the slice thickness and sequence (for example, 1 mm T1)? Can we see orbicularis oris, orbicularis oculi and frontalis on it?
+
+Vote: A, B or C? (My suggestion: A as the main reheck, C only if expression scans exist.)

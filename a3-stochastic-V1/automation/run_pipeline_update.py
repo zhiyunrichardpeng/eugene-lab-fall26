@@ -16,7 +16,7 @@ ENABLE_DB_CLEANUP = True
 ENABLE_TASK_SKIPPING = True
 SKIPPED_STATES = [
     'dataV22_AU12L',
-    'dataV22_AU6',
+    # 'dataV22_AU6',
     'dataV22_AU7',
 ]
 
@@ -25,10 +25,14 @@ manual_task = True
 if manual_task == True:
 
     PIPELINE_TASKS = [
-        'dataV22_AU0_neutral to dataV22_phoneme_N',    
+        # 'dataV22_AU0_neutral to dataV22_phoneme_N',    
         # 'dataV22_AU0_neutral to dataV22_AU7',  
         # 'dataV22_AU7 to dataV22_AU0_neutral', 
         # 'dataV22_AU12L to dataV22_AU1'    
+        'dataV22_AU0_neutral to dataV22_AU6',  
+        'dataV22_AU6 to dataV22_AU12',
+        'dataV22_AU0_neutral to dataV22_AU12',
+        'dataV22_AU12 to dataV22_AU25',
     ]
 
 
@@ -57,8 +61,7 @@ ACTION_UNITS = [
     'dataV22_AU6_12_25',     # AU 6+12+25ii: Cheese (maximum)
 ]
 
-PHONEMES = [
-    'dataV22_phoneme_N',       # Phoneme N: net
+PHONEMES = [    'dataV22_phoneme_N',       # Phoneme N: net
     'dataV22_phoneme_AA',      # Phoneme AA: pot
     'dataV22_phoneme_T',       # Phoneme T: test
     'dataV22_phoneme_IY',      # Phoneme IY: beat
@@ -172,7 +175,14 @@ import pickle
 import numpy as np
 import datetime
 import signal
-from config import a3_stochastic_relative_path
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from paths import a3_stochastic_relative_path, backup_path, results_path
+
+
+sys.path.insert(0, str(a3_stochastic_relative_path))
 
 
 sys.path.insert(0, str(a3_stochastic_relative_path))
@@ -394,25 +404,20 @@ def save_deformation_db(db_path, deformation_paths_dict):
     with open(db_path, 'w') as f:
         json.dump(output_data, f, indent=4, sort_keys=True)
 
-def get_latest_folder(base_path):
+def list_result_folders(base_path):
+    """Returns every run folder in the job_XXXXXX/XXXXXX layout under base_path."""
+    return {os.path.normpath(d) for d in glob.glob(os.path.join(base_path, '*', '*/'))}
+
+def find_new_result_folder(base_path, folders_before):
     """
-    Finds the most recently modified directory in a given path.
-    If the latest directory contains subdirectories, returns the latest subdirectory path.
-    This handles the case where results are in job_XXXXXX/XXXXXX format.
+    Returns the newest run folder created since folders_before was listed that holds a log0.txt, or None.
+    A run that crashes before writing its folder must not be credited with the previous task's folder.
     """
-    list_of_dirs = glob.glob(os.path.join(base_path, '*/'))
-    if not list_of_dirs:
+    new_dirs = [d for d in list_result_folders(base_path) - folders_before
+                if os.path.exists(os.path.join(d, "log0.txt"))]
+    if not new_dirs:
         return None
-    latest_dir = max(list_of_dirs, key=os.path.getmtime)
-
-    # Check if this directory has subdirectories
-    subdirs = glob.glob(os.path.join(latest_dir, '*/'))
-    if subdirs:
-        # Find the latest subdirectory
-        latest_subdir = max(subdirs, key=os.path.getmtime)
-        return os.path.normpath(latest_subdir)
-
-    return os.path.normpath(latest_dir)
+    return max(new_dirs, key=os.path.getmtime)
 
 def normalize_task_key(task_string):
     """Converts a task string into a standardized key format for lookups."""
@@ -701,6 +706,8 @@ def main():
                 dynamic_timeout = max(1, int(secs_until_stop))
                 print(f"[INFO] Adjusting task timeout to {dynamic_timeout}s to prevent running past the scheduled stop time.")
 
+        result_folders_before = list_result_folders(RESULTS_BASE_PATH)
+        new_result_path = None
         try:
             print(f"Executing main pipeline batch file with timeout {dynamic_timeout}s...")
             # Use Popen with CREATE_NEW_PROCESS_GROUP to ensure all child processes (Maya) are cleanly killed
@@ -741,6 +748,16 @@ def main():
             task_status = "FAILED"
             task_error = str(e)[-500:]
 
+        # run_d1_b99.bat pipes mayapy through findstr, so its exit code is findstr's, not mayapy's:
+        # a crashed run still reports success. A new result folder with a log is the real proof.
+        if task_status == "SUCCESS":
+            time.sleep(5)
+            new_result_path = find_new_result_folder(RESULTS_BASE_PATH, result_folders_before)
+            if new_result_path is None:
+                print(f"[ERROR] Batch file returned success but no new result folder with log0.txt appeared under '{RESULTS_BASE_PATH}'.")
+                task_status = "FAILED"
+                task_error = "No new result folder (mayapy likely crashed). Output tail:\n" + (stdout or "").strip()[-1500:]
+
         task_finish_time = datetime.datetime.now()
         task_duration = (task_finish_time - task_start_time).total_seconds()
         total_task_duration += task_duration
@@ -762,20 +779,12 @@ def main():
             # If we failed/timed out, skip to the next task
             continue
 
-        # If we reach here, the batch file succeeded (check=True would have raised exception otherwise)
-        # Check for new result folder
-        time.sleep(5)
-        new_result_path = get_latest_folder(RESULTS_BASE_PATH)
-
-        if new_result_path:
-            clean_path = new_result_path.replace('\\', '/')
-            print(f"Found new result path: {clean_path}")
-            deformation_db[task_string] = clean_path
-            save_deformation_db(DB_PATH, deformation_db)
-            db_key_map[normalize_task_key(task_string)] = task_string
-            print(f"Saved new path to database for task '{task_string}'.")
-        else:
-            print("[ERROR] Could not find the new result path after execution. Database not updated.")
+        clean_path = new_result_path.replace('\\', '/')
+        print(f"Found new result path: {clean_path}")
+        deformation_db[task_string] = clean_path
+        save_deformation_db(DB_PATH, deformation_db)
+        db_key_map[normalize_task_key(task_string)] = task_string
+        print(f"Saved new path to database for task '{task_string}'.")
 
     batch_finish_time = datetime.datetime.now()
     batch_duration = (batch_finish_time - batch_start_time).total_seconds()

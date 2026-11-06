@@ -1,0 +1,6 @@
+# analyze_MaM.py, mam_data.py and their tests
+numpy>=2.0
+pandas>=2.2
+scipy>=1.13
+matplotlib>=3.10  # Axes.boxplot(orientation=...)
+pytest>=8.0
