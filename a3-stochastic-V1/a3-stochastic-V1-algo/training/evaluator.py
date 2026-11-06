@@ -1,30 +1,70 @@
 import time
-
 import numpy as np
 import torch
 import math
 import os
-
 from os import path
-
+from pathlib import Path
 from utils.initialization import create_env
 from utils.common_utils import set_seed
 
 import sys
+# --- Resolve REPO_ROOT (a3-stochastic-git-V1) dynamically ---
+
+# ==============================================================================
+# Dynamic Repository Root Detection (Works via Shift+Alt+M commandPort)
+# ==============================================================================
+REPO_NAME = "a3-stochastic-Rich-local-V1"
+REPO_ROOT = None
+
+# 1. Check if 'paths' is already imported in this Maya session
+if "paths" in sys.modules and hasattr(sys.modules["paths"], "__file__"):
+    cached_path = Path(sys.modules["paths"].__file__).resolve().parent
+    if (cached_path / "paths.py").is_file():
+        REPO_ROOT = cached_path
+
+# 2. Check if running from disk where __file__ is available
+if not REPO_ROOT and "__file__" in globals() and __file__:
+    script_path = Path(__file__).resolve()
+    for p in [script_path] + list(script_path.parents):
+        if (p / "paths.py").is_file():
+            REPO_ROOT = p
+            break
+
+# 4. Standard lab & team clone fallbacks
+if not REPO_ROOT:
+    fallbacks = [
+        Path(r"C:\keyLabLocal_D") / REPO_NAME,
+        Path(r"D:\keyLabLocal_D") / REPO_NAME,
+        Path.home() / "git" / REPO_NAME,
+        Path.home() / "Documents" / "GitHub" / REPO_NAME,
+    ]
+    for fb in fallbacks:
+        if (fb / "paths.py").is_file():
+            REPO_ROOT = fb
+            break
+
+if not REPO_ROOT:
+    raise RuntimeError(
+        f"Could not locate '{REPO_NAME}' containing 'paths.py'. "
+        "Verify your repository path."
+    )
+
+# Register repository root
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from paths import (
     a3_stochastic_path,
-    b98_sampling_path,
     a1_blendshape_path,
     backup_path,
-    results_path
 )
-
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
-sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "training"/ "analysic_gradient"))
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "training"/ "analysic_gradient"))
 
 import importlib
 from pytorch_analytical_gradient import AnalyticalGradientCalculator
@@ -73,6 +113,7 @@ from utils.phase_manager import PhaseManager
 
 class Evaluator:
     def __init__(self, phase_manager=None, index=0, history_size=300, exploration_prob=0.2, **kwargs):
+        print("Evaluator: ", __file__)
         for key, value in kwargs.items():
             setattr(self, key, value)         
         kwargs.update(
@@ -1229,7 +1270,7 @@ class Evaluator:
                                 object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
         # TEST: early return with analytical gradient
         if object_name == "oor":
-            calculator = self.distance_calculator
+            calculator = self.analytical_calculator
             calculator.w1 = getattr(self, "w1", 0.34)
             calculator.w2 = getattr(self, "w2", 0.33)
             calculator.w3 = getattr(self, "w3", 0.33)
@@ -1238,7 +1279,7 @@ class Evaluator:
             calculator.max_muscle_work = getattr(self, "max_muscle_work", 1.0)
             calculator.expected_total_steps = getattr(self, "expected_total_steps", 5500)
             calculator.object_name = object_name
-
+            print("Using analytical gradient")
             gradient = self.compute_analytical_gradient(
                 positions_lip_joint=positions_lip_joint,
                 targets=target,
