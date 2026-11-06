@@ -160,8 +160,8 @@ class Evaluator:
         """this is from main branch. WIll use as minimal viable product to test the analytical gradient calculator"""
         # 1. Instantiate the specific analytical calculators for all tissues
         self.analytical_calculator = AnalyticalGradientCalculator(
-            str(a3_stochastic_relative_path / "automation"/ "oor_bind_pose.json"),
-            str(a3_stochastic_relative_path / "automation"/ "oor_skin_weights.json"),
+            str(a3_stochastic_path / "automation"/ "oor_bind_pose.json"),
+            str(a3_stochastic_path / "automation"/ "oor_skin_weights.json"),
             vertex_index=self.vertex_index
         )
         """Save these for later"""

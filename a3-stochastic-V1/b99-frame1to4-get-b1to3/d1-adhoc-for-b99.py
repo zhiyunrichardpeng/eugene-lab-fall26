@@ -10,7 +10,7 @@ from paths import (
 )
 
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "example_train"))
-sys.path.insert(0, str(backup_path / "database"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(b98_sampling_path))
 sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_l"))
@@ -188,7 +188,7 @@ def main():
                     
 
                     # Save the plot to a file
-                    output_folder = str(backup_path / "d83 initiate rest to AU12 smile"
+                    output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
                     output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
                     plt.savefig(output_file, dpi=300, bbox_inches='tight')
                     plt.close()     

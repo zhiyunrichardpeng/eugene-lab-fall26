@@ -22,7 +22,7 @@ from paths import (
 sys.path.insert(0, str(a3_stochastic_path))
 sys.path.insert(0, str(a3_stochastic_path / "example_train"))
 sys.path.insert(0, str(a3_stochastic_path / "env_gym"))
-sys.path.insert(0, str(backup_path / "database"))
+sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
 

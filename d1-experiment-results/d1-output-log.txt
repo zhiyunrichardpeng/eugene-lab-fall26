@@ -1,0 +1,80 @@
+PS C:\keyLabLocal_D\a3-stochastic-Rich-local-V1> C:\keyLabLocal_D\a3-stochastic-Rich-local-V1\a3-stochastic-V1\b99-frame1to4-get-b1to3\run_d1_b99.bat
+
+C:\keyLabLocal_D\a3-stochastic-Rich-local-V1>"C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe" "C:\Users\zpa18\a3-stochastic-V1\b99-frame1to4-get-b1to3\d1-adhoc-for-b99.py" --distance_threshold_percentage 0.1 --distance_jaw_threshold_percentage 0.1 --max_iteration 1 --step_counter_internal_max 100000000 --num_eval_episode 1 --eval_interval 1 --keyframe_num 2 --keyframe_translation_num 2 --distance_ooc_l_threshold_percentage 0.9999 --distance_ooc_r_threshold_percentage 0.9999 --distance_frontalis_threshold_percentage 0.9999 --unit_denominator 10.0 --sample_batch_size 1   2>&1  | findstr /V /C:"Frame rate mismatch" /C:"Cannot find procedure" /C:"File read in" /C:"Imported animation keys may not match" /C:"00:00:" /C:"Error: line 1:" /C:"qt.svg: Cannot open file" /C:"in gym make" /C:"seed " /C:" closing " /C:"Error: ziva " /C:"Warning: ziva"
+C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\past\builtins\misc.py:45: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module's documentation for alternative uses
+  from imp import reload
+Qt WebEngine seems to be initialized from a plugin. Please set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute before constructing QGuiApplication.
+Total length of combined x_ooc_l_joint: 300
+Total length of combined x_ooc_r_joint: 300
+Total length of combined x_frontalis_joint: 300
+a2_fromFrameGetDeltaB start
+ vertex_index length is 300
+ vertex_index   [4191, 1336, 5858, 2869, 7005, 8113, 307, 9493, 4850, 1898]
+ vertex_index ooc_l length is 300
+ vertex_index ooc_l  [4690, 7383, 5378, 7652, 5622, 4485, 721, 6017, 5215, 4389]
+ vertex_index ooc_r length is 300
+ vertex_index ooc_r  [5461, 7401, 1710, 4958, 3379, 7870, 6512, 3921, 4938, 6965]
+ vertex_index frontalis length is 300
+ vertex_index frontalis  [5912, 12189, 5272, 10435, 6292, 12203, 3060, 3134, 11212, 5548]
+C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\gym\envs\registration.py:542: UserWarning: WARN: Overriding environment m1_vertexMove_Va003
+  logger.warn(f"Overriding environment {spec.id}")
+Attribute Qt::AA_ShareOpenGLContexts must be set before QCoreApplication is created.
+This plugin does not support createPlatformOpenGLContext!
+Warning: file: \Autodesk\Maya\2023\prefs\filePathEditorRegistryPrefs.mel line 4: filePathEditor: Cannot write file '/Autodesk/Maya/2023/prefs/filePathEditorRegistryPrefs.mel'. Please check the file.
+ziva 2026-11-05 18:34:02.190 NOTE| Writing log to file "C:\Users\zpa18\AppData\Local\Temp\ziva-maya-log-8a62-65c0-21a1-2768.txt"
+I/O warning : failed to load external entity "C:/Autodesk/Maya/projects/default/data/cacheDir/myCache.xml"
+C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\gym\core.py:317: DeprecationWarning: WARN: Initializing wrapper in old step API which returns one bool instead of two. It is recommended to set `new_step_api=True` to use new step API. This will be the default behaviour in future.
+  deprecation(
+C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\gym\wrappers\step_api_compatibility.py:39: DeprecationWarning: WARN: Initializing environment in old step API which returns one bool instead of two. It is recommended to set `new_step_api=True` to use new step API. This will be the default behaviour in future.
+  deprecation(
+C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\gym\envs\registration.py:542: UserWarning: WARN: Overriding environment m1_vertexMove_Va003
+  logger.warn(f"Overriding environment {spec.id}")
+I/O warning : failed to load external entity "C:/Autodesk/Maya/projects/default/data/cacheDir/myCache.xml"
+ 
+
+
+ *************************** max_iteration, step_counter_internal_max, initial_distance, distance_min, initial_distance ooc r, distance_min ooc r, initial_distance ooc l, distance_min ooc l,  initial_distance frontalis, distance_min frontalis, UNIT_PRIME 1 100000000 38.165741610845664 3.8165741610845667 0.0 0.0 0.0 0.0 0.0 0.0 0.014000000000000002
+loaded l25 in _data True
+loaded l19 in _data True
+l33 in _data
+loaded l19 True
+Opened file: C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb
+Ziva solver nodes: ['zSolver1', 'zSolver2']
+high size:
+
+ 10821
+high_torque size:
+
+ 3603
+l36 in _data
+Create environment successfully!
+limit torch intra-op parallel threads num to 4 for saving computing resource.
+loaded l19 in _data True
+l33 in _data
+Unsaved changes detected.
+Opened file: C:/keyLabLocal_D/c99-maya-ziva-workshop/experiment_files/g10-10 rest pose 1200 landmarks v9.mb
+Ziva solver nodes: ['zSolver1', 'zSolver2']
+high size:
+
+10821
+high_torque size:
+
+ 3603
+  0%|          | 0/1 [00:00<?, ?it/s]
+C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\gym\utils\passive_env_checker.py:141: UserWarning: WARN: The obs returned by the `reset()` method was expecting numpy array dtype to be float32, actual type: float64
+  logger.warn(
+C:\Program Files\Autodesk\Maya2023\Python\lib\site-packages\gym\utils\passive_env_checker.py:165: UserWarning: WARN: The obs returned by the `reset()` method is not within the observation space.
+  logger.warn(f"{pre} is not within the observation space.")
+************** USING CUDA
+Create trainer successfully!
+Start searching trajectory ... ...
+Running phase 1
+I/O warning : failed to load external entity "C:/Autodesk/Maya/projects/default/data/cacheDir/myCache.xml"
+Step: 36600:   0%|          | 36600/100000000 [1:28:53<4046:09:35,  6.86it/s]
+in env, hit one success. should early stop now. success_flag: 1 distance: 3.4439828284895033 min dis: 3.8165741610845667 distance_ooc_l: 0.0 min distance_ooc_l: 0.0 distance_ooc_r: 0.0 min distance_ooc_r: 0.0 distance_frontalis: 0.0 min distance_frontalis: 0.0
+final distance_jaw is:  1.2785456835879812
+final distance_jaw is: 1.2785456835879812
+in env l646, hit one success. should early stop now. self.info['success_flag']: -1
+success in evaluator, distance is: 3.4439828284895033
+distance_in_MayaFile:  3.4439828284895033
+Game over since hit one success action sequence. Exiting the program early.

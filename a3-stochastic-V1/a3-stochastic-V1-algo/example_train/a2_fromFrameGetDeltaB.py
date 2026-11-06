@@ -482,7 +482,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
     sys.path.insert(0, str(a3_stochastic_path))
     sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "example_train"))
     sys.path.insert(0, str(a3_stochastic_path / "env_gym"))
-    sys.path.insert(0, str(backup_path / "database"))
+    sys.path.insert(0, str(a1_blendshape_path / "database"))
     sys.path.insert(0, str(b98_sampling_joint))
     sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
     sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_l"))
