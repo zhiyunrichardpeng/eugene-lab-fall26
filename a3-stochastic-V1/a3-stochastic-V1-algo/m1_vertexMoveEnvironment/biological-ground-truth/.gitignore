@@ -4,3 +4,5 @@ MaM_Public/
 visualization/
 __pycache__/
 .pytest_cache/
+# Exported model skin (large, a lab asset); landmarks.json and electrodes.json are small and safe to commit.
+electrodes/skin_mesh.json
