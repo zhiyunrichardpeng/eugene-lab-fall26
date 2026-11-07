@@ -32,7 +32,13 @@ Interpretations of the guideline (my calls, flagged in the output):
     point in front of the straight-line midpoint.
 
 Usage (from this folder):
-    python electrode_placement.py skin_mesh.json landmarks.json -o electrodes.json
+    python electrode_placement.py electrodes/skin_mesh.json electrodes/landmarks.json \
+        -o electrodes/electrodes.json --units-per-cm 15.8
+
+--units-per-cm: our head is scaled up about 1.6x (eye corners 142 units apart vs
+about 9 cm in adults), so 1 cm = 142 / 9 = 15.8 units. Pick it so the printed
+eye-corner width reads about 9 cm. The printout also flags pair spacings far
+from 1 cm and sites whose left and right pairs are not mirror images.
 
 No MaM data is read; outputs describe our model only.
 =============================================================================
@@ -51,6 +57,7 @@ import mam_data as m
 
 UNITS_PER_CM = 10.0  # the Maya scene is in mm
 SLIGHT_CM = 0.2
+MIRROR_TOLERANCE_CM = 0.5  # left/right electrodes further apart than this after mirroring get flagged
 FRONT_FACING = 0.5  # cos of the angle between skin normal and the forward axis
 SOURCE = "Fridlund & Cacioppo (1986), Guidelines for Human Electromyographic Research, Fig. 1 and p. 571"
 
@@ -202,6 +209,17 @@ class Placement:
         a, b = self.channels[channel]
         return float(np.linalg.norm(a.rest_position - b.rest_position))
 
+    def mirror_mismatch(self, frame: HeadFrame) -> dict[str, float]:
+        """Site -> largest distance between a left electrode mirrored across the midline and its right partner.
+
+        Every rule is mirror-symmetric, so a large value points at a landmark picked asymmetrically
+        (on our model, a ~1 cm mismatch came from one cheilion or exocanthion being off).
+        """
+        mirror = lambda q: q - 2 * ((q - frame.origin) @ frame.left) * frame.left
+        return {site: max(float(np.linalg.norm(mirror(el.rest_position) - er.rest_position))
+                          for el, er in zip(self.channels[f"{site}_l"], self.channels[f"{site}_r"]))
+                for site in m.SITES}
+
     def positions(self, vertices: np.ndarray) -> dict[str, np.ndarray]:
         """Channel -> (2, 3) electrode positions on a deformed copy of the skin (same topology)."""
         vertices = np.asarray(vertices, dtype=float)
@@ -350,6 +368,10 @@ def main() -> None:
     for ch in m.DISPLAY_CHANNELS:
         flag = "" if 0.85 <= placement.spacing(ch) / args.units_per_cm <= 1.2 else "   <- check"
         print(f"{ch:36s} {placement.spacing(ch) / args.units_per_cm:5.2f}{flag}")
+    print(f"\n{'site':36s} left/right mirror mismatch (cm)")
+    for site, gap in placement.mirror_mismatch(HeadFrame.from_landmarks(pos)).items():
+        flag = "" if gap / args.units_per_cm <= MIRROR_TOLERANCE_CM else "   <- re-pick this site's landmarks"
+        print(f"{site:36s} {gap / args.units_per_cm:5.2f}{flag}")
     print(f"wrote {args.out}")
 
 

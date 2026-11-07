@@ -3,26 +3,50 @@
 Maya side of the electrode placement (step 1 of the virtual-electrode design)
 =============================================================================
 Runs inside Maya (Python 3, no numpy needed). The geometry itself lives in
-electrode_placement.py, which runs outside Maya.
+electrode_placement.py, which runs outside Maya. Outputs land in
+electrodes/ next to this file unless a path is given.
 
-1. Open the Ziva scene at the neutral pose (AU0) and, in the Script Editor:
+0. Open the Ziva scene, go to the neutral (AU0) frame, then in the Script
+   Editor (Python tab):
 
-       import sys; sys.path.append(r"<this folder>")
-       import maya_electrode_tools as met
-       met.export_mesh("skin_mesh", r"<this folder>/electrodes/skin_mesh.json")
-       met.LandmarkPicker("skin_mesh", r"<this folder>/electrodes/landmarks.json")
+       import sys, importlib
+       sys.path.append(r"<this folder>")
+       import maya_electrode_tools as met; importlib.reload(met)
 
-   In the picker, select one vertex on the skin, press "Set" on the matching
-   row, repeat for all 19 landmarks, then "Save". Left/right are the SUBJECT's
-   sides, not the viewer's. "Show" drops locators to check the picks.
+   The skin is |jack01_MODEL|skin_cloth (met.SKIN, the Ziva-attached skin;
+   not the larger skin_cloth_copy_v5_pull_back* copies). It sits in the
+   display layer final_render_layer, which may be hidden:
+   met.show_skin() turns that layer on and isolates the skin in the viewport.
 
-2. Outside Maya (this folder):
+1. Export the skin and pick the 19 landmarks:
 
-       python electrode_placement.py electrodes/skin_mesh.json electrodes/landmarks.json -o electrodes/electrodes.json
+       met.export_mesh()          # -> electrodes/skin_mesh.json (gitignored)
+       met.LandmarkPicker()       # -> electrodes/landmarks.json
 
-3. Back in Maya, check the result on the mesh:
+   In vertex mode (select the skin, F9), click one vertex, press "Set" on its
+   row; "Save" writes the file ("Save to" / "Browse..." change it, picks are
+   kept). Left/right are the SUBJECT's sides: _l is on your right when you
+   face the model.
 
-       met.show_electrodes(r"<this folder>/electrodes/electrodes.json", "skin_mesh")
+2. Check the picks:
+
+       met.check_landmarks()      # mirror table + labelled locators
+
+   Rows marked "<- check" are swapped or far from mirror-symmetric.
+
+3. Outside Maya (this folder):
+
+       python electrode_placement.py electrodes/skin_mesh.json electrodes/landmarks.json \
+           -o electrodes/electrodes.json --units-per-cm 15.8
+
+   Fix any spacing or mirror flag it prints by re-picking those landmarks.
+
+4. Back in Maya:
+
+       met.show_electrodes()      # spheres + pair lines on the current shape
+
+   Delete electrodes_GRP / electrode_landmarks_GRP / lm_check_GRP, and turn
+   final_render_layer back off, before saving the scene.
 =============================================================================
 """
 
@@ -32,6 +56,14 @@ import re
 
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "electrodes")
+DEFAULT_MESH = os.path.join(OUT, "skin_mesh.json")
+DEFAULT_LANDMARKS = os.path.join(OUT, "landmarks.json")
+DEFAULT_ELECTRODES = os.path.join(OUT, "electrodes.json")
+SKIN = "|jack01_MODEL|skin_cloth"
+SKIN_LAYER = "final_render_layer"
 
 # Same names and order as electrode_placement.LANDMARKS (kept in sync by hand: Maya has no numpy).
 SIDED = (
@@ -59,7 +91,21 @@ def _points(mesh):
     return [(p.x, p.y, p.z) for p in _fn_mesh(mesh).getPoints(om.MSpace.kWorld)]
 
 
-def export_mesh(mesh, path):
+def show_skin(mesh=SKIN):
+    """Turn on the skin's display layer and isolate the skin in the focused viewport (not saved with the scene)."""
+    if cmds.objExists(SKIN_LAYER):
+        cmds.setAttr(SKIN_LAYER + ".visibility", True)
+    cmds.select(mesh)
+    panel = cmds.getPanel(withFocus=True)
+    if cmds.getPanel(typeOf=panel) == "modelPanel":
+        cmds.modelEditor(panel, edit=True, polymeshes=True)
+        cmds.isolateSelect(panel, state=True)
+        cmds.isolateSelect(panel, addSelected=True)
+    cmds.viewFit()
+    print(f"showing {mesh}; Ctrl+1 in the viewport leaves isolate mode")
+
+
+def export_mesh(mesh=SKIN, path=DEFAULT_MESH):
     """Write world-space vertices and triangles of mesh to JSON (export at the neutral pose)."""
     fn = _fn_mesh(mesh)
     _, ids = fn.getTriangles()
@@ -77,11 +123,11 @@ class LandmarkPicker:
 
     WINDOW = "electrodeLandmarkPicker"
 
-    def __init__(self, mesh, path):
+    def __init__(self, mesh=SKIN, path=DEFAULT_LANDMARKS):
         self.mesh, self.path = mesh, path
         self.picked = {}
-        if os.path.exists(path):
-            with open(path) as fh:
+        if os.path.exists(self.path):
+            with open(self.path) as fh:
                 self.picked = {k: int(v) for k, v in json.load(fh).get("landmarks", {}).items()}
         if cmds.window(self.WINDOW, exists=True):
             cmds.deleteUI(self.WINDOW)
@@ -97,11 +143,29 @@ class LandmarkPicker:
             cmds.button(label="Select", command=lambda _, n=name: self.select(n))
             cmds.setParent("..")
         cmds.separator(height=8)
+        cmds.rowLayout(numberOfColumns=3, adjustableColumn=2, columnWidth3=(60, 380, 90))
+        cmds.text(label="Save to", align="left")
+        self.path_field = cmds.textField(text=self.path, changeCommand=lambda value: self.set_path(value))
+        cmds.button(label="Browse...", command=lambda _: self.browse())
+        cmds.setParent("..")
         cmds.rowLayout(numberOfColumns=2)
         cmds.button(label="Save", width=120, command=lambda _: self.save())
         cmds.button(label="Show", width=120, command=lambda _: self.show())
         cmds.setParent("..")
         cmds.showWindow(self.WINDOW)
+
+    def set_path(self, path):
+        """Change where Save writes; the picks made so far are kept."""
+        self.path = os.path.abspath(path)
+        cmds.textField(self.path_field, edit=True, text=self.path)
+        print(f"landmarks will be saved to {self.path}")
+
+    def browse(self):
+        start = os.path.dirname(self.path) if os.path.isdir(os.path.dirname(self.path)) else HERE
+        chosen = cmds.fileDialog2(fileMode=0, caption="Save landmarks as", fileFilter="JSON (*.json)",
+                                  startingDirectory=start)
+        if chosen:
+            self.set_path(chosen[0])
 
     def set_from_selection(self, name):
         sel = cmds.ls(selection=True, flatten=True, long=True) or []
@@ -152,7 +216,46 @@ def _fresh_group(name):
     return cmds.group(empty=True, name=name)
 
 
-def show_electrodes(path, mesh, radius=1.5):
+def check_landmarks(path=DEFAULT_LANDMARKS, mesh=SKIN, tolerance=8.0):
+    """Print a left/right mirror table of the picked landmarks and drop labelled locators (lm_check_GRP).
+
+    x is the distance from the midline along the eye-corner axis (left +, right -); "asym" is how far
+    the two sides are from mirror images there, "off-axis" the height/depth difference. Both in scene units.
+    """
+    with open(path) as fh:
+        lm = {k: int(v) for k, v in json.load(fh)["landmarks"].items()}
+    points = _points(mesh)
+    pos = {k: points[v] for k, v in lm.items()}
+    sub = lambda a, b: [a[i] - b[i] for i in range(3)]
+    dot = lambda a, b: sum(a[i] * b[i] for i in range(3))
+    d = sub(pos["exocanthion_l"], pos["exocanthion_r"])
+    width = dot(d, d) ** 0.5
+    left = [c / width for c in d]
+    mid = [(pos["endocanthion_l"][i] + pos["endocanthion_r"][i]) / 2 for i in range(3)]
+    print(f"eye-corner width: {width:.1f} units (use --units-per-cm {width / 9.0:.1f} for a 9 cm adult width)")
+    print(f"{'landmark':15s} {'x left':>8s} {'x right':>8s} {'asym':>6s} {'off-axis':>8s}")
+    for name in sorted({k[:-2] for k in lm if k[-2:] in ("_l", "_r")}):
+        if name + "_l" not in pos or name + "_r" not in pos:
+            print(f"{name:15s} missing a side")
+            continue
+        l, r = sub(pos[name + "_l"], mid), sub(pos[name + "_r"], mid)
+        xl, xr = dot(l, left), dot(r, left)
+        off = [l[i] - xl * left[i] - (r[i] - xr * left[i]) for i in range(3)]
+        off_axis = dot(off, off) ** 0.5
+        bad = xl <= 0 or xr >= 0 or abs(xl + xr) > tolerance or off_axis > tolerance or lm[name + "_l"] == lm[name + "_r"]
+        print(f"{name:15s} {xl:8.1f} {xr:8.1f} {abs(xl + xr):6.1f} {off_axis:8.1f}{'  <- check' if bad else ''}")
+
+    group = _fresh_group("lm_check_GRP")
+    for name, p in pos.items():
+        loc = cmds.spaceLocator(name="lmc_" + name)[0]
+        cmds.xform(loc, worldSpace=True, translation=p)
+        cmds.setAttr(loc + ".localScale", 4, 4, 4)
+        ann = cmds.annotate(loc, text=name, point=[p[0], p[1] + 6, p[2] + 6])
+        cmds.parent(cmds.listRelatives(ann, parent=True)[0], group)
+        cmds.parent(loc, group)
+
+
+def show_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, radius=1.5):
     """Spheres at each electrode on the mesh's CURRENT shape (works on deformed poses too), pairs joined by a line."""
     with open(path) as fh:
         data = json.load(fh)

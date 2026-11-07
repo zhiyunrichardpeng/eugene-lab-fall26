@@ -113,6 +113,22 @@ def test_left_and_right_are_mirror_images(placement):
             np.testing.assert_allclose(el.rest_position * mirror, er.rest_position, atol=1.0, err_msg=site)
 
 
+def test_mirror_mismatch_is_small_on_a_symmetric_head(head, placement):
+    surface, landmarks = head
+    frame = ep.HeadFrame.from_landmarks(ep.landmark_positions(surface, landmarks))
+    gaps = placement.mirror_mismatch(frame)
+    assert set(gaps) == set(m.SITES) and max(gaps.values()) < 1.0
+
+
+def test_mirror_mismatch_catches_an_asymmetric_pick(head):
+    surface, landmarks = head
+    verts = surface.vertices
+    moved = dict(landmarks, cheilion_l=int(np.argmin(np.linalg.norm(verts - on_sphere(25, -32), axis=1))))  # 1 cm high
+    gaps = ep.place_electrodes(surface, moved).mirror_mismatch(
+        ep.HeadFrame.from_landmarks(ep.landmark_positions(surface, moved)))
+    assert gaps["Orbicularis Oris"] > 8 and gaps["Lateraler Frontalis"] < 1.0
+
+
 def test_rules_follow_the_guideline_geometry(head, placement):
     """Distances are along the skin (about the chord at 1 cm), directions in the head frame."""
     surface, landmarks = head
