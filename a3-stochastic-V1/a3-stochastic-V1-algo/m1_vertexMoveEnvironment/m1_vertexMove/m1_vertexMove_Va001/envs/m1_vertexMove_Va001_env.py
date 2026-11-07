@@ -1953,7 +1953,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                 import numpy as np
                 import sys
-                sys.path.insert(0, str(backup_path / "database")
+                sys.path.insert(0, str(a1_blendshape_path / "database"))
                 import importlib
 
                 # import dataV22_after_deform
@@ -2224,7 +2224,7 @@ class m1_vertexMove_Va001(gym.Env):
                 
 
                 # Save the plot to a file
-                output_folder = str(backup_path / "d83 initiate rest to AU12 smile"
+                output_folder = str(backup_path / "d83 initiate rest to AU12 smile")
                 output_file = os.path.join(output_folder, f'vertice_{object_name}.png')
                 plt.savefig(output_file, dpi=300, bbox_inches='tight')
                 plt.close()        
@@ -2761,7 +2761,7 @@ class m1_vertexMove_Va001(gym.Env):
 
                         import numpy as np
                         import sys
-                        sys.path.insert(0, str(backup_path / "database")
+                        sys.path.insert(0, str(a1_blendshape_path / "database"))
                         import importlib
 
                         # import dataV22_after_deform

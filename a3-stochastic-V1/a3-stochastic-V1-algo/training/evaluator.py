@@ -205,6 +205,7 @@ class Evaluator:
             str(a3_stochastic_path / "automation"/ "oor_skin_weights.json"),
             vertex_index=self.vertex_index
         )
+        print("Using analytical calculator")
         """Save these for later"""
         # self.analytical_calculator_jaw = AnalyticalGradientCalculator(
         #     bind_pose_json_path=str(a3_stochastic_relative_path / "automation"/ "jaw_bind_pose.json"), 
@@ -679,23 +680,24 @@ class Evaluator:
                 self.log_computation_time(self.phase_manager.current_phase)
 
                 # Calculate and log Maya distance
-                match phase:
-                    case 1:
-                        target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 2:
-                        target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 3:
-                        target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 4:
-                        target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 5:
-                        target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 6:
-                        target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 7:
-                        target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 8:
-                        target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                if phase == 1:
+                    target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 2:
+                    target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 3:
+                    target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 4:
+                    target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 5:
+                    target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 6:
+                    target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 7:
+                    target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 8:
+                    target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))
+                else:
+                    target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
 
 
                 x_conca = np.asarray([item for sublist in target_state_temp for item in sublist])
@@ -1279,7 +1281,6 @@ class Evaluator:
             calculator.max_muscle_work = getattr(self, "max_muscle_work", 1.0)
             calculator.expected_total_steps = getattr(self, "expected_total_steps", 5500)
             calculator.object_name = object_name
-            print("Using analytical gradient")
             gradient = self.compute_analytical_gradient(
                 positions_lip_joint=positions_lip_joint,
                 targets=target,
