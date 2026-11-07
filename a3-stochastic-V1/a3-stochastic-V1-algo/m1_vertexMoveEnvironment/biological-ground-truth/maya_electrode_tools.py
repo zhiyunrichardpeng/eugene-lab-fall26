@@ -104,13 +104,17 @@ class LandmarkPicker:
         cmds.showWindow(self.WINDOW)
 
     def set_from_selection(self, name):
-        sel = cmds.ls(selection=True, flatten=True) or []
+        sel = cmds.ls(selection=True, flatten=True, long=True) or []
         vtx = [s for s in sel if ".vtx[" in s]
-        if len(vtx) != 1 or vtx[0].split(".vtx[")[0].split("|")[-1] != self.mesh.split("|")[-1]:
-            cmds.warning(f"select exactly one vertex on {self.mesh}")
+        if len(vtx) != 1 or _transform(vtx[0].split(".vtx[")[0]) != _transform(self.mesh):
+            # Deformed meshes report vertices on their shape node (skin_clothShape.vtx[..]), so compare transforms.
+            msg = f"{name}: select exactly one vertex on {self.mesh} (selection: {sel[:3]}{' ...' if len(sel) > 3 else ''})"
+            print(msg)
+            cmds.warning(msg)
             return
         self.picked[name] = int(re.search(r"\[(\d+)\]", vtx[0]).group(1))
         cmds.textField(self.fields[name], edit=True, text=str(self.picked[name]))
+        print(f"{name} = vertex {self.picked[name]}")
 
     def select(self, name):
         if name in self.picked:
@@ -132,6 +136,14 @@ class LandmarkPicker:
             cmds.xform(loc, worldSpace=True, translation=points[idx])
             cmds.setAttr(f"{loc}.localScale", 2, 2, 2)
             cmds.parent(loc, group)
+
+
+def _transform(node):
+    """Full path of the transform for a mesh transform or its shape node."""
+    path = cmds.ls(node, long=True)[0]
+    if cmds.nodeType(path) == "mesh":
+        path = cmds.listRelatives(path, parent=True, fullPath=True)[0]
+    return path
 
 
 def _fresh_group(name):
