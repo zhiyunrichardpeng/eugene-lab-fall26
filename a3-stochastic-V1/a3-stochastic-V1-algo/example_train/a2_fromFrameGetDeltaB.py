@@ -1,3 +1,47 @@
+import sys
+from pathlib import Path
+
+# ==============================================================================
+# Dynamic Repository Root Detection
+# ==============================================================================
+REPO_NAME = "a3-stochastic-Rich-local-V1"
+REPO_ROOT = None
+
+if "paths" in sys.modules and hasattr(sys.modules["paths"], "__file__"):
+    cached_path = Path(sys.modules["paths"].__file__).resolve().parent
+    if (cached_path / "paths.py").is_file():
+        REPO_ROOT = cached_path
+
+if not REPO_ROOT and "__file__" in globals() and __file__:
+    script_path = Path(__file__).resolve()
+    for p in [script_path] + list(script_path.parents):
+        if (p / "paths.py").is_file():
+            REPO_ROOT = p
+            break
+
+if not REPO_ROOT:
+    fallbacks = [
+        Path(r"C:\keyLabLocal_D") / REPO_NAME,
+        Path(r"D:\keyLabLocal_D") / REPO_NAME,
+        Path.home() / "git" / REPO_NAME,
+        Path.home() / "Documents" / "GitHub" / REPO_NAME,
+    ]
+    for fb in fallbacks:
+        if (fb / "paths.py").is_file():
+            REPO_ROOT = fb
+            break
+
+if REPO_ROOT and str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from paths import (
+    a3_stochastic_path,
+    b98_sampling_path,
+    a1_blendshape_path,
+    backup_path,
+    results_path
+)
+
 # class JawRotationConfig:
 #     def __init__(self):
 #         self.configs = {
@@ -480,14 +524,17 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 )
 
     sys.path.insert(0, str(a3_stochastic_path))
-    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "example_train"))
-    sys.path.insert(0, str(a3_stochastic_path / "env_gym"))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "utils"))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
+    sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
     sys.path.insert(0, str(a1_blendshape_path / "database"))
-    sys.path.insert(0, str(b98_sampling_joint))
+    sys.path.insert(0, str(b98_sampling_path))
     sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
     sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_l"))
     sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc_r"))
     sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_frontalis"))
+    sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
     
 
     import matplotlib.pyplot as plt

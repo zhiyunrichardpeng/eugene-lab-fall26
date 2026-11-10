@@ -1,22 +1,64 @@
 import time
-
 import numpy as np
 import torch
 import math
 import os
-
 from os import path
-
+from pathlib import Path
 from utils.initialization import create_env
 from utils.common_utils import set_seed
 
 import sys
+# --- Resolve REPO_ROOT (a3-stochastic-git-V1) dynamically ---
+
+# ==============================================================================
+# Dynamic Repository Root Detection (Works via Shift+Alt+M commandPort)
+# ==============================================================================
+REPO_NAME = "a3-stochastic-Rich-local-V1"
+REPO_ROOT = None
+
+# 1. Check if 'paths' is already imported in this Maya session
+if "paths" in sys.modules and hasattr(sys.modules["paths"], "__file__"):
+    cached_path = Path(sys.modules["paths"].__file__).resolve().parent
+    if (cached_path / "paths.py").is_file():
+        REPO_ROOT = cached_path
+
+# 2. Check if running from disk where __file__ is available
+if not REPO_ROOT and "__file__" in globals() and __file__:
+    script_path = Path(__file__).resolve()
+    for p in [script_path] + list(script_path.parents):
+        if (p / "paths.py").is_file():
+            REPO_ROOT = p
+            break
+
+# 4. Standard lab & team clone fallbacks
+if not REPO_ROOT:
+    fallbacks = [
+        Path(r"C:\keyLabLocal_D") / REPO_NAME,
+        Path(r"D:\keyLabLocal_D") / REPO_NAME,
+        Path.home() / "git" / REPO_NAME,
+        Path.home() / "Documents" / "GitHub" / REPO_NAME,
+    ]
+    for fb in fallbacks:
+        if (fb / "paths.py").is_file():
+            REPO_ROOT = fb
+            break
+
+if not REPO_ROOT:
+    raise RuntimeError(
+        f"Could not locate '{REPO_NAME}' containing 'paths.py'. "
+        "Verify your repository path."
+    )
+
+# Register repository root
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from paths import (
     a3_stochastic_path,
     a1_blendshape_path,
     backup_path,
 )
-
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "example_train"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
@@ -71,6 +113,7 @@ from utils.phase_manager import PhaseManager
 
 class Evaluator:
     def __init__(self, phase_manager=None, index=0, history_size=300, exploration_prob=0.2, **kwargs):
+        print("Evaluator: ", __file__)
         for key, value in kwargs.items():
             setattr(self, key, value)         
         kwargs.update(
@@ -162,6 +205,7 @@ class Evaluator:
             str(a3_stochastic_path / "automation"/ "oor_skin_weights.json"),
             vertex_index=self.vertex_index
         )
+        print("Using analytical calculator")
         """Save these for later"""
         # self.analytical_calculator_jaw = AnalyticalGradientCalculator(
         #     bind_pose_json_path=str(a3_stochastic_path / "automation"/ "jaw_bind_pose.json"), 
@@ -636,23 +680,24 @@ class Evaluator:
                 self.log_computation_time(self.phase_manager.current_phase)
 
                 # Calculate and log Maya distance
-                match phase:
-                    case 1:
-                        target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 2:
-                        target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 3:
-                        target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 4:
-                        target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 5:
-                        target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 6:
-                        target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 7:
-                        target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))        
-                    case 8:
-                        target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))        
+                if phase == 1:
+                    target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 2:
+                    target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 3:
+                    target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 4:
+                    target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 5:
+                    target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 6:
+                    target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 7:
+                    target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))
+                elif phase == 8:
+                    target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))
+                else:
+                    target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
 
 
                 x_conca = np.asarray([item for sublist in target_state_temp for item in sublist])
@@ -1236,7 +1281,6 @@ class Evaluator:
             calculator.max_muscle_work = getattr(self, "max_muscle_work", 1.0)
             calculator.expected_total_steps = getattr(self, "expected_total_steps", 5500)
             calculator.object_name = object_name
-
             gradient = self.compute_analytical_gradient(
                 positions_lip_joint=positions_lip_joint,
                 targets=target,

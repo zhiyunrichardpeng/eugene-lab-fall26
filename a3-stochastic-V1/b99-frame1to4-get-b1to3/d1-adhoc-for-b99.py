@@ -1,6 +1,52 @@
 import datetime
 import os
 import sys
+from pathlib import Path
+# --- Resolve REPO_ROOT (a3-stochastic-git-V1) dynamically ---
+
+# ==============================================================================
+# Dynamic Repository Root Detection (Works via Shift+Alt+M commandPort)
+# ==============================================================================
+REPO_NAME = "a3-stochastic-Rich-local-V1"
+REPO_ROOT = None
+
+# 1. Check if 'paths' is already imported in this Maya session
+if "paths" in sys.modules and hasattr(sys.modules["paths"], "__file__"):
+    cached_path = Path(sys.modules["paths"].__file__).resolve().parent
+    if (cached_path / "paths.py").is_file():
+        REPO_ROOT = cached_path
+
+# 2. Check if running from disk where __file__ is available
+if not REPO_ROOT and "__file__" in globals() and __file__:
+    script_path = Path(__file__).resolve()
+    for p in [script_path] + list(script_path.parents):
+        if (p / "paths.py").is_file():
+            REPO_ROOT = p
+            break
+
+# 4. Standard lab & team clone fallbacks
+if not REPO_ROOT:
+    fallbacks = [
+        Path(r"C:\keyLabLocal_D") / REPO_NAME,
+        Path(r"D:\keyLabLocal_D") / REPO_NAME,
+        Path.home() / "git" / REPO_NAME,
+        Path.home() / "Documents" / "GitHub" / REPO_NAME,
+    ]
+    for fb in fallbacks:
+        if (fb / "paths.py").is_file():
+            REPO_ROOT = fb
+            break
+
+if not REPO_ROOT:
+    raise RuntimeError(
+        f"Could not locate '{REPO_NAME}' containing 'paths.py'. "
+        "Verify your repository path."
+    )
+
+# Register repository root
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from paths import (
     a3_stochastic_path,
     b98_sampling_path,
@@ -9,7 +55,9 @@ from paths import (
     results_path
 )
 
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"))
 sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo"/ "example_train"))
+sys.path.insert(0, str(a3_stochastic_path / "a3-stochastic-V1-algo" / "env_gym"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
 sys.path.insert(0, str(b98_sampling_path))
 sys.path.insert(0, str(b98_sampling_path / "300joints_suite_good_old"))
@@ -18,7 +66,7 @@ sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_ooc
 sys.path.insert(0, str(b98_sampling_path / "joint_positions"/"joint_position_frontalis"))
 sys.path.insert(0, str(backup_path / "b31 dataV22 backup hub"))
 
-
+print("d1 file: ", __file__)
 
 run_c96_finalized_datav21generating = 0
 run_a2_fromFrameGetDeltaB = 1
