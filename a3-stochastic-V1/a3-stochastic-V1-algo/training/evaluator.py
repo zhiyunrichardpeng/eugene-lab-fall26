@@ -432,44 +432,44 @@ class Evaluator:
             positions_jaw = obs[3*self.joint_rotate_num + 3*self.joint_num + 3*self.vertices_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
             positions_lip_joint = obs[0 : 3*self.joint_num]
             """ From main branch"""
-            # landmark_trajectory.append(np.copy(positions_lip_joint[0:3]))
-            # vertex_trajectory.append(np.copy(positions[0:3]))
+            landmark_trajectory.append(np.copy(positions_lip_joint[0:3]))
+            vertex_trajectory.append(np.copy(positions[0:3]))
             positions_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
                                                 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num : 
                                                 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
                                                 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
                                                 3*self.joint_ooc_l_num]
-            positions_ooc_r = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
-                                                3*self.joint_ooc_l_num : 
-                                                3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
-                                                3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num]
-            positions_frontalis = obs[3*self.joint_num + 
-                                                3*self.joint_rotate_num + 3*self.vertices_num + 
-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
-                                                3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num + 
-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num + 
-                                                3*self.joint_frontalis_num : 
-                                                3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
-                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
-                                                3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num + 
-                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num + 
-                                                3*self.joint_frontalis_num + 3*self.vertices_frontalis_num]
+            # positions_ooc_r = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num : 
+            #                                     3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num]
+            # positions_frontalis = obs[3*self.joint_num + 
+            #                                     3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num + 
+            #                                     3*self.joint_frontalis_num : 
+            #                                     3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+            #                                     3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num + 
+            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num + 
+            #                                     3*self.joint_frontalis_num + 3*self.vertices_frontalis_num]
 
             targets = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num : 
                         3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num]
-            targets_jaw = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
-                            3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
+            # targets_jaw = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
+            #                 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
             
             """ save for later """
-            # targets_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
-            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
-            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
-            #                                     3*self.vertices_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
-            #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
-            #                                     3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
-            #                                     3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num]
+            targets_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+                                                3*self.vertices_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
+                                                3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
+                                                3*self.joint_ooc_l_num  + 3*self.joint_ooc_r_num + 3*self.vertices_ooc_l_num  + 
+                                                3*self.vertices_ooc_r_num + 3*self.vertices_ooc_l_num]
 
             # targets_ooc_r = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
             #                                     3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 
@@ -504,26 +504,26 @@ class Evaluator:
             # # 2. Extract joints and vertices dynamically based on the exact offset in `obs`
 
             # # Base offset (skipping lip/jaw joints and target states)
-            # offset = 3*self.joint_num + 3*self.joint_rotate_num + 6*self.vertices_num + 6*self.vertices_jaw_num
+            offset = 3*self.joint_num + 3*self.joint_rotate_num + 6*self.vertices_num + 6*self.vertices_jaw_num
 
             # # --- OOC_L ---
-            # positions_ooc_l_joint = obs[offset : offset + 3*self.joint_ooc_l_num]
-            # offset += 3*self.joint_ooc_l_num
+            positions_ooc_l_joint = obs[offset : offset + 3*self.joint_ooc_l_num]
+            offset += 3*self.joint_ooc_l_num
 
             # # --- OOC_R ---
             # positions_ooc_r_joint = obs[offset : offset + 3*self.joint_ooc_r_num]
             # offset += 3*self.joint_ooc_r_num
 
             # # --- OOC_L Vertices ---
-            # positions_ooc_l_vertex = obs[offset : offset + 3*self.vertices_ooc_l_num]
-            # offset += 3*self.vertices_ooc_l_num
+            positions_ooc_l_vertex = obs[offset : offset + 3*self.vertices_ooc_l_num]
+            offset += 3*self.vertices_ooc_l_num
 
             # # --- OOC_R Vertices ---
             # positions_ooc_r_vertex = obs[offset : offset + 3*self.vertices_ooc_r_num]
             # offset += 3*self.vertices_ooc_r_num
 
             # # Skip OOC_L and OOC_R target states
-            # offset += 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num
+            offset += 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num
 
             # # --- Frontalis ---
             # positions_frontalis_joint = obs[offset : offset + 3*self.joint_frontalis_num]
@@ -538,20 +538,96 @@ class Evaluator:
                                                     3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num]
                 targets_jaw_previous = payload["next_obs"][3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
                                                         3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
-
+            # Initialize iteration tracker if it doesn't exist
+            if not hasattr(self, 'action_iteration_count'):
+                self.action_iteration_count = 0
+                self.max_action_iterations = 1e7
             # Compute gradients
+
             object_name = "oor"
-            gradient = self.compute_single_gradient(positions, targets, positions_lip_joint, self.step_t1, object_name)
+            if self.initial_distance <= 0.001:
+                gradient = np.zeros(len(positions))
+            else:
+                # For OOR, positions_lip_joint acts as your active joints
+                gradient = self.compute_single_gradient(
+                    joints=positions_lip_joint, 
+                    target=targets, 
+                    initial_distance=self.initial_distance, 
+                    observed_position=positions, 
+                    calculator=self.analytical_calculator,
+                    object_name=object_name
+                )
+            self.oor_dense_numerical_gradient = np.copy(self.prev_gradients)
+
+            # RECORD IT HERE!
+            self.record_gradient_step("oor", gradient, self.phase_manager.current_phase)
+            # RECORD THE MAGNITUDE HERE!
+            self.record_gradient_magnitude_step("oor", gradient, self.phase_manager.current_phase)
 
             rotation_values = 3 * self.joint_rotate_num * [0.0]
-            gradient_jaw = self.compute_gradient_rotation(rotation_values, targets_jaw)
+            # not yet
+            object_name = "jaw"
+            if self.initial_jaw_distance <= 0.001:
+                gradient_jaw = np.zeros(len(rotation_values))
+            else:
+                gradient_jaw = self.compute_analytical_gradient_jaw(rotation_values, targets_jaw, obs)
 
+            # --- 2. OOC_L --- test this
+            object_name = "ooc_l"
+            if self.initial_ooc_l_distance <= 0.001:
+                gradient_ooc_l = np.zeros(len(positions_ooc_l))
+            else:
+                gradient_ooc_l = self.compute_single_gradient(
+                    joints=positions_ooc_l_joint, 
+                    target=targets_ooc_l, 
+                    initial_distance=self.initial_ooc_l_distance, 
+                    observed_position=positions_ooc_l_vertex, 
+                    calculator=self.analytical_calculator_ooc_l,
+                    object_name=object_name
+                )
 
-            gradient_ooc_l = np.zeros(len(positions_ooc_l))
-            gradient_ooc_r = np.zeros(len(positions_ooc_r))
-            gradient_frontalis = np.zeros(len(positions_frontalis))
+            # RECORD IT HERE!
+            self.record_gradient_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
+            # RECORD THE MAGNITUDE HERE!
+            self.record_gradient_magnitude_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
+            # --- 3. OOC_R --- not yet
+            # object_name = "ooc_r"
+            # if self.initial_ooc_r_distance <= 0.001:
+            #     gradient_ooc_r = np.zeros(len(positions_ooc_r))
+            # else:
+            #     gradient_ooc_r = self.compute_single_gradient(
+            #         joints=positions_ooc_r_joint, 
+            #         target=targets_ooc_r, 
+            #         initial_distance=self.initial_ooc_r_distance, 
+            #         observed_position=positions_ooc_r_vertex, 
+            #         calculator=self.analytical_calculator_ooc_r,
+            #         object_name=object_name
+            #     )
+            # # RECORD IT HERE!
+            # self.record_gradient_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
+            # # RECORD THE MAGNITUDE HERE!
+            # self.record_gradient_magnitude_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
+
+            # # --- 4. FRONTALIS ---
+            # object_name = "frontalis"
+            # if self.initial_frontalis_distance <= 0.001:
+            #     gradient_frontalis = np.zeros(len(positions_frontalis))
+            # else:
+            #     gradient_frontalis = self.compute_single_gradient(
+            #         joints=positions_frontalis_joint, 
+            #         target=targets_frontalis, 
+            #         initial_distance=self.initial_frontalis_distance, 
+            #         observed_position=positions_frontalis_vertex, 
+            #         calculator=self.analytical_calculator_frontalis,
+            #         object_name=object_name
+            #     )
+
+            # # RECORD IT HERE!
+            # self.record_gradient_step("frontalis", gradient_frontalis, self.phase_manager.current_phase)                
+            # # RECORD THE MAGNITUDE HERE!
+            # self.record_gradient_magnitude_step("frontalis", gradient_frontalis, self.phase_manager.current_phase)
+
             self.current_index = (self.current_index + 1) % len(positions)    
-            
             # For phase 2, compute previous gradients
             if phase >= 2 and abc_execution_count < MAX_ABC_EXECUTIONS:
                 gradient_previous = self.compute_single_gradient(positions, targets_previous, positions_lip_joint, self.step_t1, object_name)
@@ -562,7 +638,22 @@ class Evaluator:
             else:
                 action_previous = -9999
 
-            action = np.concatenate([gradient, gradient_jaw, gradient_ooc_l, gradient_ooc_r, gradient_frontalis], axis=0)
+            #action = np.concatenate([gradient, gradient_jaw, gradient_ooc_l, gradient_ooc_r, gradient_frontalis], axis=0)
+            action = np.concatenate([gradient, gradient_jaw, gradient_ooc_l], axis=0)
+             # Increment the counter
+            self.action_iteration_count += 1
+
+            # Only plot every 100 iterations
+            if self.action_iteration_count % 100 == 0:
+                # Plot gradients
+                #object_names = ["oor", "ooc_l","ooc_r", "frontalis"]  # "oor", ooc_l
+                object_names = ["oor", "ooc_l"]  # "oor", ooc_l
+                for obj_name in object_names:
+                    self.plot_gradient_magnitudes(obj_name, self.phase_manager.current_phase)
+                    self.plot_gradients_over_iterations(obj_name, self.phase_manager.current_phase)
+
+                # Plot landmark vs vertex trajectory (1st oor landmark ↔ 1st vertex, 1-to-1 mapping)
+                self.plot_trajectories(landmark_trajectory, vertex_trajectory, self.phase_manager.current_phase)
 
             # Prepare parameters for environment step
             base_params = {
@@ -629,12 +720,6 @@ class Evaluator:
         ep_rs_sum = sum(reward_list)
         running_reward = ep_rs_sum
 
-        # Plot gradients
-        object_names = ["oor"]
-        for obj_name in object_names:
-            # self.plot_gradient_magnitudes(obj_name, self.phase_2_flag)
-            self.plot_gradient_magnitudes(obj_name, self.phase_manager.current_phase)
-
         # self.log_episode_info(self.phase_2_flag, running_reward=running_reward, next_info=next_info)
         self.log_episode_info(self.phase_manager.current_phase, running_reward=running_reward, next_info=next_info)
         
@@ -682,23 +767,20 @@ class Evaluator:
                 # Calculate and log Maya distance
                 if phase == 1:
                     target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))
-                elif phase == 2:
+                if phase == 2:
                     target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(self.j_func))
-                elif phase == 3:
+                if phase == 3:
                     target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(self.j_func))
-                elif phase == 4:
+                if phase == 4:
                     target_state_temp = getattr(dataV22_phoneme_IY, "x_middleres_OrbicularisOris" + str(self.j_func))
-                elif phase == 5:
+                if phase == 5:
                     target_state_temp = getattr(dataV22_phoneme_V, "x_middleres_OrbicularisOris" + str(self.j_func))
-                elif phase == 6:
+                if phase == 6:
                     target_state_temp = getattr(dataV22_phoneme_N, "x_middleres_OrbicularisOris" + str(self.j_func))
-                elif phase == 7:
+                if phase == 7:
                     target_state_temp = getattr(dataV22_phoneme_Y, "x_middleres_OrbicularisOris" + str(self.j_func))
-                elif phase == 8:
+                if phase == 8:
                     target_state_temp = getattr(dataV22_phoneme_UW, "x_middleres_OrbicularisOris" + str(self.j_func))
-                else:
-                    target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(self.j_func))        
-
 
                 x_conca = np.asarray([item for sublist in target_state_temp for item in sublist])
                 target_state = x_conca
