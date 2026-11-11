@@ -81,12 +81,65 @@ the EMG pattern (lips + eyes, no forehead). Only neutral→AU12 and neutral→AU
 - Kendall's W across the 4 clips: 0.50 (frontalis noise included; to recompute without it).
 - Caveat: 30 Hz with a 500 ms RMS window → onset resolution ≈ 33 ms and onsets smeared early.
 
+## Item 0: fair comparison at the electrode sites (`src/fair_compare.py`)
+
+Richard's item 0: compare the model *at the spot of each MaM electrode* with that electrode,
+instead of averaging a whole muscle.
+
+**Inputs** (all local, gitignored under `data/`):
+- MaM happy clips: 250 of 284 usable (20 participants); 34 skipped for a weak tracked smile.
+- Model run `hpy` (job 261026-171605): one transition, neutral → AU6+AU12+AU25, 1,772 solver steps.
+- Electrode positions `electrodes.json` (Fridlund placement on the lab head, by Oleh and Richard,
+  branch `wip/mam-validation-2026-11`). Checked to be in the same coordinate space as the muscles:
+  oculi electrodes sit 0.2–1.3 units and oris electrodes 2–5 units from their muscle.
+
+**Method**
+- Model (`model_run.py`): landmark path = rest + running sum of the stored per-step moves
+  (verified: the sum equals the saved final positions exactly). No Maya needed.
+  The happy run drives OOR, OOC_l, OOC_r; frontalis and jaw stay still.
+- Virtual electrode (`virtual_electrode.py`): Gaussian-weighted average (σ = r/2) of the muscle's
+  landmarks within r = 1 cm of the electrode. Per bipolar pair: shortening
+  ε = 1 − |v1−v2|/|v1(0)−v2(0)| (+ contracting, − stretched) and translation of the pair midpoint.
+- Human (`mam_happy.py`): a(t) = (envelope − rest) / session's 95th-percentile schaede level
+  (0 = rest, ~1 = near-max effort); progress 0→1 from the tracked smile (MediaPipe mouthSmile).
+- Common clock: model progress = fraction of total landmark path travelled. Only shapes and signs
+  are compared, never µV against movement.
+- Noise ceiling: each participant's rise curve vs the median of everyone else (RMSE).
+
+**Results** (`results_fair_compare_happy.csv`, `figures/fair_compare_happy.png`)
+
+| Site | Humans (a at apex, % active) | Model | Verdict |
+|---|---|---|---|
+| Zygomaticus l/r | 0.84 / 0.92, 100% | not driven | missing agonist |
+| Levator labii sup. l/r | 0.74 / 0.76, 100% | not driven | missing agonist |
+| Mentalis, depressor ang. oris | 0.20–0.38, 75–90% | not driven | missing agonist |
+| Orbicularis oculi l/r | 0.32 / 0.18, 90–95% | stretched −7.5% | sign conflict |
+| Orbicularis oris l/r | 0.37 / 0.41, 80–90% | stretched −8 to −9% | sign conflict (r only, see below) |
+| Frontalis, corrugator, procerus | ≈ 0, 0–10% | still | agree: silent |
+
+- **Sign:** humans contract orbicularis oculi in a smile; the model stretches it at both electrode
+  sites, at every patch radius tried (0.5r: −12/−13%, 2r: −3/−4%). This is robust.
+  Orbicularis oris right is stretched at all radii; **left flips to +4% at 0.5r**, so it is not robust.
+- **Timing/shape:** oculi rise in the model is within the human spread (RMSE 0.13–0.16 vs ceiling
+  median 0.17). Oris moves too early in the model (t50 = 0.15 vs 0.25–0.40 in humans; RMSE 0.25–0.30,
+  around the 90th percentile of person-to-group differences, ceiling median 0.11–0.14).
+
+**Limits**
+- EMG is the enabler, not force or movement; shortening is a stand-in for contraction
+  (lip pressing gives EMG without shortening; crosstalk, especially around the mouth).
+- MaM envelopes use a ~500 ms RMS window, so timing is blurred; posed expressions.
+- One model run, one head, landmark level (300 per muscle, not the full mesh); on the oris ring the
+  patch can include inner-surface landmarks (a geodesic patch on the mesh would fix this).
+- Model "l" assumed to be the participant's left (consistent with electrode placement, not verified).
+- Solver progress is not physiological time.
+
 ## Run
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install numpy scipy pandas matplotlib mat-io
-.venv/bin/python tests/test_emg.py
+.venv/bin/python tests/test_emg.py && .venv/bin/python tests/test_fair_compare.py
 cd src && ../.venv/bin/python mimetic_smile.py && ../.venv/bin/python mmm_happy.py
+../.venv/bin/python fair_compare.py ../data/model/hpy ../data/model/electrodes.json
 ```
 
 ## Citations
