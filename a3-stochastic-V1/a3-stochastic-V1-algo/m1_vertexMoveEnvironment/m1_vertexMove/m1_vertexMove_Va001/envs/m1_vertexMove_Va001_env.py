@@ -1563,7 +1563,7 @@ class m1_vertexMove_Va001(gym.Env):
         # # to bypass oor for now
         # base_action_prime[0:3*self.joint_num] = 0
         # to bypass ooc for now
-        base_action_prime[3*self.joint_num + 3*self.joint_rotate_num:3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num] = 0
+        #base_action_prime[3*self.joint_num + 3*self.joint_rotate_num:3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num] = 0
         base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num] = 0
 
         # to bypass frontalis for now

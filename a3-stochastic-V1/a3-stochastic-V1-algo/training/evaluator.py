@@ -465,8 +465,8 @@ class Evaluator:
 
             targets = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num : 
                         3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num]
-            # targets_jaw = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
-            #                 3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
+            targets_jaw = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num : 
+                             3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 3*self.vertices_jaw_num + 3*self.vertices_num + 3*self.vertices_jaw_num]
             
             """ save for later """
             targets_ooc_l = obs[3*self.joint_num + 3*self.joint_rotate_num + 3*self.vertices_num + 
@@ -570,7 +570,7 @@ class Evaluator:
             self.record_gradient_magnitude_step("oor", gradient, self.phase_manager.current_phase)
 
             rotation_values = 3 * self.joint_rotate_num * [0.0]
-            gradient_jaw = np.zeros(3 * self.joint_rotate_num)
+            gradient_jaw = self.compute_gradient_rotation(rotation_values, targets_jaw)
             gradient_ooc_r = np.zeros(3 * self.joint_ooc_r_num)
             gradient_frontalis = np.zeros(3 * self.joint_frontalis_num)
             # not yet
