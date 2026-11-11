@@ -1,14 +1,14 @@
-"""MaM "happy" clips on a common 0 -> 1 expression-progress clock.
+"""MaM clips of one task (default "happy") on a common 0 -> 1 expression-progress clock.
 
-For each usable happy clip (sensor session, sync_grade <= 1, non-empty EMG):
+For each usable clip of the task (sensor session, sync_grade <= 1, non-empty EMG):
   1. Normalise each channel: a(t) = (envelope(t) - rest) / ref
        rest = median envelope before the smile starts (this clip)
        ref  = 95th percentile of that channel over all of the session's standardized
               ("schaede") movement clips, i.e. a near-maximal effort for that person and site
      So 0 = rest and ~1 = near-maximal contraction; microvolts and skin impedance drop out.
-  2. Smile progress from the video: s(t) = mean(mouthSmileLeft, mouthSmileRight) (MediaPipe).
-     Progress runs 0 (smile onset) -> 1 (smile apex), using its running maximum so it never
-     goes backwards.
+  2. Progress from the video: s(t) = mean of the task's MediaPipe blendshapes (TASKS below),
+     e.g. mouthSmileLeft/Right for happy. Progress runs 0 (onset) -> 1 (apex), using its running
+     maximum so it never goes backwards.
   3. Read a(t) at the first frame where progress reaches each grid value (first passage).
 
 Caveat that comes with the data: MaM envelopes use a ~500 ms RMS window, so fine timing is blurred.
@@ -20,7 +20,14 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1] / "data" / "mam" / "MaM_Public"
 GRID = np.linspace(0.0, 1.0, 21)
-MIN_SMILE_RISE = 0.2     # skip clips where the tracked smile barely changes
+MIN_SMILE_RISE = 0.2     # skip clips where the tracked movement barely changes
+
+# task -> (MaM task label, MediaPipe blendshapes that measure its progress)
+TASKS = {
+    "happy": ("happy", ["mouthSmileLeft", "mouthSmileRight"]),
+    "smile-closed": ("Smile-Closed", ["mouthSmileLeft", "mouthSmileRight"]),
+    "eye-tight": ("Eye-Tight", ["eyeBlinkLeft", "eyeBlinkRight"]),   # largest-moving scores in this task
+}
 
 
 def index():
@@ -35,7 +42,7 @@ def session_refs(df, q=95):
     refs = {}
     sch = df[(df["mode"] == "schaede") & df.emg.notna()]
     for (pid, rec), g in sch.groupby(["pid", "rec"]):
-        frames = [pd.read_csv(ROOT / p, index_col=0) for p in g.emg]
+        frames = [pd.read_csv(ROOT / p, index_col=0) for p in g.emg if (ROOT / p).exists()]
         frames = [f for f in frames if len(f)]
         if frames:
             refs[(pid, rec)] = pd.concat(frames).quantile(q / 100.0)
@@ -47,7 +54,7 @@ def first_passage(x, grid):
     return np.searchsorted(x, grid - 1e-12, side="left").clip(0, len(x) - 1)
 
 
-def clip_curves(row, ref):
+def clip_curves(row, ref, cols=("mouthSmileLeft", "mouthSmileRight")):
     """Normalised EMG of one clip at each progress grid point: DataFrame (grid x channel), or None."""
     emg = pd.read_csv(ROOT / row.emg, index_col=0)
     if emg.empty or not isinstance(row.MediaPipe, str):
@@ -56,7 +63,7 @@ def clip_curves(row, ref):
     n = min(len(emg), len(mp))
     emg, mp = emg.iloc[:n], mp.iloc[:n]
 
-    s = mp[["mouthSmileLeft", "mouthSmileRight"]].mean(axis=1).rolling(3, center=True, min_periods=1).mean().to_numpy()
+    s = mp[list(cols)].mean(axis=1).rolling(3, center=True, min_periods=1).mean().to_numpy()
     apex = int(np.argmax(s))
     if apex < 3:
         return None
@@ -75,15 +82,16 @@ def clip_curves(row, ref):
     return out
 
 
-def all_curves():
+def all_curves(task="happy"):
     """Long table: pid, clip_id, grid, channel, a  (one row per clip x grid point x channel)."""
+    label, cols = TASKS[task]
     df = index()
-    happy = df[(df.task == "happy") & df.emg.notna() & (df.sync_grade <= 1)]
+    happy = df[(df.task == label) & df.emg.notna() & (df.sync_grade <= 1)]
     refs = session_refs(df[(df.pid + "_" + df.rec).isin(set(happy.pid + "_" + happy.rec))])
     rows, skipped = [], 0
     for r in happy.itertuples():
         ref = refs.get((r.pid, r.rec))
-        c = None if ref is None else clip_curves(r, ref)
+        c = None if ref is None else clip_curves(r, ref, cols)
         if c is None:
             skipped += 1
             continue

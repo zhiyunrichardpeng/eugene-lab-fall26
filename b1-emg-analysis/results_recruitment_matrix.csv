@@ -1,0 +1,199 @@
+task,target,channel,human_median,human_pct_active,participants,clips,model_state,model_eps_pct,model_moved_cm,placements_same_state_pct,placements_shortening_pct,placements_stretching_pct,robust_to_placement,verdict
+Forehead,AU1,Orbicularis Oris_l,0.003417865162698222,0.0,20,77,still,-1.2823706541098545e-07,1.0682207749490066e-08,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Orbicularis Oris_r,0.0013884363238580615,0.0,20,77,still,2.016171674057432e-08,1.1749825192921018e-08,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Orbicularis Oculi_l,0.04485920193642007,15.0,20,77,still,0.0015287103451999684,2.176285648670346e-05,77.77777777777777,11.11111111111111,0.0,False,agree: silent
+Forehead,AU1,Orbicularis Oculi_r,0.05500280167927167,20.0,20,77,still,0.03264479781623919,0.00096469553089784,77.77777777777777,11.11111111111111,0.0,False,agree: silent
+Forehead,AU1,Medialer Frontalis_l,1.2231942317082747,100.0,20,77,shortens,15.055070813993277,0.41661486809731507,100.0,100.0,0.0,True,agree: active
+Forehead,AU1,Medialer Frontalis_r,1.3188866551161542,100.0,20,77,shortens,12.271503400144312,0.4439635391765558,100.0,100.0,0.0,True,agree: active
+Forehead,AU1,Zygomaticus_l,0.016891074935764205,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Zygomaticus_r,0.006685289849176802,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Depressor Ang. Oris_l,0.0005881414371455921,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Depressor Ang. Oris_r,0.0016495081532137046,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Mentalis_l,0.025020238275017877,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Mentalis_r,0.019132356474635674,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Corrugator Supercilii_l,0.56011057241712,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Forehead,AU1,Corrugator Supercilii_r,0.49547273111487666,95.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Forehead,AU1,Depressor Supercilii Procerus_l,0.06870165898490907,40.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Depressor Supercilii Procerus_r,0.19378690997522424,90.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Forehead,AU1,Masseter_l,0.013945322329780654,15.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU1,Masseter_r,0.02140620977200429,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Orbicularis Oris_l,0.003417865162698222,0.0,20,77,still,-1.2823706541098545e-07,1.0682207749490066e-08,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Orbicularis Oris_r,0.0013884363238580615,0.0,20,77,still,2.016171674057432e-08,1.1749825192921018e-08,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Orbicularis Oculi_l,0.04485920193642007,15.0,20,77,still,-0.0775379079292371,0.003430505086577391,55.55555555555556,0.0,44.44444444444444,False,agree: silent
+Forehead,AU2,Orbicularis Oculi_r,0.05500280167927167,20.0,20,77,still,-0.02347665826878398,0.003203093143264271,66.66666666666667,0.0,11.11111111111111,False,agree: silent
+Forehead,AU2,Medialer Frontalis_l,1.2231942317082747,100.0,20,77,moves,1.2275062145766902,0.060225966431265654,88.88888888888889,11.11111111111111,0.0,True,"moves, no shortening"
+Forehead,AU2,Medialer Frontalis_r,1.3188866551161542,100.0,20,77,stretches,-3.9528464023452337,0.09535719582312759,44.44444444444444,0.0,44.44444444444444,False,sign conflict
+Forehead,AU2,Zygomaticus_l,0.016891074935764205,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Zygomaticus_r,0.006685289849176802,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Depressor Ang. Oris_l,0.0005881414371455921,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Depressor Ang. Oris_r,0.0016495081532137046,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Mentalis_l,0.025020238275017877,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Mentalis_r,0.019132356474635674,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Corrugator Supercilii_l,0.56011057241712,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Forehead,AU2,Corrugator Supercilii_r,0.49547273111487666,95.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Forehead,AU2,Depressor Supercilii Procerus_l,0.06870165898490907,40.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Depressor Supercilii Procerus_r,0.19378690997522424,90.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Forehead,AU2,Masseter_l,0.013945322329780654,15.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Forehead,AU2,Masseter_r,0.02140620977200429,5.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Orbicularis Oris_l,0.015978594893022315,10.0,20,77,moves,-0.2167066121445682,0.010238612313612238,33.333333333333336,0.0,22.22222222222222,False,agree: silent
+Eye-Tight,AU6,Orbicularis Oris_r,0.012006348576597985,15.0,20,77,still,-0.1858430211011397,0.005824435622879032,66.66666666666667,0.0,0.0,False,agree: silent
+Eye-Tight,AU6,Orbicularis Oculi_l,1.854955520097631,100.0,20,77,moves,0.27387662624758224,0.08877619634359565,44.44444444444444,44.44444444444444,11.11111111111111,False,"moves, no shortening"
+Eye-Tight,AU6,Orbicularis Oculi_r,1.4264913006773194,100.0,20,77,shortens,6.148351073663205,0.1624102640253813,55.55555555555556,55.55555555555556,11.11111111111111,False,agree: active
+Eye-Tight,AU6,Medialer Frontalis_l,0.3603387019452198,100.0,20,77,still,4.3981374098223114e-08,1.5080167450136266e-09,100.0,0.0,0.0,True,missing agonist
+Eye-Tight,AU6,Medialer Frontalis_r,0.28908054793488797,100.0,20,77,still,5.781486400735503e-10,2.1284728380038755e-09,100.0,0.0,0.0,True,missing agonist
+Eye-Tight,AU6,Zygomaticus_l,0.07500452790703672,40.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Zygomaticus_r,0.07117658941416276,40.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Depressor Ang. Oris_l,0.03766800217689821,15.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Depressor Ang. Oris_r,0.05206929769581267,20.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Mentalis_l,0.03747669569946871,20.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Mentalis_r,0.03843934496961786,15.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Corrugator Supercilii_l,0.9422613392305181,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Eye-Tight,AU6,Corrugator Supercilii_r,1.107518514789577,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Eye-Tight,AU6,Depressor Supercilii Procerus_l,0.4493084617300598,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Eye-Tight,AU6,Depressor Supercilii Procerus_r,0.7197021457176827,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Eye-Tight,AU6,Masseter_l,0.05234767800312561,25.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Eye-Tight,AU6,Masseter_r,0.03912600670637077,20.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Closed,AU12,Orbicularis Oris_l,0.12784400918199623,70.0,20,76,moves,-0.4231934381998981,0.06449635931689637,77.77777777777777,0.0,22.22222222222222,False,"moves, no shortening"
+Smile-Closed,AU12,Orbicularis Oris_r,0.12718085564045606,70.0,20,76,moves,-0.9697318900513396,0.029214167601652227,44.44444444444444,0.0,11.11111111111111,False,"moves, no shortening"
+Smile-Closed,AU12,Orbicularis Oculi_l,0.16508445187689463,70.0,20,76,still,-8.221172631550644e-08,6.587312946345104e-10,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Orbicularis Oculi_r,0.2722187047854154,90.0,20,76,still,0.0,0.0,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Medialer Frontalis_l,0.010139195935866138,10.0,20,76,still,4.3981374098223114e-08,1.5080167450136266e-09,100.0,0.0,0.0,True,agree: silent
+Smile-Closed,AU12,Medialer Frontalis_r,0.013169694303787883,5.0,20,76,still,5.781486400735503e-10,2.1284728380038755e-09,100.0,0.0,0.0,True,agree: silent
+Smile-Closed,AU12,Zygomaticus_l,0.7907472419799372,100.0,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Zygomaticus_r,0.9777353929906318,100.0,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Depressor Ang. Oris_l,0.2053155774860839,95.0,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Depressor Ang. Oris_r,0.2571563317136346,80.0,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Mentalis_l,0.09185088677313527,45.0,20,76,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Closed,AU12,Mentalis_r,0.10817788237960775,55.00000000000001,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Corrugator Supercilii_l,0.023865248051313737,10.0,20,76,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Closed,AU12,Corrugator Supercilii_r,0.018939300833136115,0.0,20,76,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Closed,AU12,Depressor Supercilii Procerus_l,0.11471510433124758,60.0,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Depressor Supercilii Procerus_r,0.010449937244162558,0.0,20,76,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Closed,AU12,Masseter_l,0.3774850270628471,90.0,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Closed,AU12,Masseter_r,0.2296205107783913,80.0,20,76,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Orbicularis Oris_l,0.6387805140185617,95.0,20,74,stretches,-8.134028535895288,0.11091715116241418,66.66666666666667,11.11111111111111,66.66666666666667,False,sign conflict
+Smile-Open,AU6_12_25,Orbicularis Oris_r,0.7408175840464677,100.0,20,74,stretches,-13.891516317283603,0.11713845975789423,44.44444444444444,22.22222222222222,44.44444444444444,False,sign conflict
+Smile-Open,AU6_12_25,Orbicularis Oculi_l,0.3156205469453207,95.0,20,74,stretches,-9.53592410123445,0.11984780615558974,55.55555555555556,22.22222222222222,55.55555555555556,False,sign conflict
+Smile-Open,AU6_12_25,Orbicularis Oculi_r,0.3296290520530164,100.0,20,74,stretches,-2.9860647943641627,0.17521032103725212,55.55555555555556,0.0,55.55555555555556,False,sign conflict
+Smile-Open,AU6_12_25,Medialer Frontalis_l,0.00583260063188948,0.0,20,74,still,8.747846891310473e-09,8.034744176946821e-10,100.0,0.0,0.0,True,agree: silent
+Smile-Open,AU6_12_25,Medialer Frontalis_r,0.008208080323573372,5.0,20,74,still,-1.2820899897292293e-08,1.9367319492241013e-09,100.0,0.0,0.0,True,agree: silent
+Smile-Open,AU6_12_25,Zygomaticus_l,1.168409782533316,100.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Zygomaticus_r,1.3726576789671499,100.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Depressor Ang. Oris_l,0.3852338192125137,95.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Depressor Ang. Oris_r,0.40221319682948814,100.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Mentalis_l,0.6185924456509869,95.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Mentalis_r,0.6160482738584296,95.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Corrugator Supercilii_l,0.012870703664007874,5.0,20,74,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Open,AU6_12_25,Corrugator Supercilii_r,0.015276158005642321,0.0,20,74,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Open,AU6_12_25,Depressor Supercilii Procerus_l,0.4984967624524285,90.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Depressor Supercilii Procerus_r,0.010880638205134414,5.0,20,74,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Smile-Open,AU6_12_25,Masseter_l,0.3900960803642507,80.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Smile-Open,AU6_12_25,Masseter_r,0.22365307676785134,90.0,20,74,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Orbicularis Oris_l,0.41480449154296506,95.0,20,273,stretches,-8.134028535895288,0.11091715116241418,66.66666666666667,11.11111111111111,66.66666666666667,False,sign conflict
+happy,AU6_12_25,Orbicularis Oris_r,0.5043216983430278,95.0,20,273,stretches,-13.891516317283603,0.11713845975789423,44.44444444444444,22.22222222222222,44.44444444444444,False,sign conflict
+happy,AU6_12_25,Orbicularis Oculi_l,0.3459632547797771,90.0,20,273,stretches,-9.53592410123445,0.11984780615558974,55.55555555555556,22.22222222222222,55.55555555555556,False,sign conflict
+happy,AU6_12_25,Orbicularis Oculi_r,0.2784779497073705,100.0,20,273,stretches,-2.9860647943641627,0.17521032103725212,55.55555555555556,0.0,55.55555555555556,False,sign conflict
+happy,AU6_12_25,Medialer Frontalis_l,0.0507516795272405,30.0,20,273,still,8.747846891310473e-09,8.034744176946821e-10,100.0,0.0,0.0,True,agree: silent
+happy,AU6_12_25,Medialer Frontalis_r,0.08553405376819964,45.0,20,273,still,-1.2820899897292293e-08,1.9367319492241013e-09,100.0,0.0,0.0,True,agree: silent
+happy,AU6_12_25,Zygomaticus_l,0.848221430613538,100.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Zygomaticus_r,0.9403623954532402,100.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Depressor Ang. Oris_l,0.3284646455974093,85.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Depressor Ang. Oris_r,0.25827546642183596,95.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Mentalis_l,0.38326435044285806,95.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Mentalis_r,0.46046257857844974,95.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Corrugator Supercilii_l,0.09445171263657685,45.0,20,273,no muscle,,,100.0,0.0,0.0,True,agree: silent
+happy,AU6_12_25,Corrugator Supercilii_r,0.1123999005848367,55.00000000000001,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Depressor Supercilii Procerus_l,-0.0038690968785432597,5.0,20,273,no muscle,,,100.0,0.0,0.0,True,agree: silent
+happy,AU6_12_25,Depressor Supercilii Procerus_r,0.0727907147329655,30.0,20,273,no muscle,,,100.0,0.0,0.0,True,agree: silent
+happy,AU6_12_25,Masseter_l,0.16083226792047878,65.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+happy,AU6_12_25,Masseter_r,0.12348203878796087,60.0,20,273,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,AU22,Orbicularis Oris_l,1.1410341207841252,100.0,20,77,moves,-0.19203559518723434,0.022782936516465322,33.333333333333336,11.11111111111111,22.22222222222222,False,"moves, no shortening"
+Lip-Pucker,AU22,Orbicularis Oris_r,1.1749653642360003,100.0,20,77,moves,0.038696923885706,0.019712800358235055,44.44444444444444,11.11111111111111,0.0,False,"moves, no shortening"
+Lip-Pucker,AU22,Orbicularis Oculi_l,0.04009134773065813,15.0,20,77,still,-8.221172631550644e-08,6.587312946345104e-10,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Orbicularis Oculi_r,0.10828806089030177,65.0,20,77,still,0.0,0.0,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,AU22,Medialer Frontalis_l,0.01712541436533263,10.0,20,77,still,4.3981374098223114e-08,1.5080167450136266e-09,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Medialer Frontalis_r,0.00427754938081627,10.0,20,77,still,5.781486400735503e-10,2.1284728380038755e-09,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Zygomaticus_l,0.03487792523636171,20.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Zygomaticus_r,0.053426089642014424,35.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Depressor Ang. Oris_l,0.8630289577063497,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,AU22,Depressor Ang. Oris_r,0.8467315935356156,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,AU22,Mentalis_l,0.6671456903084271,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,AU22,Mentalis_r,0.6078721742295738,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,AU22,Corrugator Supercilii_l,0.021634022002057635,10.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Corrugator Supercilii_r,0.019318587960760733,10.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Depressor Supercilii Procerus_l,0.433544554863289,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,AU22,Depressor Supercilii Procerus_r,0.013147702233650086,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Masseter_l,0.0863282186253295,35.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,AU22,Masseter_r,0.08865029934240024,45.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Orbicularis Oris_l,1.1410341207841252,100.0,20,77,moves,0.9122354243658592,0.025449671488043325,11.11111111111111,44.44444444444444,11.11111111111111,False,"moves, no shortening"
+Lip-Pucker,phoneme_UW,Orbicularis Oris_r,1.1749653642360003,100.0,20,77,shortens,8.905784068816924,0.08732023960459201,44.44444444444444,44.44444444444444,0.0,False,agree: active
+Lip-Pucker,phoneme_UW,Orbicularis Oculi_l,0.04009134773065813,15.0,20,77,still,-1.1994665261028103e-07,9.200494678351684e-10,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Orbicularis Oculi_r,0.10828806089030177,65.0,20,77,still,6.383737982673665e-08,2.0827169017764418e-09,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,phoneme_UW,Medialer Frontalis_l,0.01712541436533263,10.0,20,77,still,8.747846891310473e-09,8.034744176946821e-10,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Medialer Frontalis_r,0.00427754938081627,10.0,20,77,still,-1.2820899897292293e-08,1.9367319492241013e-09,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Zygomaticus_l,0.03487792523636171,20.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Zygomaticus_r,0.053426089642014424,35.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Depressor Ang. Oris_l,0.8630289577063497,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,phoneme_UW,Depressor Ang. Oris_r,0.8467315935356156,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,phoneme_UW,Mentalis_l,0.6671456903084271,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,phoneme_UW,Mentalis_r,0.6078721742295738,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,phoneme_UW,Corrugator Supercilii_l,0.021634022002057635,10.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Corrugator Supercilii_r,0.019318587960760733,10.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Depressor Supercilii Procerus_l,0.433544554863289,100.0,20,77,no muscle,,,100.0,0.0,0.0,True,missing agonist
+Lip-Pucker,phoneme_UW,Depressor Supercilii Procerus_r,0.013147702233650086,0.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Masseter_l,0.0863282186253295,35.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+Lip-Pucker,phoneme_UW,Masseter_r,0.08865029934240024,45.0,20,77,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU1,Orbicularis Oris_l,0.10838864924205108,70.0,20,275,still,-1.2823706541098545e-07,1.0682207749490066e-08,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Orbicularis Oris_r,0.10957039052398841,60.0,20,275,still,2.016171674057432e-08,1.1749825192921018e-08,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Orbicularis Oculi_l,0.06080043407901185,15.0,20,275,still,0.0015287103451999684,2.176285648670346e-05,77.77777777777777,11.11111111111111,0.0,False,agree: silent
+surprised,AU1,Orbicularis Oculi_r,0.08085997259561949,15.0,20,275,still,0.03264479781623919,0.00096469553089784,77.77777777777777,11.11111111111111,0.0,False,agree: silent
+surprised,AU1,Medialer Frontalis_l,0.45466827047519287,85.0,20,275,shortens,15.055070813993277,0.41661486809731507,100.0,100.0,0.0,True,agree: active
+surprised,AU1,Medialer Frontalis_r,0.45132456891767764,90.0,20,275,shortens,12.271503400144312,0.4439635391765558,100.0,100.0,0.0,True,agree: active
+surprised,AU1,Zygomaticus_l,0.02415381859526996,0.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU1,Zygomaticus_r,0.02626827360559155,0.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU1,Depressor Ang. Oris_l,0.10642987190239908,55.00000000000001,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Depressor Ang. Oris_r,0.09865731502503396,50.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU1,Mentalis_l,0.1589891697149286,70.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Mentalis_r,0.1460247329960631,85.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Corrugator Supercilii_l,0.23777063856373137,95.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Corrugator Supercilii_r,0.2346803494600593,90.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Depressor Supercilii Procerus_l,0.024951545592838312,5.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU1,Depressor Supercilii Procerus_r,0.12348479272528023,80.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU1,Masseter_l,0.03926198945356429,5.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU1,Masseter_r,0.039161208548810306,20.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU2,Orbicularis Oris_l,0.10838864924205108,70.0,20,275,still,-1.2823706541098545e-07,1.0682207749490066e-08,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Orbicularis Oris_r,0.10957039052398841,60.0,20,275,still,2.016171674057432e-08,1.1749825192921018e-08,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Orbicularis Oculi_l,0.06080043407901185,15.0,20,275,still,-0.0775379079292371,0.003430505086577391,55.55555555555556,0.0,44.44444444444444,False,agree: silent
+surprised,AU2,Orbicularis Oculi_r,0.08085997259561949,15.0,20,275,still,-0.02347665826878398,0.003203093143264271,66.66666666666667,0.0,11.11111111111111,False,agree: silent
+surprised,AU2,Medialer Frontalis_l,0.45466827047519287,85.0,20,275,moves,1.2275062145766902,0.060225966431265654,88.88888888888889,11.11111111111111,0.0,True,"moves, no shortening"
+surprised,AU2,Medialer Frontalis_r,0.45132456891767764,90.0,20,275,stretches,-3.9528464023452337,0.09535719582312759,44.44444444444444,0.0,44.44444444444444,False,sign conflict
+surprised,AU2,Zygomaticus_l,0.02415381859526996,0.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU2,Zygomaticus_r,0.02626827360559155,0.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU2,Depressor Ang. Oris_l,0.10642987190239908,55.00000000000001,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Depressor Ang. Oris_r,0.09865731502503396,50.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU2,Mentalis_l,0.1589891697149286,70.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Mentalis_r,0.1460247329960631,85.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Corrugator Supercilii_l,0.23777063856373137,95.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Corrugator Supercilii_r,0.2346803494600593,90.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Depressor Supercilii Procerus_l,0.024951545592838312,5.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU2,Depressor Supercilii Procerus_r,0.12348479272528023,80.0,20,275,no muscle,,,100.0,0.0,0.0,True,missing agonist
+surprised,AU2,Masseter_l,0.03926198945356429,5.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+surprised,AU2,Masseter_r,0.039161208548810306,20.0,20,275,no muscle,,,100.0,0.0,0.0,True,agree: silent
+angry,AU4,Orbicularis Oris_l,0.42356814599949716,95.0,20,276,still,1.2398171378436018e-08,1.3765468255513217e-09,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Orbicularis Oris_r,0.41073575486363967,95.0,20,276,still,1.0997758259634338e-08,2.7144780725044274e-10,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Orbicularis Oculi_l,0.10798295699996335,50.0,20,276,moves,-1.0143235412080953,0.03291702054247494,11.11111111111111,0.0,22.22222222222222,False,"moves, no shortening"
+angry,AU4,Orbicularis Oculi_r,0.19258443313934537,75.0,20,276,still,0.1707115465643949,0.006246502879609657,66.66666666666667,0.0,22.22222222222222,False,missing agonist
+angry,AU4,Medialer Frontalis_l,0.337686574315319,100.0,20,276,still,4.3981374098223114e-08,1.5080167450136266e-09,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Medialer Frontalis_r,0.29853611192687984,100.0,20,276,still,5.781486400735503e-10,2.1284728380038755e-09,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Zygomaticus_l,0.06605325044206735,40.0,20,276,no muscle,,,100.0,0.0,0.0,True,agree: silent
+angry,AU4,Zygomaticus_r,0.08643037165312739,45.0,20,276,no muscle,,,100.0,0.0,0.0,True,agree: silent
+angry,AU4,Depressor Ang. Oris_l,0.4062764130919184,95.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Depressor Ang. Oris_r,0.5072295209837666,100.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Mentalis_l,0.28291267487979754,95.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Mentalis_r,0.3040090271921365,90.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Corrugator Supercilii_l,1.0850732344582061,100.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Corrugator Supercilii_r,1.0300733048004114,100.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Depressor Supercilii Procerus_l,0.2301766923037774,70.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Depressor Supercilii Procerus_r,0.542953488269894,100.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Masseter_l,0.11803889352319398,60.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist
+angry,AU4,Masseter_r,0.1097727202172824,50.0,20,276,no muscle,,,100.0,0.0,0.0,True,missing agonist

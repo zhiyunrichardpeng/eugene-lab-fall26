@@ -59,6 +59,55 @@ def virtual_path(path, idx, w):
     return (path[:, idx, :] * w[None, :, None]).sum(axis=1)
 
 
+def surface_patch(rest_vertices, point, radius, layer):
+    """Mesh vertices directly under an electrode, first tissue layer only.
+
+    The inward direction is taken from the electrode to the nearest vertex. A vertex is kept if it
+    lies within `radius` sideways of that line and within `layer` of the top surface, so the
+    deeper side of the muscle (e.g. the inner lip surface of the orbicularis oris ring, which sits
+    behind a gap of a few units) is excluded. Weights: Gaussian in sideways distance, sigma = radius / 2.
+    """
+    rel = rest_vertices - point
+    dist = np.linalg.norm(rel, axis=1)
+    n = rel[dist.argmin()] / dist.min()
+    depth = rel @ n
+    side = np.linalg.norm(rel - np.outer(depth, n), axis=1)
+    under = side <= radius
+    top = depth[under].min()
+    idx = np.flatnonzero(under & (depth <= top + layer))
+    w = np.exp(-(side[idx] ** 2) / (2.0 * (radius / 2.0) ** 2))
+    return idx, w / w.sum(), float(dist.min())
+
+
+def mesh_pair_signals(landmark_path, bind, weights, electrodes, radius, layer):
+    """Like pair_signals, but on the full muscle mesh rebuilt by linear blend skinning.
+
+    vertex(t) = bind + weights @ (landmarks(t) - landmarks(0)), the lab's own LBS formula
+    (pytorch_analytical_gradient.LinearBlendSkinning); only the patch vertices are rebuilt.
+    """
+    moves = landmark_path - landmark_path[0]                          # (T, K, 3)
+    v, info = [], []
+    for p in electrodes:
+        idx, w, dmin = surface_patch(bind, p, radius, layer)
+        verts = bind[idx][None] + np.einsum("nk,tkd->tnd", weights[idx], moves)
+        v.append((verts * w[None, :, None]).sum(axis=1))
+        info.append({"n_vertices": int(idx.size), "nearest_vertex": dmin})
+    length = np.linalg.norm(v[0] - v[1], axis=1)
+    eps = 1.0 - length / length[0]
+    mid = (v[0] + v[1]) / 2.0
+    return eps, np.linalg.norm(mid - mid[0], axis=1), info
+
+
+def static_shortening(bind, deformed, electrodes, radius, layer):
+    """Shortening between the two virtual electrodes for one fixed deformed mesh (e.g. a target pose)."""
+    v0, v1 = [], []
+    for p in electrodes:
+        idx, w, _ = surface_patch(bind, p, radius, layer)
+        v0.append(w @ bind[idx])
+        v1.append(w @ deformed[idx])
+    return 1.0 - np.linalg.norm(v1[0] - v1[1]) / np.linalg.norm(v0[0] - v0[1])
+
+
 def pair_signals(path, electrodes, radius):
     """Shortening and translation over time for one electrode pair on one muscle path."""
     v = []

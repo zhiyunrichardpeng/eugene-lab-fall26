@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import fair_compare as fc
 import mam_happy
 import model_run
+import recruitment_matrix as rm
 import virtual_electrode as ve
 
 
@@ -85,6 +86,44 @@ def test_shortening_sign_and_size():
         assert eps[-1] < -0.05
 
 
+def test_surface_patch_keeps_first_layer_only():
+    """Two parallel sheets (like the outer and inner lip surface): only the near one is read."""
+    g = np.stack(np.meshgrid(np.arange(-20, 21, 2.0), np.arange(-20, 21, 2.0)), -1).reshape(-1, 2)
+    top = np.c_[g, np.full(len(g), 5.0)]
+    deep = np.c_[g, np.full(len(g), 15.0)]
+    verts = np.vstack([top, deep])
+    idx, w, dmin = ve.surface_patch(verts, np.array([0.0, 0, 0]), radius=6, layer=4)
+    assert idx.max() < len(top) and idx.size > 10       # nothing from the deep sheet
+    assert abs(w.sum() - 1) < 1e-12 and dmin == 5.0
+
+
+def test_mesh_signals_match_landmarks_with_identity_skinning():
+    """If every vertex is bound 100% to one landmark, mesh and landmark results must agree."""
+    with tempfile.TemporaryDirectory() as t:
+        make_run(Path(t), contract=0.2)
+        paths, _ = model_run.load_run(t)
+        bind, weights = paths["OOR"][0].copy(), np.eye(300)
+        pair = np.array([[-20.0, 0, 0], [20.0, 0, 0]])
+        eps_m, tr_m, _ = ve.mesh_pair_signals(paths["OOR"], bind, weights, pair, radius=30.0, layer=100.0)
+        assert abs(eps_m[-1] - 0.2) < 0.02, eps_m[-1]
+
+
+def test_target_pose_read_as_data_and_static_shortening():
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d) / "dataV22_X.py"
+        f.write_text("import os\nos.system('echo should never run')\n"
+                     "x_middleres_OrbicularisOris0 = [[0, 0, 0], [1, 0, 0]]\n"
+                     "x_middleres_OrbicularisOris1 = [[0, 0, 0], [2, 0, 0]]\n")
+        tg = model_run.load_target(f)
+        assert list(tg) == ["OOR"] and tg["OOR"][1, 0] == 2.0
+    g = np.stack(np.meshgrid(np.arange(-20, 21, 2.0), np.arange(-2, 3, 2.0)), -1).reshape(-1, 2)
+    bind = np.c_[g, np.zeros(len(g))]
+    squeezed = bind * [0.8, 1, 1]
+    pair = np.array([[-10.0, 0, -1], [10.0, 0, -1]])
+    eps = ve.static_shortening(bind, squeezed, pair, radius=3, layer=1)
+    assert abs(eps - 0.2) < 1e-9
+
+
 def test_weights_fallback_and_normalised():
     lm = np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0], [300, 0, 0.0]])
     idx, w, dmin = ve.weights_for_point(lm, np.array([1.0, 0, 0]), radius=5, min_k=3)
@@ -107,6 +146,17 @@ def test_classify():
     assert fc.classify(True, {"driven": True, "eps": np.array([0, .05])}) == "agree: contracts"
     assert fc.classify(True, {"driven": True, "eps": np.array([0, -.05])}).startswith("sign conflict")
     assert fc.classify(False, {"driven": True, "eps": np.array([0, .05])}) == "over-recruitment"
+
+
+def test_recruitment_verdicts():
+    assert rm.verdict(True, "shortens") == "agree: active"
+    assert rm.verdict(True, "stretches") == "sign conflict"
+    assert rm.verdict(True, "still") == "missing agonist"
+    assert rm.verdict(True, "no muscle") == "missing agonist"
+    assert rm.verdict(True, "moves") == "moves, no shortening"
+    assert rm.verdict(False, "shortens") == "over-recruitment"
+    assert rm.verdict(False, "stretches") == "agree: silent"      # passive stretch of a silent muscle is fine
+    assert rm.UNRELIABLE_CHANNELS.isdisjoint({"Zygomaticus_l", "Medialer Frontalis_l"})
 
 
 if __name__ == "__main__":

@@ -1,0 +1,23 @@
+channel,model_tissue,human_apex_median,human_apex_iqr,human_pct_active,human_t50,model_driven,verdict,model_eps_end_pct,model_eps_end_pct_r0.5,model_eps_end_pct_r2,model_t50,shape_rmse_model,shape_rmse_ceiling_median,shape_rmse_ceiling_p90
+Orbicularis Oris_l,OOR,0.18975295099035272,0.27823456736326063,65.0,0.6000000000000001,True,"driven, no length change",-0.4235376248364675,0.02406692504951513,-7.025864981676588,0.15000000000000002,0.3868881688205187,0.18162630800646576,0.4238146243437976
+Orbicularis Oris_r,OOR,0.15035577073898634,0.21483791726586335,65.0,0.65,True,"driven, no length change",-1.1598065056021678,,-6.4571475162280345,0.15000000000000002,0.4466819458680298,0.24464000377276882,0.44298294972478536
+Orbicularis Oculi_l,OOC_l,0.19384169598440992,0.26519869422265147,70.0,0.8500000000000001,False,missing agonist,,,,,,,
+Orbicularis Oculi_r,OOC_r,0.24891455747758706,0.1810782173278892,80.0,0.75,False,missing agonist,,,,,,,
+Medialer Frontalis_l,frontalis,0.011224141536994777,0.01746737826478857,0.0,0.75,False,agree: silent,,,,,,,
+Medialer Frontalis_r,frontalis,0.004798776707913307,0.014314717892150868,0.0,1.0,False,agree: silent,,,,,,,
+Lateraler Frontalis_l,frontalis,0.3604559886293003,0.3348693444468959,85.0,0.6000000000000001,False,missing agonist,,,,,,,
+Lateraler Frontalis_r,frontalis,0.4781841262161368,0.37015309010826847,90.0,0.75,False,missing agonist,,,,,,,
+Zygomaticus_l,-,0.7028486736484845,0.670220448971691,95.0,0.45,False,missing agonist,,,,,,,
+Zygomaticus_r,-,0.9271944711312874,0.5352221420035168,95.0,0.30000000000000004,False,missing agonist,,,,,,,
+Levator Labii Superioris_l,-,0.003498341540621501,0.045406666809065854,5.0,1.0,False,agree: silent,,,,,,,
+Levator Labii Superioris_r,-,0.001240201170900528,0.06693815375629861,15.0,0.8500000000000001,False,agree: silent,,,,,,,
+Depressor Ang. Oris_l,-,0.19045023997157765,0.2314828866282151,75.0,0.7000000000000001,False,missing agonist,,,,,,,
+Depressor Ang. Oris_r,-,0.2184523373878039,0.23193821048812036,75.0,0.8,False,missing agonist,,,,,,,
+Mentalis_l,-,0.06194217148272255,0.12270115445243719,30.0,0.8500000000000001,False,agree: silent,,,,,,,
+Mentalis_r,-,0.04824570816974682,0.12611574076914464,40.0,0.65,False,agree: silent,,,,,,,
+Corrugator Supercilii_l,-,-0.0038068387667590225,0.027620903305931133,0.0,0.1,False,agree: silent,,,,,,,
+Corrugator Supercilii_r,-,-0.007981217862416458,0.018064460462509153,0.0,0.2,False,agree: silent,,,,,,,
+Depressor Supercilii Procerus_l,-,0.08978389621056686,0.09591822549270673,45.0,0.75,False,agree: silent,,,,,,,
+Depressor Supercilii Procerus_r,-,0.0009278495012967917,0.0102382922414763,0.0,1.0,False,agree: silent,,,,,,,
+Masseter_l,-,0.39019336408870575,0.5130053407503895,75.0,0.8500000000000001,False,missing agonist,,,,,,,
+Masseter_r,-,0.2449082711340187,0.24940154931441727,60.0,0.9,False,missing agonist,,,,,,,

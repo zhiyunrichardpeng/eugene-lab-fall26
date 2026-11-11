@@ -65,6 +65,37 @@ def load_run(run_dir):
     return paths, cum[:, JAW]
 
 
+SKIN_FILES = {"OOR": "oor", "OOC_l": "ooc_l", "OOC_r": "ooc_r", "frontalis": "frontalis"}
+
+
+def load_skinning(lbs_dir, tissue):
+    """Bind-pose vertices (N, 3) and skin weights (N, 300) of one muscle, from automation/*.json."""
+    import json
+    f = SKIN_FILES[tissue]
+    bind = np.asarray(json.load(open(Path(lbs_dir) / f"{f}_bind_pose.json")), float)
+    weights = np.asarray(json.load(open(Path(lbs_dir) / f"{f}_skin_weights.json")), float)
+    return bind, weights
+
+
+TARGET_KEYS = {"OOR": "x_middleres_OrbicularisOris1", "OOC_l": "x_middleres_OrbicularisOculi_l1",
+               "OOC_r": "x_middleres_OrbicularisOculi_r1", "frontalis": "x_middleres_Frontalis1"}
+
+
+def load_target(pose_file):
+    """Artist-sculpted target meshes {tissue: (N, 3)} from a dataV22_*.py pose file.
+
+    In these files index 0 is the rest shape (equal to the bind pose) and index 1 the expression.
+    The file is read as data with ast.literal_eval, never executed.
+    """
+    import ast
+    want = {v: k for k, v in TARGET_KEYS.items()}
+    out = {}
+    for node in ast.parse(Path(pose_file).read_text()).body:
+        if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", None) in want:
+            out[want[node.targets[0].id]] = np.asarray(ast.literal_eval(node.value), float)
+    return out
+
+
 def driven(paths, tol=1e-9):
     """Tissues the solver actually moved in this run."""
     return [k for k, p in paths.items() if np.abs(p[-1] - p[0]).max() > tol]
