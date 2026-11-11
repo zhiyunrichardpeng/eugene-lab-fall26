@@ -58,7 +58,8 @@ import mam_data as m
 UNITS_PER_CM = 10.0  # the Maya scene is in mm
 SLIGHT_CM = 0.2
 MIRROR_TOLERANCE_CM = 0.5  # left/right electrodes further apart than this after mirroring get flagged
-FRONT_FACING = 0.5  # cos of the angle between skin normal and the forward axis
+FRONT_FACING = (0.3, 0.7)  # cos(skin normal, forward axis): sideways below, front-facing above, blended between
+NORMAL_RADIUS_CM = 0.5  # skin patch whose average normal sets the walking plane
 SOURCE = "Fridlund & Cacioppo (1986), Guidelines for Human Electromyographic Research, Fig. 1 and p. 571"
 
 SIDED_LANDMARKS = {
@@ -142,6 +143,20 @@ class Surface:
             raise ValueError(f"no skin in front of or behind {point}")
         i = int(np.argmax(t))
         return self._hit(k[i], u[i], v[i], point + t[i] * forward)
+
+    def normal_near(self, point: np.ndarray, radius: float, center: np.ndarray) -> np.ndarray:
+        """Area-weighted skin normal of the triangles within radius of point, pointing away from center.
+
+        One triangle's normal is noise at a crease (a lip corner can face down on one side and up
+        on the other), so steps taken in its tangent plane would bend asymmetrically.
+        """
+        a, b, c = (self.vertices[self.triangles[:, k]] for k in range(3))
+        near = np.linalg.norm((a + b + c) / 3 - point, axis=1) <= radius
+        normal = np.cross(b[near] - a[near], c[near] - a[near]).sum(axis=0)  # cross length = 2 x area
+        if not np.any(normal):
+            raise ValueError(f"no skin triangles within {radius} of {point}")
+        normal = unit(normal)
+        return normal if normal @ (point - center) >= 0 else -normal
 
     def project(self, point: np.ndarray, center: np.ndarray) -> Hit:
         """Point dropped onto the outer skin along the local surface normal.
@@ -267,14 +282,14 @@ def place_electrodes(surface: Surface, landmarks: dict[str, int], units_per_cm: 
         means 1 cm on the skin, as with a ruler on the face, not a 1 cm vertical drop.
         Where the skin faces forward, the out-of-plane part is removed along the forward axis, so the
         step keeps its direction as seen from the front ("vertical lines" are frontal-view lines);
-        where it faces sideways (masseter), it is removed along the normal.
+        where it faces sideways (masseter), it is removed along the normal, with a smooth blend in between
+        so the two sides of a slightly asymmetric face never fall under different rules.
         """
         here = snap(start)
-        a, b, c = surface.vertices[here.vertices]
-        normal = unit(np.cross(b - a, c - a))
-        if normal @ (here.rest_position - frame.origin) < 0:
-            normal = -normal  # point out of the head whatever the triangle winding
-        slide = frame.forward if normal @ frame.forward > FRONT_FACING else normal
+        normal = surface.normal_near(here.rest_position, NORMAL_RADIUS_CM * cm, frame.origin)
+        lo, hi = FRONT_FACING
+        w = float(np.clip((normal @ frame.forward - lo) / (hi - lo), 0, 1))  # no jump between the two rules
+        slide = unit(w * frame.forward + (1 - w) * normal)
         on_skin = lambda v: unit(v - (v @ normal) / (slide @ normal) * slide)
         return snap(here.rest_position + sum(d * on_skin(direction) for d, direction in steps))
 

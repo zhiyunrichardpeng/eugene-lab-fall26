@@ -222,3 +222,22 @@ def test_cli_reads_the_maya_export_formats(tmp_path):
     assert run.returncode == 0, run.stderr
     assert "<- check" not in run.stdout
     assert set(json.loads(out.read_text())["channels"]) == set(m.CHANNELS)
+
+
+def test_normal_near_averages_over_a_crease():
+    # A convex 90 degree edge along x, like a lip corner: the top strip faces up (+y), the front one +z.
+    xs = np.linspace(-10, 10, 11)
+    up = [(x, 0.0, z) for z in np.linspace(-10, 0, 6) for x in xs]
+    front = [(x, y, 0.0) for y in np.linspace(0, -10, 6)[1:] for x in xs]
+    verts = np.array(up + front)
+    n = len(xs)
+    rows = [list(range(r * n, (r + 1) * n)) for r in range(len(verts) // n)]
+    order = rows  # one grid: back of the top strip, over the edge, down the front
+    tris = []
+    for r0, r1 in zip(order, order[1:]):
+        for i in range(n - 1):
+            tris += [(r0[i], r0[i + 1], r1[i + 1]), (r0[i], r1[i + 1], r1[i])]
+    surface = ep.Surface(verts, np.asarray(tris))
+    normal = surface.normal_near(np.zeros(3), 5.0, center=np.array([0.0, -50.0, -50.0]))
+    # One triangle at the fold faces straight up or straight forward; the patch average is in between.
+    assert normal == pytest.approx(np.array([0, 1, 1]) / np.sqrt(2), abs=0.05)

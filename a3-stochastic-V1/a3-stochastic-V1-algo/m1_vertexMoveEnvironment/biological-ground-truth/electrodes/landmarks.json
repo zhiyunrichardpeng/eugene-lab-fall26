@@ -1,24 +1,24 @@
 {
-    "mesh": "|jack01_MODEL|skin_cloth",
-    "landmarks": {
-        "endocanthion_l": 4934,
-        "endocanthion_r": 45109,
-        "exocanthion_l": 27440,
-        "exocanthion_r": 33576,
-        "pupil_l": 9735,
-        "pupil_r": 11164,
-        "brow_inner_l": 15859,
-        "brow_inner_r": 21673,
-        "brow_middle_l": 27140,
-        "brow_middle_r": 32890,
-        "alar_curvature_l": 26346,
-        "alar_curvature_r": 43685,
-        "cheilion_l": 23926,
-        "cheilion_r": 34384,
-        "gonion_r": 19954,
-        "gonion_l": 14079,
-        "preauricular_l": 12535,
-        "preauricular_r": 18439,
-        "pogonion": 30916
-    }
+ "mesh": "|jack01_MODEL|skin_cloth",
+ "landmarks": {
+  "endocanthion_l": 4934,
+  "endocanthion_r": 11153,
+  "exocanthion_l": 27440,
+  "exocanthion_r": 33569,
+  "pupil_l": 9735,
+  "pupil_r": 11164,
+  "brow_inner_l": 15859,
+  "brow_inner_r": 21673,
+  "brow_middle_l": 38706,
+  "brow_middle_r": 44477,
+  "alar_curvature_l": 14882,
+  "alar_curvature_r": 43706,
+  "cheilion_l": 3066,
+  "cheilion_r": 41367,
+  "gonion_r": 23062,
+  "gonion_l": 28801,
+  "preauricular_l": 12535,
+  "preauricular_r": 18439,
+  "pogonion": 30916
+ }
 }
