@@ -1538,6 +1538,10 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
                 # 'UNIT_PRIME_jaw_translate': UNIT_PRIME_jaw_translate,
                 'phase_params': phase_params,
                 'initial_distance': initial_distance,
+                'initial_jaw_distance': initial_jaw_distance,
+                'initial_ooc_l_distance': initial_ooc_l_distance,
+                'initial_ooc_r_distance': initial_ooc_r_distance,
+                'initial_frontalis_distance': initial_frontalis_distance,
 
                 'distance_min': distance_min,
                 'distance_jaw_min': distance_jaw_min,

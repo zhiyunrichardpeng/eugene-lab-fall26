@@ -120,6 +120,11 @@ class Evaluator:
             {"reward_scale": None, "repeat_num": None}
         )  # evaluation don't need to scale reward
 
+        # self.initial_ooc_l_distance = getattr(self, "initial_ooc_l_distance", 0.0)
+        # self.initial_ooc_r_distance = getattr(self, "initial_ooc_r_distance", 0.0)
+        # self.initial_frontalis_distance = getattr(self, "initial_frontalis_distance", 0.0)
+        # self.initial_jaw_distance = getattr(self, "initial_jaw_distance", 0.0)
+
         if phase_manager is None:
             # Default to 2 phases if not specified
             self.phase_manager = PhaseManager(max_phases=2)
@@ -186,6 +191,7 @@ class Evaluator:
         self.distance_jaw_min = kwargs["distance_jaw_min"]
         self.distance_jaw_threshold_percentage = kwargs["distance_jaw_threshold_percentage"]
         self.gradients_over_iterations = []
+        self.gradients_over_iterations_dict = {}
         self.current_index = 0  # Track the current index to update
     
         self.prev_gradients = None
@@ -1930,6 +1936,195 @@ class Evaluator:
                 transparent=False)
         plt.close()
 
+    def plot_gradients_over_iterations(self, object_name, current_phase=1, indices=None):
+        """Plot the chosen flattened_gradient coordinates over optimization steps.
+        
+        Args:
+            object_name (str): Name of the object to plot
+            current_phase (int): Current phase number (1, 2, 3, etc.)
+            indices (list, optional): List of specific coordinate indices of the flattened gradient to plot.
+                                      If None, auto-selects top 5 indices with the highest variance.
+        """
+        # Initialize dictionary if not exist
+        if not hasattr(self, 'gradients_over_iterations_dict'):
+            self.gradients_over_iterations_dict = {}
+            
+        if current_phase not in self.gradients_over_iterations_dict:
+            self.gradients_over_iterations_dict[current_phase] = {}
+            
+        if object_name not in self.gradients_over_iterations_dict[current_phase]:
+            print(f"No gradient history available to plot for {object_name} in phase {current_phase}")
+            return
+            
+        data = self.gradients_over_iterations_dict[current_phase][object_name]
+        if not data:
+            print(f"Empty gradient history for {object_name} in phase {current_phase}")
+            return
+            
+        grads = np.array(data)  # shape: (num_steps, num_params)
+
+        num_steps, num_params = grads.shape
+
+        # Automatically generate step indices (0, 1, 2, ..., num_steps - 1)
+        steps = np.arange(num_steps)
+
+        if indices is None:
+            # Dynamically choose the top-5 coordinates with the highest variance
+            # so we visualize the most active parameters/dimensions
+            variances = np.var(grads, axis=0)
+            num_to_pick = min(5, num_params)
+            indices = np.argsort(variances)[::-1][:num_to_pick].tolist()
+            
+        # Set up professional plotting style
+        plt.figure(figsize=(9, 6), dpi=300)
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = ['Times New Roman']
+        plt.rcParams['mathtext.fontset'] = 'stix'
+        plt.rcParams['font.size'] = 12
+        plt.rcParams['axes.linewidth'] = 1.2
+
+        # Plot each selected coordinate
+        for idx in indices:
+            if idx < 0 or idx >= num_params:
+                print(f"Warning: index {idx} is out of bounds for gradient of size {num_params}")
+                continue
+            plt.plot(steps, grads[:, idx], 
+                     linewidth=1.5,
+                     label=f'Coordinate {idx}')
+
+        # Plot the mean absolute gradient as a background reference
+        mean_abs_grad = np.mean(np.abs(grads), axis=1)
+        plt.plot(steps, mean_abs_grad,
+                 color='black',
+                 linewidth=2.0,
+                 linestyle='--',
+                 alpha=0.6,
+                 label='Mean Absolute Gradient')
+
+        # Axis labels with increased font size
+        plt.xlabel('Optimization step', fontsize=14)
+        plt.ylabel('Gradient Value', fontsize=14)
+        
+        # Remove top and right spines
+        ax = plt.gca()
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        
+        # Configure tick parameters
+        ax.tick_params(axis='both', which='major', 
+                    direction='out', 
+                    length=6, 
+                    width=1.2,
+                    labelsize=12)
+
+        # Add gridlines
+        plt.grid(True, linestyle='--', alpha=0.4)
+
+        plt.legend(frameon=True, loc='best', fontsize=10)
+
+        # Determine filename based on phase
+        filename = f'Gradients_Over_Iterations_{object_name}'
+        if current_phase > 1:
+            filename += f'_phase{current_phase}'
+        filename += '.png'
+
+        # Save with tight layout and high DPI
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.save_folder, filename), 
+                bbox_inches='tight', 
+                dpi=300,
+                transparent=False)
+        plt.close()
+
+    def plot_trajectories(self, landmark_trajectory, vertex_trajectory, current_phase=1):
+        """Plot the 3D and 2D trajectories of the first landmark and vertex.
+        
+        Args:
+            landmark_trajectory (list): List of 3D coordinates for the landmark.
+            vertex_trajectory (list): List of 3D coordinates for the vertex.
+            current_phase (int): The active phase.
+        """
+        if not landmark_trajectory or not vertex_trajectory:
+            print("No trajectory data to plot.")
+            return
+
+        # Local import to ensure 3D plotting is supported
+        from mpl_toolkits.mplot3d import Axes3D
+
+        landmark_trajectory = np.array(landmark_trajectory) # shape: (T, 3)
+        vertex_trajectory = np.array(vertex_trajectory) # shape: (T, 3)
+        steps = np.arange(len(landmark_trajectory))
+
+        # Set up professional plotting style
+        fig = plt.figure(figsize=(14, 6), dpi=300)
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = ['Times New Roman']
+        plt.rcParams['mathtext.fontset'] = 'stix'
+        plt.rcParams['font.size'] = 11
+
+        # Panel 1: 3D Trajectory
+        ax1 = fig.add_subplot(121, projection='3d')
+        
+        # Plot trajectories
+        ax1.plot(landmark_trajectory[:, 0], landmark_trajectory[:, 1], landmark_trajectory[:, 2],
+                 color='#1f77b4', linewidth=2, label='1st Landmark')
+        ax1.plot(vertex_trajectory[:, 0], vertex_trajectory[:, 1], vertex_trajectory[:, 2],
+                 color='#ff7f0e', linewidth=2, linestyle='--', label='1st Vertex')
+
+        # Highlight start and end points
+        ax1.scatter(landmark_trajectory[0, 0], landmark_trajectory[0, 1], landmark_trajectory[0, 2],
+                    color='green', marker='o', s=50, label='Start')
+        ax1.scatter(landmark_trajectory[-1, 0], landmark_trajectory[-1, 1], landmark_trajectory[-1, 2],
+                    color='red', marker='x', s=50, label='End')
+        ax1.scatter(vertex_trajectory[0, 0], vertex_trajectory[0, 1], vertex_trajectory[0, 2],
+                    color='green', marker='o', s=50)
+        ax1.scatter(vertex_trajectory[-1, 0], vertex_trajectory[-1, 1], vertex_trajectory[-1, 2],
+                    color='red', marker='x', s=50)
+
+        ax1.set_xlabel('X')
+        ax1.set_ylabel('Y')
+        ax1.set_zlabel('Z')
+        ax1.set_title('3D Trajectory Comparison')
+        ax1.legend(loc='best')
+        ax1.grid(True, linestyle='--', alpha=0.3)
+
+        # Panel 2: 2D Coordinates over steps
+        ax2 = fig.add_subplot(122)
+        
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+        labels = ['X', 'Y', 'Z']
+        
+        for i in range(3):
+            ax2.plot(steps, landmark_trajectory[:, i], 
+                     color=colors[i], linewidth=1.5, label=f'Landmark {labels[i]}')
+            ax2.plot(steps, vertex_trajectory[:, i], 
+                     color=colors[i], linewidth=1.5, linestyle='--', label=f'Vertex {labels[i]}')
+
+        ax2.set_xlabel('Steps')
+        ax2.set_ylabel('Coordinate Value')
+        ax2.set_title('Coordinate Alignment Over Steps')
+        ax2.legend(loc='best', ncol=2)
+        ax2.grid(True, linestyle='--', alpha=0.3)
+        
+        # Remove top and right spines on 2D plot
+        ax2.spines['top'].set_visible(False)
+        ax2.spines['right'].set_visible(False)
+
+        # Determine filename based on phase
+        filename = 'Trajectory_Comparison'
+        if current_phase > 1:
+            filename += f'_phase{current_phase}'
+        filename += '.png'
+
+        plt.suptitle(f'Movement Trajectory Analysis (Phase {current_phase})', 
+                     fontsize=14, fontweight='bold', y=0.98)
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.save_folder, filename), 
+                    bbox_inches='tight', 
+                    dpi=300,
+                    transparent=False)
+        plt.close()
+
     def plot_objective_terms_forward(self, current_phase=1):
         """Plot forward gradient objective terms with error handling"""
         data = self._get_term_history(current_phase)
@@ -2400,7 +2595,38 @@ class Evaluator:
         if phase == 1:
             return f"/{base_name}.pkl"
         return f"/{base_name}_phase{phase}.pkl"
+    def record_gradient_step(self, object_name, gradient_array, current_phase):
+        """Saves the flat gradient array at the current iteration for plotting later."""
+        if not hasattr(self, 'gradients_over_iterations_dict'):
+            self.gradients_over_iterations_dict = {}
+            
+        if current_phase not in self.gradients_over_iterations_dict:
+            self.gradients_over_iterations_dict[current_phase] = {}
+            
+        if object_name not in self.gradients_over_iterations_dict[current_phase]:
+            self.gradients_over_iterations_dict[current_phase][object_name] = []
+            
+        # Append a copy of the flat numpy array gradient
+        self.gradients_over_iterations_dict[current_phase][object_name].append(np.copy(gradient_array))
 
+    def record_gradient_magnitude_step(self, object_name, gradient_array, current_phase):
+        """Computes the L2 norm (magnitude) of the gradient and saves it with the current step."""
+        if not hasattr(self, 'gradient_magnitudes'):
+            self.gradient_magnitudes = {}
+            
+        if current_phase not in self.gradient_magnitudes:
+            self.gradient_magnitudes[current_phase] = {}
+            
+        if object_name not in self.gradient_magnitudes[current_phase]:
+            self.gradient_magnitudes[current_phase][object_name] = []
+            
+        # Calculate the magnitude (L2 norm) of the gradient array
+        magnitude = float(np.linalg.norm(gradient_array))
+        
+        # Save as a tuple of (step, magnitude) so zip(*gradient_data) can unpack it safely
+        current_step = self.action_iteration_count
+        self.gradient_magnitudes[current_phase][object_name].append((current_step, magnitude))
+        
 def create_evaluator(phase_manager=None, **kwargs):
     evaluator = Evaluator(phase_manager=phase_manager, **kwargs)
     print("Create evaluator successfully!")
