@@ -61,8 +61,16 @@ electrodes/ next to this file unless a path is given.
    rewrites electrodes.json from the rules and drops manual moves, so commit
    the file right after saving.
 
-   Delete electrodes_GRP / electrode_landmarks_GRP / lm_check_GRP, and turn
-   final_render_layer back off, before saving the scene.
+6. Keep the electrodes in the scene, glued to the skin, at the neutral frame:
+
+       met.attach_electrodes()    # -> electrodes_skin_GRP, follows the skin in every frame
+
+   Scrub to an expression: the spheres and pair lines should ride on the skin.
+   Rerun it after electrodes.json changes (it rebuilds the group).
+
+   Delete electrodes_GRP / electrode_landmarks_GRP / lm_check_GRP (not
+   electrodes_skin_GRP), and turn final_render_layer back off, before saving
+   the scene.
 =============================================================================
 """
 
@@ -271,12 +279,15 @@ def check_landmarks(path=DEFAULT_LANDMARKS, mesh=SKIN, tolerance=8.0):
         cmds.parent(loc, group)
 
 
-def show_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, radius=1.5):
-    """Spheres at each electrode on the mesh's CURRENT shape (works on deformed poses too), pairs joined by a line."""
+def show_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, radius=1.5, group="electrodes_GRP"):
+    """Spheres at each electrode on the mesh's CURRENT shape (works on deformed poses too), pairs joined by a line.
+
+    The spheres are static; attach_electrodes() makes them follow the skin.
+    """
     with open(path) as fh:
         data = json.load(fh)
     points = _points(mesh)
-    group = _fresh_group("electrodes_GRP")
+    group = _fresh_group(group)
     for channel, entry in data["channels"].items():
         tag = re.sub(r"[^A-Za-z0-9_]", "", channel.replace(" ", "_"))
         ends = []
@@ -290,8 +301,11 @@ def show_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, radius=1.5):
             cmds.parent(sphere, group)
             ends.append(pos)
         line = cmds.curve(name=f"pair_{tag}", degree=1, point=ends)
+        cmds.addAttr(line, longName="electrodeChannel", dataType="string")
+        cmds.setAttr(line + ".electrodeChannel", channel, type="string")
         cmds.parent(line, group)
     print(f"placed {2 * len(data['channels'])} electrodes from {path}")
+    return group
 
 
 def slide_on_skin(on=True, mesh=SKIN):
@@ -385,3 +399,53 @@ def save_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, group="electrodes_GRP"):
     with open(path, "w") as fh:
         json.dump(data, fh, indent=1)
     print(f"saved {len(moved)} moved electrode(s) -> {path}: {', '.join(moved) or 'none moved'}")
+
+
+ATTACHED_GROUP = "electrodes_skin_GRP"
+
+
+def attach_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, radius=1.5, group=ATTACHED_GROUP):
+    """Electrode spheres glued to the skin, saved with the scene: they follow it in any pose or sim frame.
+
+    Run at the neutral (AU0) frame. A hidden copy of the skin at that frame is the reference; one
+    proximityPin node pins every sphere to its closest point there and moves it with the live skin.
+    The pair lines follow their spheres. Running it again rebuilds everything from path.
+    """
+    for node in [group, group + "_proximityPin"] + (cmds.ls(group + "_pos_*") or []):
+        if cmds.objExists(node):
+            cmds.delete(node)
+    group = show_electrodes(path, mesh, radius, group)
+    rest = cmds.duplicate(mesh, name=group + "_rest_skin")[0]  # current shape only, no deformer history
+    rest = cmds.parent(rest, group)[0]
+    cmds.setAttr(rest + ".visibility", False)
+    rest_shape = cmds.listRelatives(rest, shapes=True, fullPath=True, noIntermediate=True)[0]
+    skin_shape = cmds.listRelatives(mesh, shapes=True, fullPath=True, noIntermediate=True)[0]
+
+    pin = cmds.createNode("proximityPin", name=group + "_proximityPin")
+    needed = ("originalGeometry", "deformedGeometry", "inputMatrix", "outputMatrix")
+    missing = [a for a in needed if not cmds.attributeQuery(a, node=pin, exists=True)]
+    if missing:
+        raise RuntimeError(f"proximityPin lacks {missing}; its attributes: {cmds.listAttr(pin)}")
+    cmds.connectAttr(rest_shape + ".worldMesh[0]", pin + ".originalGeometry")
+    cmds.connectAttr(skin_shape + ".worldMesh[0]", pin + ".deformedGeometry")
+
+    children = cmds.listRelatives(group, children=True, type="transform", fullPath=True) or []
+    tagged = [c for c in children if cmds.attributeQuery("electrodeChannel", node=c, exists=True)]
+    spheres = {(cmds.getAttr(c + ".electrodeChannel"), int(cmds.getAttr(c + ".electrodeIndex"))): c
+               for c in tagged if cmds.attributeQuery("electrodeIndex", node=c, exists=True)}
+    for i, sphere in enumerate(spheres.values()):
+        world = cmds.xform(sphere, query=True, worldSpace=True, matrix=True)
+        cmds.setAttr(f"{pin}.inputMatrix[{i}]", world, type="matrix")
+        cmds.xform(sphere, matrix=[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])  # pin now owns placement
+        cmds.connectAttr(f"{pin}.outputMatrix[{i}]", sphere + ".offsetParentMatrix")
+
+    for line in tagged:
+        if cmds.attributeQuery("electrodeIndex", node=line, exists=True):
+            continue  # a sphere
+        channel = cmds.getAttr(line + ".electrodeChannel")
+        shape = cmds.listRelatives(line, shapes=True, fullPath=True)[0]
+        for k in (0, 1):
+            dm = cmds.createNode("decomposeMatrix", name=f"{group}_pos_1")
+            cmds.connectAttr(spheres[(channel, k)] + ".worldMatrix[0]", dm + ".inputMatrix")
+            cmds.connectAttr(dm + ".outputTranslate", f"{shape}.controlPoints[{k}]")
+    print(f"attached {len(spheres)} electrodes to {mesh} via {pin}; scrub the timeline to check they follow")
