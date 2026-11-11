@@ -45,6 +45,17 @@ electrodes/ next to this file unless a path is given.
 
        met.show_electrodes()      # spheres + pair lines on the current shape
 
+5. Optional manual realign, at the neutral frame, after met.show_electrodes():
+
+       met.slide_on_skin()        # dragged spheres now slide on the skin
+       # move elec_<channel>_1 / _2 spheres with the Move tool (W)
+       met.save_electrodes()      # snap to the skin, write electrodes/electrodes.json
+       met.slide_on_skin(False)   # back to normal moving
+
+   Moved electrodes are marked "manual": true. Rerunning electrode_placement.py
+   rewrites electrodes.json from the rules and drops manual moves, so commit
+   the file right after saving.
+
    Delete electrodes_GRP / electrode_landmarks_GRP / lm_check_GRP, and turn
    final_render_layer back off, before saving the scene.
 =============================================================================
@@ -268,8 +279,104 @@ def show_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, radius=1.5):
             pos = [sum(w * points[v][axis] for w, v in zip(e["barycentric"], e["vertices"])) for axis in range(3)]
             sphere = cmds.polySphere(name=f"elec_{tag}_{i}", radius=radius, subdivisionsX=8, subdivisionsY=6)[0]
             cmds.xform(sphere, worldSpace=True, translation=pos)
+            for attr, value in (("electrodeChannel", channel), ("electrodeIndex", str(i - 1))):
+                cmds.addAttr(sphere, longName=attr, dataType="string")
+                cmds.setAttr(f"{sphere}.{attr}", value, type="string")
             cmds.parent(sphere, group)
             ends.append(pos)
         line = cmds.curve(name=f"pair_{tag}", degree=1, point=ends)
         cmds.parent(line, group)
     print(f"placed {2 * len(data['channels'])} electrodes from {path}")
+
+
+def slide_on_skin(on=True, mesh=SKIN):
+    """Make the skin live so moved electrode spheres stay on its surface (Modify > Make Live)."""
+    if on:
+        cmds.makeLive(mesh)
+        print(f"{mesh} is live: spheres moved with W slide on it; met.slide_on_skin(False) to stop")
+    else:
+        cmds.makeLive(none=True)
+        print("skin no longer live")
+
+
+def _triangle_offsets(fn):
+    """Index of each polygon's first triangle in the export_mesh triangle list (same getTriangles order)."""
+    counts, _ = fn.getTriangles()
+    offsets, total = [], 0
+    for c in counts:
+        offsets.append(total)
+        total += c
+    return offsets
+
+
+def _barycentric(p, a, b, c):
+    """Barycentric weights of p projected into triangle abc, clamped to the triangle."""
+    sub = lambda u, v: [u[i] - v[i] for i in range(3)]
+    dot = lambda u, v: sum(u[i] * v[i] for i in range(3))
+    v0, v1, v2 = sub(b, a), sub(c, a), sub(p, a)
+    d00, d01, d11, d20, d21 = dot(v0, v0), dot(v0, v1), dot(v1, v1), dot(v2, v0), dot(v2, v1)
+    den = d00 * d11 - d01 * d01
+    if abs(den) < 1e-20:
+        return [1.0, 0.0, 0.0]
+    v = (d11 * d20 - d01 * d21) / den
+    w = (d00 * d21 - d01 * d20) / den
+    weights = [max(0.0, 1 - v - w), max(0.0, v), max(0.0, w)]
+    total = sum(weights)
+    return [x / total for x in weights]
+
+
+def _snap(fn, offsets, point):
+    """Closest skin spot to point: (triangle id in the export, its 3 vertex ids, barycentric, position)."""
+    hit, face = fn.getClosestPoint(om.MPoint(*point), om.MSpace.kWorld)
+    hit = (hit.x, hit.y, hit.z)
+    poly = om.MItMeshPolygon(fn.dagPath())
+    poly.setIndex(face)
+    _, ids = poly.getTriangles(om.MSpace.kWorld)
+    ids = list(ids)
+    best = None
+    for k in range(0, len(ids), 3):
+        tri = ids[k:k + 3]
+        corners = [tuple(fn.getPoint(v, om.MSpace.kWorld))[:3] for v in tri]
+        bary = _barycentric(hit, *corners)
+        pos = [sum(bary[j] * corners[j][axis] for j in range(3)) for axis in range(3)]
+        err = sum((pos[axis] - hit[axis]) ** 2 for axis in range(3))
+        if best is None or err < best[0]:
+            best = (err, offsets[face] + k // 3, tri, bary, pos)
+    return best[1:]
+
+
+def save_electrodes(path=DEFAULT_ELECTRODES, mesh=SKIN, group="electrodes_GRP"):
+    """Snap the electrode spheres onto the skin and write their surface positions back to path.
+
+    Run at the neutral frame: rest_position is taken from the skin as it is now. Only spheres that
+    moved more than 0.01 units are rewritten (and marked "manual"); the rest keep their entries.
+    """
+    with open(path) as fh:
+        data = json.load(fh)
+    fn = _fn_mesh(mesh)
+    offsets = _triangle_offsets(fn)
+    units = data.get("units_per_cm", 10.0)
+    moved = []
+    for sphere in cmds.listRelatives(group, children=True, type="transform", fullPath=True) or []:
+        if not cmds.attributeQuery("electrodeChannel", node=sphere, exists=True):
+            continue
+        channel = cmds.getAttr(sphere + ".electrodeChannel")
+        index = int(cmds.getAttr(sphere + ".electrodeIndex"))
+        entry = data["channels"][channel]["electrodes"][index]
+        here = cmds.xform(sphere, query=True, worldSpace=True, translation=True)
+        old = [sum(w * tuple(fn.getPoint(v, om.MSpace.kWorld))[axis] for w, v in zip(entry["barycentric"], entry["vertices"]))
+               for axis in range(3)]
+        if sum((here[a] - old[a]) ** 2 for a in range(3)) ** 0.5 < 0.01:
+            continue
+        triangle, vertices, bary, pos = _snap(fn, offsets, here)
+        entry.update(triangle=triangle, vertices=vertices, barycentric=bary, rest_position=pos, manual=True)
+        cmds.xform(sphere, worldSpace=True, translation=pos)
+        moved.append(f"{channel} #{index + 1}")
+    for channel, entry in data["channels"].items():
+        a, b = (e["rest_position"] for e in entry["electrodes"])
+        entry["spacing"] = round(sum((a[i] - b[i]) ** 2 for i in range(3)) ** 0.5, 4)
+        if any(e.get("manual") for e in entry["electrodes"]):
+            print(f"  {channel:34s} spacing {entry['spacing'] / units:.2f} cm")
+    with open(path, "w") as fh:
+        json.dump(data, fh, indent=1)
+    print(f"saved {len(moved)} moved electrode(s) -> {path}: {', '.join(moved) or 'none moved'}")
