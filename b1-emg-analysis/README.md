@@ -88,7 +88,8 @@ instead of averaging a whole muscle.
 
 **Inputs** (all local, gitignored under `data/`):
 - MaM happy clips: 250 of 284 usable (20 participants); 34 skipped for a weak tracked smile.
-- Model run `hpy` (job 261026-171605): one transition, neutral → AU6+AU12+AU25, 1,772 solver steps.
+- Model runs (from `wip/mam-validation-2026-11`): main `hpy` (job 261026-171605, neutral → AU6+AU12+AU25,
+  1,772 steps), plus checks `au6` (neutral → AU6, 323 steps) and `au12` (neutral → AU12, 530 steps).
 - Electrode positions `electrodes.json` (Fridlund placement on the lab head, by Oleh and Richard,
   branch `wip/mam-validation-2026-11`). Checked to be in the same coordinate space as the muscles:
   oculi electrodes sit 0.2–1.3 units and oris electrodes 2–5 units from their muscle.
@@ -102,33 +103,43 @@ instead of averaging a whole muscle.
   ε = 1 − |v1−v2|/|v1(0)−v2(0)| (+ contracting, − stretched) and translation of the pair midpoint.
 - Human (`mam_happy.py`): a(t) = (envelope − rest) / session's 95th-percentile schaede level
   (0 = rest, ~1 = near-max effort); progress 0→1 from the tracked smile (MediaPipe mouthSmile).
-- Common clock: model progress = fraction of total landmark path travelled. Only shapes and signs
-  are compared, never µV against movement.
+- Common clock: model progress = net progress towards the final pose (1 − distance to end / start
+  distance, running max). Not path length: the solver travels 2.6–3.1× further than the net
+  displacement (it jitters), which would make real movement look early. Only shapes and signs are
+  compared, never µV against movement.
 - Noise ceiling: each participant's rise curve vs the median of everyone else (RMSE).
 
-**Results** (`results_fair_compare_happy.csv`, `figures/fair_compare_happy.png`)
+**Results** (`results_fair_compare_happy.csv`, `results_model_runs.csv`, `figures/fair_compare_happy.png`)
 
 | Site | Humans (a at apex, % active) | Model | Verdict |
 |---|---|---|---|
 | Zygomaticus l/r | 0.84 / 0.92, 100% | not driven | missing agonist |
 | Levator labii sup. l/r | 0.74 / 0.76, 100% | not driven | missing agonist |
 | Mentalis, depressor ang. oris | 0.20–0.38, 75–90% | not driven | missing agonist |
-| Orbicularis oculi l/r | 0.32 / 0.18, 90–95% | stretched −7.5% | sign conflict |
-| Orbicularis oris l/r | 0.37 / 0.41, 80–90% | stretched −8 to −9% | sign conflict (r only, see below) |
+| Orbicularis oculi l/r | 0.32 / 0.18, 90–95% | never clearly shortened | no contraction at the site |
+| Orbicularis oris l/r | 0.37 / 0.41, 80–90% | stretched in `hpy` only | not robust |
 | Frontalis, corrugator, procerus | ≈ 0, 0–10% | still | agree: silent |
 
-- **Sign:** humans contract orbicularis oculi in a smile; the model stretches it at both electrode
-  sites, at every patch radius tried (0.5r: −12/−13%, 2r: −3/−4%). This is robust.
-  Orbicularis oris right is stretched at all radii; **left flips to +4% at 0.5r**, so it is not robust.
-- **Timing/shape:** oculi rise in the model is within the human spread (RMSE 0.13–0.16 vs ceiling
-  median 0.17). Oris moves too early in the model (t50 = 0.15 vs 0.25–0.40 in humans; RMSE 0.25–0.30,
-  around the 90th percentile of person-to-group differences, ceiling median 0.11–0.14).
+- **Recruitment (robust):** the muscles doing most of the work in a human smile are not driven by the
+  model at all. This holds by construction in every run.
+- **Orbicularis oculi:** humans contract it (active in 90–95% of participants). In `hpy` the model
+  stretches it at the electrode sites (−7.5%, −3 to −13% across patch radii). But in the AU6-only run,
+  which is the eye-squint movement itself, its length barely changes (−1 to +4%). So the stretch comes
+  from combining AU6+AU12+AU25; what holds in both runs is only that the model never clearly
+  *shortens* the muscle where the electrode is.
+- **Orbicularis oris:** stretched −8 to −9% in `hpy`, but the left site flips to +4% at a small patch
+  and both sites are ~0 in the AU12-only run. Not a finding.
+- **Timing/shape** (net-progress clock): oculi rise is within the human spread (RMSE 0.08–0.17 vs a
+  person-to-group median of 0.17). Oris rises somewhat earlier than in humans (half-way at 0.20 vs
+  0.25–0.40; RMSE 0.17–0.24 vs ceiling median 0.11–0.14, 90th percentile 0.26–0.28), so at the edge
+  of the human range, not outside it. Earlier versions of this table used a path-length clock and
+  overstated this gap.
 
 **Limits**
 - EMG is the enabler, not force or movement; shortening is a stand-in for contraction
   (lip pressing gives EMG without shortening; crosstalk, especially around the mouth).
 - MaM envelopes use a ~500 ms RMS window, so timing is blurred; posed expressions.
-- One model run, one head, landmark level (300 per muscle, not the full mesh); on the oris ring the
+- Three model runs, one head, landmark level (300 per muscle, not the full mesh); on the oris ring the
   patch can include inner-surface landmarks (a geodesic patch on the mesh would fix this).
 - Model "l" assumed to be the participant's left (consistent with electrode placement, not verified).
 - Solver progress is not physiological time.
@@ -139,7 +150,7 @@ instead of averaging a whole muscle.
 python3 -m venv .venv && .venv/bin/pip install numpy scipy pandas matplotlib mat-io
 .venv/bin/python tests/test_emg.py && .venv/bin/python tests/test_fair_compare.py
 cd src && ../.venv/bin/python mimetic_smile.py && ../.venv/bin/python mmm_happy.py
-../.venv/bin/python fair_compare.py ../data/model/hpy ../data/model/electrodes.json
+../.venv/bin/python fair_compare.py ../data/model/electrodes.json ../data/model/hpy ../data/model/au6 ../data/model/au12
 ```
 
 ## Citations

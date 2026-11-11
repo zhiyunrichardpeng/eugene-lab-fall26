@@ -60,6 +60,17 @@ def test_rebuilds_paths_and_progress():
         assert abs(p[25] - 0.5) < 1e-9          # constant speed -> halfway at the middle step
 
 
+def test_progress_ignores_jitter():
+    """Overshoot-and-return must not count as progress; wasted motion must be reported."""
+    X = np.array([0, 1, 3, 2, 3, 2.5, 4.0])                 # net 4, path 1+2+1+1+0.5+1.5 = 7
+    paths = {"OOR": np.zeros((len(X), 300, 3))}
+    paths["OOR"][:, 0, 0] = X
+    p = model_run.progress(paths)
+    assert np.all(np.diff(p) >= 0) and p[-1] == 1.0
+    assert abs(p[2] - 0.75) < 1e-12 and abs(p[3] - 0.75) < 1e-12   # stepping back is not progress
+    assert abs(model_run.wasted_motion(paths) - 7 / 4) < 1e-12
+
+
 def test_shortening_sign_and_size():
     with tempfile.TemporaryDirectory() as t:
         make_run(Path(t), contract=0.2)

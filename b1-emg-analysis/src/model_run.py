@@ -71,12 +71,20 @@ def driven(paths, tol=1e-9):
 
 
 def progress(paths):
-    """Expression progress 0 -> 1 for each step: fraction of the total path length travelled.
+    """Expression progress 0 -> 1 for each step: net progress towards the final pose.
 
-    Uses all driven landmarks together. Path length (not distance to the target) is used so
-    the clock always moves forward, even when the solver oscillates.
+    p(t) = 1 - |X(t) - X_end| / |X_0 - X_end| over all driven landmarks, with a running
+    maximum so the clock never goes backwards.
+
+    Not path length: the solver travels 2.6-3x further than the net displacement (it jitters
+    on its way), so a path-length clock mostly counts jitter and makes real movement look early.
     """
     X = np.concatenate([paths[k].reshape(len(paths[k]), -1) for k in driven(paths)], axis=1)
-    step = np.linalg.norm(np.diff(X, axis=0), axis=1)
-    s = np.concatenate([[0.0], np.cumsum(step)])
-    return s / s[-1]
+    d = np.linalg.norm(X - X[-1], axis=1)
+    return np.maximum.accumulate(1.0 - d / d[0])
+
+
+def wasted_motion(paths):
+    """Total landmark path length divided by net displacement (1.0 = straight to the target)."""
+    X = np.concatenate([paths[k].reshape(len(paths[k]), -1) for k in driven(paths)], axis=1)
+    return np.linalg.norm(np.diff(X, axis=0), axis=1).sum() / np.linalg.norm(X[-1] - X[0])

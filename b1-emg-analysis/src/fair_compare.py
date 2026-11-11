@@ -7,7 +7,9 @@ human: tracked smile). We never compare units (EMG is not movement); we compare
   3. timing/shape: when does each site rise along the expression, against the spread
      between people (noise ceiling: each person vs the median of everyone else)?
 
-Usage:  python fair_compare.py ../data/model/hpy ../data/model/electrodes.json
+Usage:  python fair_compare.py ../data/model/electrodes.json ../data/model/hpy [more runs ...]
+        The first run is the main comparison; extra runs (e.g. neutral->AU6, neutral->AU12)
+        are checked for whether the model-side findings hold in other transitions.
 """
 import sys
 from pathlib import Path
@@ -146,5 +148,29 @@ def main(run_dir, electrodes_path):
     print(table.round(2).to_string(index=False))
 
 
+def cross_run(run_dirs, electrodes_path):
+    """Model-side numbers per run, to see which findings survive a different transition."""
+    pos, upc = ve.load_electrodes(electrodes_path)
+    rows = []
+    for run in run_dirs:
+        paths, _ = model_run.load_run(run)
+        prog = model_run.progress(paths)
+        drv = model_run.driven(paths)
+        for ch, tissue in ve.CHANNEL_TISSUE.items():
+            if tissue not in drv:
+                continue
+            eps = {s: ve.pair_signals(paths[tissue], pos[ch], s * upc)[0][-1] for s in (0.5, 1.0, 2.0)}
+            trans = ve.pair_signals(paths[tissue], pos[ch], upc)[1]
+            rows.append({"run": Path(run).name, "steps": len(prog) - 1,
+                         "wasted_motion": model_run.wasted_motion(paths), "channel": ch,
+                         "eps_end_pct_r0.5": 100 * eps[0.5], "eps_end_pct_r": 100 * eps[1.0],
+                         "eps_end_pct_r2": 100 * eps[2.0], "site_t50": prog[np.argmax(rise(trans) >= 0.5)]})
+    table = pd.DataFrame(rows)
+    table.to_csv(OUT / "results_model_runs.csv", index=False)
+    print("\nmodel side across runs:")
+    print(table.round(2).to_string(index=False))
+
+
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[2], sys.argv[1])
+    cross_run(sys.argv[2:], sys.argv[1])
