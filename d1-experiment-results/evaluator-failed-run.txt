@@ -1,0 +1,15 @@
+PS C:\keyLabLocal_D\a3-stochastic-Rich-local-V1> New-TimeSpan -Start (get-process mayapy).StartTime
+
+Days              : 0
+Hours             : 2
+Minutes           : 57
+Seconds           : 12
+Milliseconds      : 693
+Ticks             : 106326933283
+TotalDays         : 0.123063580188657
+TotalHours        : 2.95352592452778
+TotalMinutes      : 177.211555471667
+TotalSeconds      : 10632.6933283
+TotalMilliseconds : 10632693.3283
+
+This took 2 hours and never even got success
