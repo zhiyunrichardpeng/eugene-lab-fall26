@@ -59,12 +59,12 @@ UNITS_PER_CM = 10.0  # the Maya scene is in mm
 SLIGHT_CM = 0.2
 MIRROR_TOLERANCE_CM = 0.5  # left/right electrodes further apart than this after mirroring get flagged
 FRONT_FACING = (0.3, 0.7)  # cos(skin normal, forward axis): sideways below, front-facing above, blended between
-NORMAL_RADIUS_CM = 0.5  # skin patch whose average normal sets the walking plane
+NORMAL_RADIUS_CM = 1.0  # skin patch whose average normal sets the walking plane
 # Model-specific shifts away from the nose/mouth, on top of the Fridlund rules. On the jack01 muscle
 # rig the guideline sites land one strand too medial (levator on levator labii alaeque nasi,
 # zygomaticus on zygomaticus minor), checked against the muscle view in Maya; 0 = pure Fridlund.
 LEVATOR_EXTRA_LATERAL_CM = 0.5
-ZYGOMATICUS_EXTRA_TOWARD_EAR_CM = 1.5
+ZYGOMATICUS_EXTRA_TOWARD_EAR_CM = 1.0
 SOURCE = "Fridlund & Cacioppo (1986), Guidelines for Human Electromyographic Research, Fig. 1 and p. 571"
 
 SIDED_LANDMARKS = {

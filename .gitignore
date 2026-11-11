@@ -7,3 +7,5 @@ venv/
 # Python bytecode and local reference papers
 __pycache__/
 Beneath_the_Skin_*.pdf
+output.prof
+results/
