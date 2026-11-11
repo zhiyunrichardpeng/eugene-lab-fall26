@@ -39,6 +39,11 @@ electrodes/ next to this file unless a path is given.
        python electrode_placement.py electrodes/skin_mesh.json electrodes/landmarks.json \
            -o electrodes/electrodes.json --units-per-cm 15.8
 
+   After manual moves (step 5), bring every pair back to 0.95-1.05 cm apart:
+
+       python electrode_placement.py electrodes/skin_mesh.json electrodes/landmarks.json \
+           --respace electrodes/electrodes.json
+
    Fix any spacing or mirror flag it prints by re-picking those landmarks.
 
 4. Back in Maya:

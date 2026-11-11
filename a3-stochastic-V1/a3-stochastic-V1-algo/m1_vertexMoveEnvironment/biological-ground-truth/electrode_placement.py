@@ -375,16 +375,59 @@ def place_electrodes(surface: Surface, landmarks: dict[str, int], units_per_cm: 
     return Placement({ch: channels[ch] for ch in m.CHANNELS}, dict(landmarks), units_per_cm, slight_cm)
 
 
+def respace(data: dict, surface: Surface, center: np.ndarray, lo_cm: float = 0.95, hi_cm: float = 1.05,
+            target_cm: float = 1.0) -> list[str]:
+    """Bring every pair in an electrodes.json dict to lo_cm..hi_cm apart, in place; returns the changed channels.
+
+    The first electrode stays; the second slides along the pair's own direction and is snapped back onto
+    the skin, so hand-placed sites keep their spot and orientation. Other fields (e.g. "manual") are kept.
+    """
+    units = data["units_per_cm"]
+    changed = []
+    for channel, entry in data["channels"].items():
+        first, second = entry["electrodes"]
+        anchor = np.asarray(first["rest_position"])
+        direction = unit(np.asarray(second["rest_position"]) - anchor)
+        reach = target_cm * units
+        for _ in range(10):  # snapping onto curved skin changes the distance a little; rescale and retry
+            hit = surface.project(anchor + reach * direction, center)
+            gap = np.linalg.norm(hit.position - anchor)
+            if lo_cm * units <= gap <= hi_cm * units and abs(gap - target_cm * units) < 0.01 * units:
+                break
+            reach *= target_cm * units / gap
+        old = np.linalg.norm(np.asarray(second["rest_position"]) - anchor)
+        if lo_cm * units <= old <= hi_cm * units:
+            continue
+        if not lo_cm * units <= gap <= hi_cm * units:
+            raise ValueError(f"{channel}: could not reach {lo_cm}-{hi_cm} cm (got {gap / units:.2f} cm)")
+        second.update(triangle=int(hit.triangle), vertices=surface.triangles[hit.triangle].tolist(),
+                      barycentric=hit.barycentric.tolist(), rest_position=hit.position.tolist(), respaced=True)
+        entry["spacing"] = round(float(gap), 4)
+        changed.append(f"{channel}: {old / units:.2f} -> {gap / units:.2f} cm")
+    return changed
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("mesh", type=Path, help="skin mesh JSON from maya_electrode_tools.export_mesh")
     parser.add_argument("landmarks", type=Path, help="landmark JSON from maya_electrode_tools.LandmarkPicker")
     parser.add_argument("-o", "--out", type=Path, default=Path("electrodes.json"))
     parser.add_argument("--units-per-cm", type=float, default=UNITS_PER_CM)
+    parser.add_argument("--respace", type=Path, metavar="ELECTRODES_JSON",
+                        help="instead of placing from the rules, bring this file's pairs to 0.95-1.05 cm apart "
+                             "(in place; keeps manual moves)")
     args = parser.parse_args()
 
     surface, mesh_name = Surface.load(args.mesh)
     landmarks = json.loads(args.landmarks.read_text())["landmarks"]
+    if args.respace:
+        data = json.loads(args.respace.read_text())
+        frame = HeadFrame.from_landmarks(landmark_positions(surface, landmarks))
+        changed = respace(data, surface, frame.origin)
+        args.respace.write_text(json.dumps(data, indent=1))
+        print("\n".join(changed) or "all pairs already 0.95-1.05 cm apart")
+        print(f"wrote {args.respace}")
+        return
     placement = place_electrodes(surface, landmarks, args.units_per_cm)
     placement.save(args.out, mesh_name)
 

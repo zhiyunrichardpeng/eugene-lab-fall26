@@ -259,3 +259,25 @@ def test_model_shifts_move_levator_and_zygomaticus_outward(head, placement, frid
     to_ear = ep.unit(pos["preauricular_l"] - pos["cheilion_l"])
     assert (zyg - zyg0) @ to_ear == pytest.approx(ep.ZYGOMATICUS_EXTRA_TOWARD_EAR_CM * ep.UNITS_PER_CM, rel=0.25)
     assert placement.spacing("Zygomaticus_l") == pytest.approx(ep.UNITS_PER_CM, rel=0.1)
+
+
+def test_respace_brings_pairs_into_range_and_keeps_manual_moves(head, placement, tmp_path):
+    surface, landmarks = head
+    path = tmp_path / "electrodes.json"
+    placement.save(path, "sphere")
+    data = json.loads(path.read_text())
+    zyg = data["channels"]["Zygomaticus_l"]["electrodes"]
+    first_before = list(zyg[0]["rest_position"])
+    zyg[0]["manual"] = True
+    a, b = (np.asarray(e["rest_position"]) for e in zyg)
+    far = surface.project(a + 1.4 * (b - a), np.zeros(3))  # pull the pair to ~1.4 cm
+    zyg[1].update(triangle=far.triangle, vertices=surface.triangles[far.triangle].tolist(),
+                  barycentric=far.barycentric.tolist(), rest_position=far.position.tolist())
+    changed = ep.respace(data, surface, np.zeros(3))
+    assert any(c.startswith("Zygomaticus_l") for c in changed)
+    for entry in data["channels"].values():
+        p, q = (np.asarray(e["rest_position"]) for e in entry["electrodes"])
+        assert 0.95 * ep.UNITS_PER_CM <= np.linalg.norm(p - q) <= 1.05 * ep.UNITS_PER_CM
+    assert zyg[0]["rest_position"] == first_before and zyg[0]["manual"]  # anchor and flag untouched
+    new_dir = ep.unit(np.asarray(zyg[1]["rest_position"]) - a)
+    assert new_dir @ ep.unit(b - a) > 0.99  # same pair orientation
