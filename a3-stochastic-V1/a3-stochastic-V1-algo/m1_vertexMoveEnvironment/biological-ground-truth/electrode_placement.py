@@ -60,6 +60,11 @@ SLIGHT_CM = 0.2
 MIRROR_TOLERANCE_CM = 0.5  # left/right electrodes further apart than this after mirroring get flagged
 FRONT_FACING = (0.3, 0.7)  # cos(skin normal, forward axis): sideways below, front-facing above, blended between
 NORMAL_RADIUS_CM = 0.5  # skin patch whose average normal sets the walking plane
+# Model-specific shifts away from the nose/mouth, on top of the Fridlund rules. On the jack01 muscle
+# rig the guideline sites land one strand too medial (levator on levator labii alaeque nasi,
+# zygomaticus on zygomaticus minor), checked against the muscle view in Maya; 0 = pure Fridlund.
+LEVATOR_EXTRA_LATERAL_CM = 0.5
+ZYGOMATICUS_EXTRA_TOWARD_EAR_CM = 1.5
 SOURCE = "Fridlund & Cacioppo (1986), Guidelines for Human Electromyographic Research, Fig. 1 and p. 571"
 
 SIDED_LANDMARKS = {
@@ -265,8 +270,13 @@ class Placement:
 
 
 def place_electrodes(surface: Surface, landmarks: dict[str, int], units_per_cm: float = UNITS_PER_CM,
-                     slight_cm: float = SLIGHT_CM) -> Placement:
-    """One electrode pair per MaM channel, by the Fridlund & Cacioppo (1986) rules."""
+                     slight_cm: float = SLIGHT_CM, levator_extra_cm: float = LEVATOR_EXTRA_LATERAL_CM,
+                     zygomaticus_extra_cm: float = ZYGOMATICUS_EXTRA_TOWARD_EAR_CM) -> Placement:
+    """One electrode pair per MaM channel, by the Fridlund & Cacioppo (1986) rules.
+
+    levator_extra_cm and zygomaticus_extra_cm shift those two sites outward for this rig's anatomy;
+    pass 0 for both to get the guideline sites unchanged.
+    """
     pos = landmark_positions(surface, landmarks)
     frame = HeadFrame.from_landmarks(pos)
     cm, slight = units_per_cm, slight_cm * units_per_cm
@@ -329,12 +339,14 @@ def place_electrodes(surface: Surface, landmarks: dict[str, int], units_per_cm: 
 
         # Levator labii superioris (+ alaeque nasi): 1 cm lateral of the ala nasi baseline, 0.5 cm below the
         # alar curvature point; second 1 cm superior and slightly lateral.
-        e1 = walk(p("alar_curvature"), (cm, lat), (0.5 * cm, down))
+        e1 = walk(p("alar_curvature"), ((1 + levator_extra_cm) * cm, lat), (0.5 * cm, down))
         rules["Levator Labii Superioris"] = (e1, walk(e1.rest_position, (cm, up), (slight, lat)))
 
         # Zygomatic major: midway along cheilion-preauricular; second 1 cm toward the mouth on that line.
+        to_ear = unit(p("preauricular") - p("cheilion"))
         e1 = snap(surface.project_frontal((p("cheilion") + p("preauricular")) / 2, frame.forward).position)
-        rules["Zygomaticus"] = (e1, walk(e1.rest_position, (cm, unit(p("cheilion") - p("preauricular")))))
+        e1 = walk(e1.rest_position, (zygomaticus_extra_cm * cm, to_ear))
+        rules["Zygomaticus"] = (e1, walk(e1.rest_position, (cm, -to_ear)))
 
         # Orbicularis oris (inferior): 1 cm below the cheilion; second 1 cm medial and slightly inferior,
         # parallel to the lower lip border.

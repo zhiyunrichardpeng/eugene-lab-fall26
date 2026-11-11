@@ -67,6 +67,12 @@ def placement(head):
     return ep.place_electrodes(surface, landmarks)
 
 
+@pytest.fixture(scope="module")
+def fridlund(head):
+    surface, landmarks = head
+    return ep.place_electrodes(surface, landmarks, levator_extra_cm=0, zygomaticus_extra_cm=0)
+
+
 def test_every_mam_channel_gets_one_pair(placement):
     assert set(placement.channels) == set(m.CHANNELS)
     assert all(len(pair) == 2 for pair in placement.channels.values())
@@ -129,8 +135,9 @@ def test_mirror_mismatch_catches_an_asymmetric_pick(head):
     assert gaps["Orbicularis Oris"] > 8 and gaps["Lateraler Frontalis"] < 1.0
 
 
-def test_rules_follow_the_guideline_geometry(head, placement):
+def test_rules_follow_the_guideline_geometry(head, fridlund):
     """Distances are along the skin (about the chord at 1 cm), directions in the head frame."""
+    placement = fridlund
     surface, landmarks = head
     pos = ep.landmark_positions(surface, landmarks)
     oris1, oris2 = (e.rest_position for e in placement.channels["Orbicularis Oris_l"])
@@ -241,3 +248,14 @@ def test_normal_near_averages_over_a_crease():
     normal = surface.normal_near(np.zeros(3), 5.0, center=np.array([0.0, -50.0, -50.0]))
     # One triangle at the fold faces straight up or straight forward; the patch average is in between.
     assert normal == pytest.approx(np.array([0, 1, 1]) / np.sqrt(2), abs=0.05)
+
+
+def test_model_shifts_move_levator_and_zygomaticus_outward(head, placement, fridlund):
+    surface, landmarks = head
+    pos = ep.landmark_positions(surface, landmarks)
+    lev, lev0 = (c.channels["Levator Labii Superioris_l"][0].rest_position for c in (placement, fridlund))
+    assert lev[0] - lev0[0] == pytest.approx(ep.LEVATOR_EXTRA_LATERAL_CM * ep.UNITS_PER_CM, rel=0.25)
+    zyg, zyg0 = (c.channels["Zygomaticus_l"][0].rest_position for c in (placement, fridlund))
+    to_ear = ep.unit(pos["preauricular_l"] - pos["cheilion_l"])
+    assert (zyg - zyg0) @ to_ear == pytest.approx(ep.ZYGOMATICUS_EXTRA_TOWARD_EAR_CM * ep.UNITS_PER_CM, rel=0.25)
+    assert placement.spacing("Zygomaticus_l") == pytest.approx(ep.UNITS_PER_CM, rel=0.1)
