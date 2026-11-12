@@ -1639,12 +1639,9 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
                 'overlapping_length': overlapping_length,
                 })
 
-        print(" \n\n\n *************************** max_iteration, step_counter_internal_max, initial_distance, distance_min, initial_distance ooc r, distance_min ooc r, initial_distance ooc l, distance_min ooc l,  initial_distance frontalis, distance_min frontalis, UNIT_PRIME", 
-              args['max_iteration'], args['step_counter_internal_max'], initial_distance, args['distance_min'], 
-              initial_ooc_r_distance, args['distance_ooc_r_min'], 
-              initial_ooc_l_distance, args['distance_ooc_l_min'], 
-              initial_frontalis_distance, args['distance_frontalis_min'], 
-                args['UNIT_PRIME'])
+        print(f"{__file__}\n\n\n *************************** max_iteration{args['max_iteration']}\n step_counter_internal_max: {args['step_counter_internal_max']}\n initial_distance: {initial_distance}\n distance_min: {args['distance_min']}\n initial_distance ooc r: {initial_ooc_r_distance}\n distance_min ooc r: {args['distance_ooc_r_min']}\n initial_distance ooc l: {initial_ooc_l_distance}\n distance_min ooc l: {args['distance_ooc_l_min']}\n  initial_distance frontalis: {initial_frontalis_distance}\n, distance_min frontalis: {args['distance_frontalis_min']}\n UNIT_PRIME: {args['UNIT_PRIME']}")
+              
+                
         # initial_angle_degrees, args['degrees_min'],      inidial degree, degrees_min
 
 
