@@ -91,3 +91,18 @@ Maybe it can be even faster but I'll need some more help to figure out how.
 ## What to do next?
 - Check the cProfile output for 1 run. I forgot to do it this time.
 - Ask Richard and LLM how we could make this faster or if it's good enough move on to another task.
+# Update Deprecated Third and Fourth Run (11/08/26, 11/11/26)
+Embarrasing 
+# Useful Windows commands
+Check process run time:
+```powershell
+New-TimeSpan -Start (get-process mayapy).StartTime
+```
+Check ALL processes:
+```powershell
+Tasklist
+```
+Check SPECIFIC processes by name:
+```powershell
+Tasklist | findstr /i "pattern"
+```
