@@ -101,12 +101,18 @@ if str(REPO_ROOT) not in sys.path:
 # Import Paths and Sub-modules
 # ==============================================================================
 from paths import (
-    a3_stochastic_relative_path,
     b98_sampling_path,
     a1_blendshape_path,
     backup_path,
     results_path
 )
+
+try:
+    from paths import a3_stochastic_relative_path
+except ImportError:
+    from paths import a3_stochastic_path as a3_stochastic_relative_path
+
+a3_stochastic_path = a3_stochastic_relative_path
 
 sys.path.insert(0, str(a3_stochastic_relative_path / "a3-stochastic-V1-algo"/ "example_train"))
 sys.path.insert(0, str(a1_blendshape_path / "database"))
@@ -189,7 +195,7 @@ LAST_ANIMATION_PHONEME = "dataV22_AU0_neutral"  # Default starting phoneme
 CONTINUE_FROM_LAST = True  # Set to True to continue from last animation
 
 # --- OVERLAP CONFIGURATION ---
-OVERLAP_RATIO = 0.1  # Coarticulation overlap between phases (0.1 = 10%, 0.4 = 40%)
+OVERLAP_RATIO = 0.4  # Coarticulation overlap between phases (0.1 = 10%, 0.4 = 40%)
 BASE_TRANSITION_FRAMES = 50  # Baseline frame duration per transition
 
 # --- FEEDBACK CONTROL CONFIGURATION ---
