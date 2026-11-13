@@ -6,3 +6,5 @@ __pycache__/
 .pytest_cache/
 # Exported model skin (large, a lab asset); landmarks.json and electrodes.json are small and safe to commit.
 electrodes/skin_mesh.json
+# Clinical MRI (personal health data): never commit.
+MRI Data/
