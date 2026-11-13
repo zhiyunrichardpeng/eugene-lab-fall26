@@ -190,6 +190,70 @@ CONTINUE_FROM_LAST = True  # Set to True to continue from last animation
 
 # --- OVERLAP CONFIGURATION ---
 OVERLAP_RATIO = 0.1  # Coarticulation overlap between phases (0.1 = 10%, 0.4 = 40%)
+
+# --- TIMING PROFILE WITHIN EACH TRANSITION ---
+# "uniform": frames sample each transition's solver steps evenly (original behaviour,
+#            roughly constant speed through the whole transition).
+# "minjerk": frames follow a minimum-jerk profile s(u) = 10u^3 - 15u^4 + 6u^5: the motion
+#            eases in, peaks at 1.875x its average speed and eases out. It is completed in the
+#            first MOTION_FRACTION of each transition, then the pose is held. Frame counts and
+#            end poses are unchanged.
+TIMING_PROFILE = "minjerk"   # "uniform" or "minjerk"
+MOTION_FRACTION = 0.6        # minjerk only: fraction of each transition spent moving (0 < f <= 1)
+CHECKPOINT_META_NAME = "combined_checkpoints_meta.json"  # records which timing a checkpoint file uses
+
+
+def timing_progress(tau):
+    """Fraction of a transition's motion completed at normalised time tau (0..1)."""
+    if TIMING_PROFILE != "minjerk":
+        return float(tau)  # uniform: unchanged
+    tau = min(max(float(tau), 0.0), 1.0)
+    u = min(tau / MOTION_FRACTION, 1.0) if MOTION_FRACTION > 0 else 1.0
+    return u ** 3 * (10.0 - 15.0 * u + 6.0 * u * u)
+
+
+def select_checkpoint_indices(total_steps, num_checkpoints):
+    """Solver-step index shown at each frame of a single transition."""
+    if TIMING_PROFILE != "minjerk":
+        # Original even sampling, unchanged.
+        if total_steps <= num_checkpoints:
+            return list(range(total_steps))
+        step_size = total_steps / num_checkpoints
+        indices = [int(i * step_size) for i in range(num_checkpoints)]
+        if indices[-1] != total_steps - 1:
+            indices[-1] = total_steps - 1
+        return indices
+    # Minimum-jerk: exactly num_checkpoints frames; repeated indices are holds.
+    if num_checkpoints <= 1:
+        return [total_steps - 1]
+    last = total_steps - 1
+    return [int(round(timing_progress(k / (num_checkpoints - 1)) * last)) for k in range(num_checkpoints)]
+
+
+def segment_checkpoint_indices(b_start, b_end, n_pts):
+    """Step indices for the n_pts frames of one phase [b_start, b_end) in a chained sequence."""
+    if TIMING_PROFILE != "minjerk":
+        if n_pts > 1:
+            return np.linspace(b_start, b_end, num=n_pts, endpoint=False, dtype=int).tolist()
+        return [b_start]
+    # Minimum-jerk within the phase; the hold stays on the phase's last step (b_end - 1),
+    # so every frame still belongs to its own phase.
+    last = max(b_start, b_end - 1)
+    return [int(round(b_start + timing_progress(j / float(n_pts)) * (last - b_start))) for j in range(n_pts)]
+
+
+def checkpoint_timing_matches(folder):
+    """True if the checkpoint file in `folder` was made with the current timing settings."""
+    try:
+        with open(os.path.join(folder, CHECKPOINT_META_NAME), "r") as f:
+            meta = json.load(f)
+    except (OSError, ValueError):
+        meta = {"timing_profile": "uniform"}  # files made before timing profiles existed
+    if meta.get("timing_profile", "uniform") != TIMING_PROFILE:
+        return False
+    if TIMING_PROFILE == "minjerk" and abs(float(meta.get("motion_fraction", -1.0)) - MOTION_FRACTION) > 1e-9:
+        return False
+    return True
 BASE_TRANSITION_FRAMES = 50  # Baseline frame duration per transition
 
 # --- FEEDBACK CONTROL CONFIGURATION ---
@@ -1566,7 +1630,7 @@ def perform_the_deformation(source_path, start_frame_offset=14, continue_from_la
 
             phase_len = current_phase_end - current_phase_start
             if phase_len == 0: phase_len = 1
-            progress = (i - current_phase_start + 1) / float(phase_len)
+            progress = timing_progress((i - current_phase_start + 1) / float(phase_len))
             
             # Apply portion of the error
             if 'x_joint_conca' in correction_vectors:
@@ -2486,18 +2550,18 @@ def run_deformation_processing_with_dissipation(phonemes_list, log_paths_list,
         b_start = modified_boundaries[k]
         b_end = modified_boundaries[k + 1]
         n_pts = phase_net_frames[k]
-        # Include b_start and b_end exactly
-        if n_pts > 1:
-            seg_pts = np.linspace(b_start, b_end, num=n_pts, endpoint=False, dtype=int).tolist()
-        else:
-            seg_pts = [b_start]
+        # Frame positions within the phase follow TIMING_PROFILE (uniform = original linspace)
+        seg_pts = segment_checkpoint_indices(b_start, b_end, n_pts)
         checkpoint_indices.extend(seg_pts)
 
-    # Ensure final action is included
-    if total_actions_len - 1 not in checkpoint_indices:
+    # Ensure final action is included (minjerk: always add it, so the frame count matches uniform)
+    if TIMING_PROFILE == "minjerk" or total_actions_len - 1 not in checkpoint_indices:
         checkpoint_indices.append(total_actions_len - 1)
-    checkpoint_indices = sorted(list(set(checkpoint_indices)))
-    print(f"Total Checkpoints Sampled: {len(checkpoint_indices)} (One per frame)")
+    if TIMING_PROFILE == "minjerk":
+        checkpoint_indices = sorted(checkpoint_indices)  # keep repeats: they are the holds
+    else:
+        checkpoint_indices = sorted(list(set(checkpoint_indices)))
+    print(f"Total Checkpoints Sampled: {len(checkpoint_indices)} (One per frame, timing: {TIMING_PROFILE})")
 
     # 6. Accumulate Blended Actions into Checkpoints
     correct_dim = len(current_actions[0][0]) if (current_actions and current_actions[0]) else 3603
@@ -2508,10 +2572,11 @@ def run_deformation_processing_with_dissipation(phonemes_list, log_paths_list,
     for p in current_actions:
         flat_blended.extend(p)
 
-    cp_set = set(checkpoint_indices)
+    from collections import Counter
+    cp_count = Counter(checkpoint_indices)  # repeated indices = held frames (minjerk)
     for step_idx, action in enumerate(flat_blended):
         delta_accum += np.array(action)
-        if step_idx in cp_set:
+        for _ in range(cp_count.get(step_idx, 0)):
             combined_checkpoints.append((step_idx, delta_accum.tolist()))
 
     if checkpoint_indices[-1] not in [cp[0] for cp in combined_checkpoints]:
@@ -2520,6 +2585,8 @@ def run_deformation_processing_with_dissipation(phonemes_list, log_paths_list,
     # 7. Build the Dissipation Schedule Metadata (Matching the Diagram)
     cp_step_list = [cp[0] for cp in combined_checkpoints]
     def find_nearest_cp_idx(step):
+        if step >= cp_step_list[-1]:
+            return len(cp_step_list) - 1  # end of sequence (minjerk holds repeat the last step)
         diffs = [abs(s - step) for s in cp_step_list]
         return int(np.argmin(diffs))
 
@@ -2817,7 +2884,7 @@ def perform_the_deformation_with_dissipation(source_path,
                 w_start = active_window_meta['window_start_cp_idx']
                 w_end = active_window_meta['window_end_cp_idx']
                 span = max(1, w_end - w_start)
-                progress = min(1.0, max(0.0, float(i - w_start) / float(span)))
+                progress = timing_progress(min(1.0, max(0.0, float(i - w_start) / float(span))))
 
                 if 'x_joint_conca' in active_correction_vectors:
                     x_joint_curr += (active_correction_vectors['x_joint_conca'] * progress)
@@ -2948,18 +3015,11 @@ def run_deformation_processing_to_source(phonemes_list, log_paths_list, source_p
         print("ERROR: No actions found. Cannot generate checkpoints.")
         return
 
-    # Calculate checkpoint selection
+    # Calculate checkpoint selection (timing: TIMING_PROFILE)
     total_steps = len(all_actions)
-    
-    if total_steps <= num_checkpoints:
-        checkpoint_indices = list(range(total_steps))
-    else:
-        step_size = total_steps / num_checkpoints
-        checkpoint_indices = [int(i * step_size) for i in range(num_checkpoints)]
-        if checkpoint_indices[-1] != total_steps - 1:
-            checkpoint_indices[-1] = total_steps - 1
+    checkpoint_indices = select_checkpoint_indices(total_steps, num_checkpoints)
 
-    print(f"Selected {len(checkpoint_indices)} checkpoint indices")
+    print(f"Selected {len(checkpoint_indices)} checkpoint indices (timing: {TIMING_PROFILE})")
 
     # Calculate cumulative deformation at each checkpoint
     combined_checkpoints = []
@@ -2980,6 +3040,11 @@ def run_deformation_processing_to_source(phonemes_list, log_paths_list, source_p
     output_path = os.path.join(log_path_output, "combined_checkpoints.pkl")
     with open(output_path, 'wb') as f:
         pickle.dump([cp[1] for cp in combined_checkpoints], f)
+
+    # Record which timing this file uses, so changing TIMING_PROFILE regenerates it
+    with open(os.path.join(log_path_output, CHECKPOINT_META_NAME), "w") as f:
+        json.dump({"timing_profile": TIMING_PROFILE, "motion_fraction": MOTION_FRACTION,
+                   "num_checkpoints": len(combined_checkpoints)}, f, indent=2)
 
     print(f"Results saved to: {output_path}")
     
@@ -4055,6 +4120,9 @@ def run_single_transition(phoneme_from, phoneme_to, start_frame, continue_mode, 
                 existing_checkpoints = pickle.load(f)
             if len(existing_checkpoints) != num_checkpoints:
                 print(f"[CHECKPOINT] Existing file has {len(existing_checkpoints)} frames, but {num_checkpoints} are needed. Regenerating...")
+                generate_new = True
+            elif not checkpoint_timing_matches(source_path):
+                print(f"[CHECKPOINT] Existing file uses a different timing profile than '{TIMING_PROFILE}'. Regenerating...")
                 generate_new = True
             else:
                 print(f"[CHECKPOINT] Found existing combined_checkpoints.pkl in source path with correct frame count.")
@@ -5810,7 +5878,7 @@ def precompute_keyboard_transitions(*args):
                 try:
                     with open(checkpoint_file_path, 'rb') as f:
                         existing_checkpoints = pickle.load(f)
-                    if len(existing_checkpoints) != num_checkpoints:
+                    if len(existing_checkpoints) != num_checkpoints or not checkpoint_timing_matches(source_path):
                         generate_new = True
                 except:
                     generate_new = True
