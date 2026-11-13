@@ -7,6 +7,8 @@ from os import path
 from pathlib import Path
 from utils.initialization import create_env
 from utils.common_utils import set_seed
+import inspect
+
 
 import sys
 # --- Resolve REPO_ROOT (a3-stochastic-git-V1) dynamically ---
@@ -1406,6 +1408,7 @@ class Evaluator:
     def compute_single_gradient(self, position, target, positions_lip_joint, step_t1, 
                                 object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
         # TEST: early return with analytical gradient
+        print("L1049")
         if object_name in ("oor", "ooc_l"):
             if object_name == "oor":
                 calculator = self.analytical_calculator
@@ -1431,8 +1434,14 @@ class Evaluator:
 
             if object_name == "oor":
                 self.prev_gradients = gradient
+
+            print(f" [OK] Reached line 1438")
+            sys.exit(0)
             return gradient
 
+
+        print("passed the test, now quit.")
+        sys.exit(0)
         # Initialize a cumulative gradient to sum over all steps
         cumulative_gradient = np.zeros_like(position, dtype=np.float32)        
         # Get current phase
