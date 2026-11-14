@@ -1,3 +1,4 @@
+# We have to choose what phoneme to deform to. This used to be Neutral to N, but that does not use ooc_l or ooc_r so thats why we werent seeing their gradients be updatedÍ
 import time
 import numpy as np
 import torch
@@ -323,16 +324,18 @@ class Evaluator:
         
         # Initialize environment based on phase
         if phase == 1:
+            # this comes from overwrite dataV22
             obs, info = self.env.reset(return_info=True)
         else:  # Phase 2
             info = payload["next_info"]
             obs = payload["next_obs"]
             # Setup phase 2 specific parameters
             if phase == 2:
+                # change this to O -> T > IY
                 target_state_temp = getattr(dataV22_phoneme_AA, "x_middleres_OrbicularisOris" + str(1))      
                 x_jaw = getattr(dataV22_phoneme_AA, "x_middleres_Jaw" + str(1))
                 elements = dataV22_phoneme_AA.x_middleres_OrbicularisOris_face_0
-                this_task = "N to AA"
+                this_task = "N to AA" # O to T
 
             if phase == 3:
                 target_state_temp = getattr(dataV22_phoneme_T, "x_middleres_OrbicularisOris" + str(1))      
@@ -573,7 +576,7 @@ class Evaluator:
             gradient_jaw = self.compute_gradient_rotation(rotation_values, targets_jaw)
             gradient_ooc_r = np.zeros(3 * self.joint_ooc_r_num)
             gradient_frontalis = np.zeros(3 * self.joint_frontalis_num)
-            # not yet
+            # this comes back
             # object_name = "jaw"
             # if self.initial_jaw_distance <= 0.001:
             #     gradient_jaw = np.zeros(len(rotation_values))
@@ -623,6 +626,7 @@ class Evaluator:
                 )
 
             # RECORD IT HERE!
+            # this may make it slow
             self.record_gradient_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
             # RECORD THE MAGNITUDE HERE!
             self.record_gradient_magnitude_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
@@ -1446,6 +1450,7 @@ class Evaluator:
             self.gradient_magnitudes[self.phase_manager.current_phase][object_name] = []
 
         # get previous gradient of full 
+        """THIS MAKES THE EVALUATION SUPER SLOWÍ"""
         def get_full_gradient(position, target, positions_lip_joint, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
             # position here is the chosen indexed vertices, not landmark's position. but is one-one mapping related.
             gradient = np.zeros_like(position, dtype=np.float32)

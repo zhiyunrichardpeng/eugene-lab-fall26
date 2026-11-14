@@ -937,8 +937,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
 
         # importlib.reload(dataV22)
         # by default x is for x with lip lower
-        # important line. this line decides what target pose the face will deform to.
-
+        # important line. this line decides what target pose the face will deform to. CHANGE THIS LINE TO BE PHONEME T INSTEAD OF N
         target_state_temp = getattr(dataV22, "x_middleres_OrbicularisOris" + str(j_func))        
 
 
@@ -1472,6 +1471,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
         # previous_pose_folder = str(results_path / \job_250428-184837\250428-184853"
         debug_mode = False
         
+        # IMPORTANT VARIABLE
         if debug_mode == True:
             log_plot_every = 2 # 30 1
         else:
@@ -1639,7 +1639,7 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
                 'overlapping_length': overlapping_length,
                 })
 
-        print(f"{__file__}\n\n\n *************************** max_iteration{args['max_iteration']}\n step_counter_internal_max: {args['step_counter_internal_max']}\n initial_distance: {initial_distance}\n distance_min: {args['distance_min']}\n initial_distance ooc r: {initial_ooc_r_distance}\n distance_min ooc r: {args['distance_ooc_r_min']}\n initial_distance ooc l: {initial_ooc_l_distance}\n distance_min ooc l: {args['distance_ooc_l_min']}\n  initial_distance frontalis: {initial_frontalis_distance}\n, distance_min frontalis: {args['distance_frontalis_min']}\n UNIT_PRIME: {args['UNIT_PRIME']}")
+        print(f"{__file__}\n\n\n ***************************\nmax_iteration: {args['max_iteration']}\n step_counter_internal_max: {args['step_counter_internal_max']}\n initial_distance: {initial_distance}\n distance_min: {args['distance_min']}\n initial_distance ooc r: {initial_ooc_r_distance}\n distance_min ooc r: {args['distance_ooc_r_min']}\n initial_distance ooc l: {initial_ooc_l_distance}\n distance_min ooc l: {args['distance_ooc_l_min']}\n  initial_distance frontalis: {initial_frontalis_distance}\n, distance_min frontalis: {args['distance_frontalis_min']}\n UNIT_PRIME: {args['UNIT_PRIME']}")
               
                 
         # initial_angle_degrees, args['degrees_min'],      inidial degree, degrees_min

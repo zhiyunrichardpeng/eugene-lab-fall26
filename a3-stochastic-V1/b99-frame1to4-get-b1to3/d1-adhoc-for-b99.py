@@ -436,15 +436,6 @@ def main():
 
                 deltaBList.append(deltaB) # i is frame index.
 
-                # with open(save_folder + "/deltaBList_temp.pkl", 'wb') as f:
-                #     pickle.dump({'deltaBList': deltaBList}, f)       
-
-            # with open(str(results_path / \240423-150653 log files\log.txt", 'w') as f:
-            #     print("deltaBList: \n \n", deltaBList, file = f)  
-
-            # with open(str(results_path / \240423-150653 log files" + "/deltaBList_temp.pkl", 'wb') as f:
-            #     pickle.dump({'deltaBList': deltaBList}, f)
-
 
 # Run the profiler
 cProfile.run('main()', 'output.prof')
