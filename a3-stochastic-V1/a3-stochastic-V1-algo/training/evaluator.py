@@ -227,16 +227,16 @@ class Evaluator:
             skin_weights_json_path=str(a3_stochastic_path / "automation"/ "ooc_l_skin_weights.json"),
             vertex_index=self.vertex_ooc_l_index
         )
-        # self.analytical_calculator_ooc_r = AnalyticalGradientCalculator(
-        #     bind_pose_json_path=str(a3_stochastic_path / "automation"/ "ooc_r_bind_pose.json"),
-        #     skin_weights_json_path=str(a3_stochastic_path / "automation"/ "ooc_r_skin_weights.json"),
-        #     vertex_index=self.vertex_ooc_r_index
-        # )
-        # self.analytical_calculator_frontalis = AnalyticalGradientCalculator(
-        #     bind_pose_json_path=str(a3_stochastic_path / "automation"/ "frontalis_bind_pose.json"),
-        #     skin_weights_json_path=str(a3_stochastic_path / "automation"/ "frontalis_skin_weights.json"),
-        #     vertex_index=self.vertex_frontalis_index
-        # )
+        self.analytical_calculator_ooc_r = AnalyticalGradientCalculator(
+            bind_pose_json_path=str(a3_stochastic_path / "automation"/ "ooc_r_bind_pose.json"),
+            skin_weights_json_path=str(a3_stochastic_path / "automation"/ "ooc_r_skin_weights.json"),
+            vertex_index=self.vertex_ooc_r_index
+        )
+        self.analytical_calculator_frontalis = AnalyticalGradientCalculator(
+            bind_pose_json_path=str(a3_stochastic_path / "automation"/ "frontalis_bind_pose.json"),
+            skin_weights_json_path=str(a3_stochastic_path / "automation"/ "frontalis_skin_weights.json"),
+            vertex_index=self.vertex_frontalis_index
+        )
 
         self.analytical_gradient_scale = 0.022
 
@@ -559,11 +559,14 @@ class Evaluator:
             # # Skip OOC_L and OOC_R target states
             offset += 3*self.vertices_ooc_l_num + 3*self.vertices_ooc_r_num
 
-            # # --- Frontalis ---
-            # positions_frontalis_joint = obs[offset : offset + 3*self.joint_frontalis_num]
-            # offset += 3*self.joint_frontalis_num
+            # # --- Frontalis: joints, then observed vertices, then target vertices ---
+            positions_frontalis_joint = obs[offset : offset + 3*self.joint_frontalis_num]
+            offset += 3*self.joint_frontalis_num
 
-            # positions_frontalis_vertex = obs[offset : offset + 3*self.vertices_frontalis_num]
+            positions_frontalis_vertex = obs[offset : offset + 3*self.vertices_frontalis_num]
+            offset += 3*self.vertices_frontalis_num
+
+            targets_frontalis = obs[offset : offset + 3*self.vertices_frontalis_num]
 
 
             # For phase 2, get previous targets
@@ -608,8 +611,6 @@ class Evaluator:
             else:
                 gradient_jaw = self.compute_gradient_rotation_cached("current", rotation_values, targets_jaw)
             add_time("grad_jaw", section_start)
-            gradient_ooc_r = np.zeros(3 * self.joint_ooc_r_num)
-            gradient_frontalis = np.zeros(3 * self.joint_frontalis_num)
             # this comes back
             # object_name = "jaw"
             # if self.initial_jaw_distance <= 0.001:
@@ -617,91 +618,25 @@ class Evaluator:
             # else:
             #     gradient_jaw = self.compute_analytical_gradient_jaw(rotation_values, targets_jaw, obs)
 
-            # --- 2. OOC_L --- test this
-            object_name = "ooc_l"
-            expected_ooc_l_joint_values = 3 * self.joint_ooc_l_num
-            expected_ooc_l_vertex_values = 3 * self.vertices_ooc_l_num
-            if len(positions_ooc_l_joint) != expected_ooc_l_joint_values:
-                raise ValueError(
-                    f"OOC-L joint slice has {len(positions_ooc_l_joint)} values; "
-                    f"expected {expected_ooc_l_joint_values}."
-                )
-            if (
-                len(positions_ooc_l_vertex) != expected_ooc_l_vertex_values
-                or len(targets_ooc_l) != expected_ooc_l_vertex_values
-            ):
-                raise ValueError(
-                    "OOC-L observed and target vertex slices must each contain "
-                    f"{expected_ooc_l_vertex_values} values; got "
-                    f"{len(positions_ooc_l_vertex)} and {len(targets_ooc_l)}."
-                )
-            if (
-                self.analytical_calculator_ooc_l.K != self.joint_ooc_l_num
-                or self.analytical_calculator_ooc_l.N != self.vertices_ooc_l_num
-            ):
-                raise ValueError(
-                    "OOC-L analytical calculator dimensions do not match the "
-                    "configured joint and vertex counts."
-                )
+            # --- 2-4. OOC_L, OOC_R, FRONTALIS ---
+            # Each is zero (and costs nothing) when the target pose does not move that tissue.
             section_start = time.perf_counter()
-            if self.initial_ooc_l_distance <= 0.001:
-                gradient_ooc_l = np.zeros(expected_ooc_l_joint_values)
-            else:
-                gradient_ooc_l = self.compute_single_gradient(
-                    positions_ooc_l_vertex,
-                    targets_ooc_l,
-                    positions_ooc_l_joint,
-                    self.step_t1,
-                    object_name,
-                )
-            if len(gradient_ooc_l) != expected_ooc_l_joint_values:
-                raise ValueError(
-                    f"OOC-L gradient has {len(gradient_ooc_l)} values; "
-                    f"expected {expected_ooc_l_joint_values}."
-                )
+            gradient_ooc_l = self.compute_tissue_gradient(
+                "ooc_l", positions_ooc_l_joint, positions_ooc_l_vertex, targets_ooc_l,
+                self.analytical_calculator_ooc_l, self.initial_ooc_l_distance)
             add_time("grad_ooc_l", section_start)
 
-            # RECORD IT HERE!
-            # this may make it slow
-            self.record_gradient_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
-            # RECORD THE MAGNITUDE HERE!
-            self.record_gradient_magnitude_step("ooc_l", gradient_ooc_l, self.phase_manager.current_phase)
-            # --- 3. OOC_R --- not yet
-            # object_name = "ooc_r"
-            # if self.initial_ooc_r_distance <= 0.001:
-            #     gradient_ooc_r = np.zeros(len(positions_ooc_r))
-            # else:
-            #     gradient_ooc_r = self.compute_single_gradient(
-            #         joints=positions_ooc_r_joint, 
-            #         target=targets_ooc_r, 
-            #         initial_distance=self.initial_ooc_r_distance, 
-            #         observed_position=positions_ooc_r_vertex, 
-            #         calculator=self.analytical_calculator_ooc_r,
-            #         object_name=object_name
-            #     )
-            # # RECORD IT HERE!
-            # self.record_gradient_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
-            # # RECORD THE MAGNITUDE HERE!
-            # self.record_gradient_magnitude_step("ooc_r", gradient_ooc_r, self.phase_manager.current_phase)
+            section_start = time.perf_counter()
+            gradient_ooc_r = self.compute_tissue_gradient(
+                "ooc_r", positions_ooc_r_joint, positions_ooc_r_vertex, targets_ooc_r,
+                self.analytical_calculator_ooc_r, self.initial_ooc_r_distance)
+            add_time("grad_ooc_r", section_start)
 
-            # # --- 4. FRONTALIS ---
-            # object_name = "frontalis"
-            # if self.initial_frontalis_distance <= 0.001:
-            #     gradient_frontalis = np.zeros(len(positions_frontalis))
-            # else:
-            #     gradient_frontalis = self.compute_single_gradient(
-            #         joints=positions_frontalis_joint, 
-            #         target=targets_frontalis, 
-            #         initial_distance=self.initial_frontalis_distance, 
-            #         observed_position=positions_frontalis_vertex, 
-            #         calculator=self.analytical_calculator_frontalis,
-            #         object_name=object_name
-            #     )
-
-            # # RECORD IT HERE!
-            # self.record_gradient_step("frontalis", gradient_frontalis, self.phase_manager.current_phase)                
-            # # RECORD THE MAGNITUDE HERE!
-            # self.record_gradient_magnitude_step("frontalis", gradient_frontalis, self.phase_manager.current_phase)
+            section_start = time.perf_counter()
+            gradient_frontalis = self.compute_tissue_gradient(
+                "frontalis", positions_frontalis_joint, positions_frontalis_vertex, targets_frontalis,
+                self.analytical_calculator_frontalis, self.initial_frontalis_distance)
+            add_time("grad_frontalis", section_start)
 
             self.current_index = (self.current_index + 1) % len(positions)    
             # For phase 2, compute previous gradients
@@ -1462,15 +1397,15 @@ class Evaluator:
     """
     def compute_single_gradient(self, position, target, positions_lip_joint, step_t1, 
                                 object_name, batch_size=1, epsilon=1e-3, threshold=1e-5, clip_value=1.0):
-        # TEST: early return with analytical gradient
-        # print("1049")
-        if object_name in ("oor", "ooc_l"):
-            if object_name == "oor":
-                calculator = self.analytical_calculator
-                initial_distance = self.initial_distance
-            else:
-                calculator = self.analytical_calculator_ooc_l
-                initial_distance = self.initial_ooc_l_distance
+        # Tissues with an analytical calculator never reach the numerical fallback below.
+        analytical_tissues = {
+            "oor": (self.analytical_calculator, self.initial_distance),
+            "ooc_l": (self.analytical_calculator_ooc_l, self.initial_ooc_l_distance),
+            "ooc_r": (self.analytical_calculator_ooc_r, self.initial_ooc_r_distance),
+            "frontalis": (self.analytical_calculator_frontalis, self.initial_frontalis_distance),
+        }
+        if object_name in analytical_tissues:
+            calculator, initial_distance = analytical_tissues[object_name]
             calculator.w1 = getattr(self, "w1", 0.34)
             calculator.w2 = getattr(self, "w2", 0.33)
             calculator.w3 = getattr(self, "w3", 0.33)
@@ -1489,14 +1424,8 @@ class Evaluator:
 
             if object_name == "oor":
                 self.prev_gradients = gradient
-
-            # print(f" [OK] Reached line 1438")
-            # sys.exit(0)
             return gradient
 
-
-        print("passed the test, now quit.")
-        sys.exit(0)
         # Initialize a cumulative gradient to sum over all steps
         cumulative_gradient = np.zeros_like(position, dtype=np.float32)        
         # Get current phase
@@ -1895,6 +1824,36 @@ class Evaluator:
         self._jaw_gradient_recomputes += 1
         return gradient
 
+    def compute_tissue_gradient(self, object_name, joints, vertices, targets, calculator, initial_distance):
+        """Analytical gradient for one translated tissue (ooc_l, ooc_r or frontalis).
+
+        Returns zeros when the target pose does not move the tissue. The gradient history
+        used for plotting is only kept for tissues that are active.
+        """
+        expected_joint_values = 3 * calculator.K
+        expected_vertex_values = 3 * calculator.N
+        if len(joints) != expected_joint_values:
+            raise ValueError(
+                f"{object_name} joint slice has {len(joints)} values; the analytical "
+                f"calculator expects {expected_joint_values}."
+            )
+        if len(vertices) != expected_vertex_values or len(targets) != expected_vertex_values:
+            raise ValueError(
+                f"{object_name} observed and target vertex slices must each contain "
+                f"{expected_vertex_values} values; got {len(vertices)} and {len(targets)}."
+            )
+        if initial_distance <= 0.001:
+            return np.zeros(expected_joint_values)
+        gradient = self.compute_single_gradient(vertices, targets, joints, self.step_t1, object_name)
+        if len(gradient) != expected_joint_values:
+            raise ValueError(
+                f"{object_name} gradient has {len(gradient)} values; expected {expected_joint_values}."
+            )
+        current_phase = self.phase_manager.current_phase
+        self.record_gradient_step(object_name, gradient, current_phase)
+        self.record_gradient_magnitude_step(object_name, gradient, current_phase)
+        return gradient
+
     def save_gradient_plots(self, landmark_trajectory, vertex_trajectory):
         """Save the gradient and trajectory figures for the current phase.
 
@@ -1903,10 +1862,12 @@ class Evaluator:
         """
         current_phase = self.phase_manager.current_phase
         try:
-            # object_names = ["oor", "ooc_l", "ooc_r", "frontalis"]
-            for obj_name in ["oor", "ooc_l"]:
-                self.plot_gradient_magnitudes(obj_name, current_phase)
-                self.plot_gradients_over_iterations(obj_name, current_phase)
+            # Only tissues that were active in this phase have a gradient history.
+            recorded = self.gradients_over_iterations_dict.get(current_phase, {})
+            for obj_name in ["oor", "ooc_l", "ooc_r", "frontalis"]:
+                if obj_name in recorded:
+                    self.plot_gradient_magnitudes(obj_name, current_phase)
+                    self.plot_gradients_over_iterations(obj_name, current_phase)
             # Landmark vs vertex trajectory (1st oor landmark <-> 1st vertex, 1-to-1 mapping)
             self.plot_trajectories(landmark_trajectory, vertex_trajectory, current_phase)
         except Exception as e:
