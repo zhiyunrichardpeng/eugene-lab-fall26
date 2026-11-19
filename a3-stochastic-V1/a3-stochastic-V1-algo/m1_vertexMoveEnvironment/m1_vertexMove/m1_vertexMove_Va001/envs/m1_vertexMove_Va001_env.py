@@ -1419,48 +1419,11 @@ class m1_vertexMove_Va001(gym.Env):
         s_jaw_prime = self.position_jaw
         
         reward = 0.0
-        base_action_prime = np.array([0.0]*3*self.joint_num + [0.0]*3*self.joint_rotate_num + [0.0]*3*self.joint_ooc_l_num + [0.0]*3*self.joint_ooc_r_num + [0.0]*3*self.joint_frontalis_num)       
-
-        # print("size of action", len(action))
-        # print("size of base_action_prime", len(base_action_prime))
-
-        # for translation
-        for actionI in range(0,3*self.joint_num):           
-            base_action_prime[int(actionI)] = action[int(actionI)]                       
-
-        # for rotation
-        for actionI in range(3*self.joint_num, 3*self.joint_num + self.joint_rotate_num * 3):    # 0,3*self.joint_num         
-            base_action_prime[int(actionI)] = action[int(actionI)]
-
-        # for translate joint_ooc_l_num
-        for actionI in range(3*self.joint_num + self.joint_rotate_num * 3, 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num ):    # 0,3*self.joint_num         
-            base_action_prime[int(actionI)] = action[int(actionI)]
-
-
-
-        # for translate joint_ooc_l_num
-        for actionI in range(3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num , 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num):    # 0,3*self.joint_num         
-            base_action_prime[int(actionI)] = action[int(actionI)]
-
-
-        # # for translate joint_frontalis_num
-        # for actionI in range(3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num, 3*self.joint_num + self.joint_rotate_num * 3 + 3*self.joint_ooc_l_num + 3*self.joint_ooc_r_num + 3 * 3*self.joint_frontalis_num):    # 0,3*self.joint_num         
-        #     base_action_prime[int(actionI)] = action[int(actionI)]
-
-        # print("Size of base_action_prime:", len(base_action_prime) if isinstance(base_action_prime, list) else base_action_prime.shape)
-        # print("Size of action:", len(action) if isinstance(action, list) else action.shape)
-
-        # for translate joint_frontalis_num
-        for actionI in range(3 * self.joint_num + self.joint_rotate_num * 3 + 
-                            3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num, 
-                            3 * self.joint_num + self.joint_rotate_num * 3 + 
-                            3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num + 
-                            3 * self.joint_frontalis_num):  # 0, 3 * self.joint_num
-            # Print sizes of base_action_prime and action
-
-
-            # Assign the action value
-            base_action_prime[int(actionI)] = action[int(actionI)]
+        # One slot per action value: lips, jaw rotation, ooc_l, ooc_r, frontalis.
+        action_length = 3 * (self.joint_num + self.joint_rotate_num + self.joint_ooc_l_num + self.joint_ooc_r_num + self.joint_frontalis_num)
+        if len(action) < action_length:
+            raise ValueError(f"action has {len(action)} values; expected {action_length}.")
+        base_action_prime = np.array(action[:action_length], dtype=float)
 
 
         # bk1
@@ -1706,120 +1669,12 @@ class m1_vertexMove_Va001(gym.Env):
         #             self.cmds.move( x_joint_[3*i], x_joint_[3*i+1], x_joint_[3*i+2], 'lip_lower0'+str(7), absolute=True )
 
 
-        # translate
+        # translate: send to Maya only the joints that moved this step
         if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            for i in range(self.joint_num):
-                flag_temp1 = np.array_equal(self.x_joint[3 * i], x_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_joint[3 * i + 1], x_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_joint[3 * i + 2], x_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
-                    # Determine the joint name based on the index i
-                    if i + 1 <= 9:
-                        joint_name = f'oor_0{i + 1}'  # Leading zero for single-digit numbers
-                    elif i + 1 <= 99:
-                        joint_name = f'oor_{i + 1}'
-                    elif i + 1 <= 999:
-                        joint_name = f'oor_{i + 1}'
-                    else:
-                        joint_name = f'oor_{i + 1}'
-
-                    # Move the joint
-                    if 1==0: # joint_name == "lip_lower191":
-                        # print("lip_lower191 x_joint_", x_joint_)
-                        
-                        # print("lip_lower191 self.x_joint", self.x_joint)
-                        # print("lip_lower191 size self.x_joint", len(self.x_joint))
-                        # print("lip_lower191 base_action_prime[0:3*self.joint_num]", base_action_prime[0:3*self.joint_num])
-                        print("lip_lower191 size base_action_prime[0:3*self.joint_num]", len(base_action_prime[0:3*self.joint_num]))
-                        # self.cmds.move(self.x_joint[3 * i], x_joint_[3 * i + 1], self.x_joint[3 * i + 2], joint_name, absolute=True)
-                        objectList = "lip_lower191"
-                        position_t = self.cmds.xform(objectList, query=True, worldSpace=True, translation=True)
-                        print(position_t)
-
-                        x_joint_init_conca_t = position_t
-                        i_temp2 = 0
-                        self.cmds.move( x_joint_init_conca_t[3*i_temp2]+0.17, x_joint_init_conca_t[3*i_temp2+1], x_joint_init_conca_t[3*i_temp2+2], joint_name, absolute=True)
-                    else: 
-                        # print("joint_name to deform this time", joint_name)
-                        self.cmds.move(x_joint_[3 * i], x_joint_[3 * i + 1], x_joint_[3 * i + 2], joint_name, absolute=True)
-
-
-        # translate ooc l
-        if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            for i in range(self.joint_num):
-                flag_temp1 = np.array_equal(self.x_ooc_l_joint[3 * i], x_ooc_l_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_ooc_l_joint[3 * i + 1], x_ooc_l_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_ooc_l_joint[3 * i + 2], x_ooc_l_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
-                    # Determine the joint name based on the index i
-                    if i + 1 <= 9:
-                        joint_name = f'ooc_l_0{i + 1}'  # Leading zero for single-digit numbers
-                    elif i + 1 <= 99:
-                        joint_name = f'ooc_l_{i + 1}'
-                    elif i + 1 <= 999:
-                        joint_name = f'ooc_l_{i + 1}'
-                    else:
-                        joint_name = f'ooc_l_{i + 1}'
-
-                    # Move the joint
-                    if 1==0: # joint_name == "lip_lower191":
-                        pass                    
-
-                    else: 
-                        # print("joint_name to deform this time", joint_name)
-                        self.cmds.move(x_ooc_l_joint_[3 * i], x_ooc_l_joint_[3 * i + 1], x_ooc_l_joint_[3 * i + 2], joint_name, absolute=True)
-
-
-        # translate ooc l
-        if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            for i in range(self.joint_num):
-                flag_temp1 = np.array_equal(self.x_ooc_r_joint[3 * i], x_ooc_r_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_ooc_r_joint[3 * i + 1], x_ooc_r_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_ooc_r_joint[3 * i + 2], x_ooc_r_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
-                    # Determine the joint name based on the index i
-                    if i + 1 <= 9:
-                        joint_name = f'ooc_r_0{i + 1}'  # Leading zero for single-digit numbers
-                    elif i + 1 <= 99:
-                        joint_name = f'ooc_r_{i + 1}'
-                    elif i + 1 <= 999:
-                        joint_name = f'ooc_r_{i + 1}'
-                    else:
-                        joint_name = f'ooc_r_{i + 1}'
-
-                    # Move the joint
-                    if 1==0: # joint_name == "lip_lower191":
-                        pass                    
-
-                    else: 
-                        # print("joint_name to deform this time", joint_name)
-                        self.cmds.move(x_ooc_r_joint_[3 * i], x_ooc_r_joint_[3 * i + 1], x_ooc_r_joint_[3 * i + 2], joint_name, absolute=True)
-
-
-        # translate ooc l
-        if self.debug_mode_vsCode == 0 or self.debug_mode_vsCode == 1:
-            for i in range(self.joint_num):
-                flag_temp1 = np.array_equal(self.x_frontalis_joint[3 * i], x_frontalis_joint_[3 * i])
-                flag_temp2 = np.array_equal(self.x_frontalis_joint[3 * i + 1], x_frontalis_joint_[3 * i + 1])
-                flag_temp3 = np.array_equal(self.x_frontalis_joint[3 * i + 2], x_frontalis_joint_[3 * i + 2])
-                if not flag_temp1 or not flag_temp2 or not flag_temp3:
-                    # Determine the joint name based on the index i
-                    if i + 1 <= 9:
-                        joint_name = f'frontalis_0{i + 1}'  # Leading zero for single-digit numbers
-                    elif i + 1 <= 99:
-                        joint_name = f'frontalis_{i + 1}'
-                    elif i + 1 <= 999:
-                        joint_name = f'frontalis_{i + 1}'
-                    else:
-                        joint_name = f'frontalis_{i + 1}'
-
-                    # Move the joint
-                    if 1==0: # joint_name == "lip_lower191":
-                        pass                    
-
-                    else: 
-                        # print("joint_name to deform this time", joint_name)
-                        self.cmds.move(x_frontalis_joint_[3 * i], x_frontalis_joint_[3 * i + 1], x_frontalis_joint_[3 * i + 2], joint_name, absolute=True)
+            self._move_changed_joints(self.x_joint, x_joint_, 'oor')
+            self._move_changed_joints(self.x_ooc_l_joint, x_ooc_l_joint_, 'ooc_l')
+            self._move_changed_joints(self.x_ooc_r_joint, x_ooc_r_joint_, 'ooc_r')
+            self._move_changed_joints(self.x_frontalis_joint, x_frontalis_joint_, 'frontalis')
 
 
         # objectList = ['middleres_Jaw']
@@ -3606,6 +3461,17 @@ class m1_vertexMove_Va001(gym.Env):
         distance_ship_vertices = np.sqrt(squared_diff_vertices)
 
         return distance_ship_vertices.tolist()
+
+    def _move_changed_joints(self, joints_before, joints_after, name_prefix):
+        """Move in Maya only the joints whose position changed this step.
+
+        Joints are named <prefix>_01 ... <prefix>_09, <prefix>_10, ... in the scene.
+        """
+        before = np.asarray(joints_before, dtype=float).reshape(-1, 3)
+        after = np.asarray(joints_after, dtype=float).reshape(-1, 3)
+        for i in np.flatnonzero(np.any(before != after, axis=1)):
+            self.cmds.move(float(after[i, 0]), float(after[i, 1]), float(after[i, 2]),
+                           f'{name_prefix}_{i + 1:02d}', absolute=True)
 
     def returnCoordinates(self, object_name, vertex_indices=None):
         # Select the object
