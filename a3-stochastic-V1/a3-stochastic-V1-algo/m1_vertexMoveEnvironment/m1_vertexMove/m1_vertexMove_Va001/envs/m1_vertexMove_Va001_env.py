@@ -1071,6 +1071,15 @@ class m1_vertexMove_Va001(gym.Env):
 
         t_limit_sigmoid = get_smooth_limit()
         action[0:self.joint_num * 3] = np.clip(action[0:self.joint_num * 3], -t_limit_sigmoid, t_limit_sigmoid)
+        # The other translated tissues get the same eased per-step limit. Each one uses the lip
+        # limit (UNIT_PRIME) unless UNIT_PRIME_ooc_l / UNIT_PRIME_ooc_r / UNIT_PRIME_frontalis is set.
+        tissue_start = 3 * self.joint_num + 3 * self.joint_rotate_num
+        for tissue, joint_count in (("ooc_l", self.joint_ooc_l_num), ("ooc_r", self.joint_ooc_r_num), ("frontalis", self.joint_frontalis_num)):
+            tissue_unit = getattr(self, "UNIT_PRIME_" + tissue, None)
+            tissue_limit = t_limit_sigmoid if tissue_unit is None else t_limit_sigmoid * tissue_unit / self.UNIT_PRIME
+            tissue_end = tissue_start + 3 * joint_count
+            action[tissue_start:tissue_end] = np.clip(action[tissue_start:tissue_end], -tissue_limit, tissue_limit)
+            tissue_start = tissue_end
         # this is r prime   degree per step.
 
         set_constant_threshold_percentage = 15/100
@@ -1451,10 +1460,10 @@ class m1_vertexMove_Va001(gym.Env):
         # base_action_prime[0:3*self.joint_num] = 0
         # to bypass ooc for now
         #base_action_prime[3*self.joint_num + 3*self.joint_rotate_num:3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num] = 0
-        base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num] = 0
+        # base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num] = 0
 
         # to bypass frontalis for now
-        base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num + 3 * self.joint_frontalis_num] = 0
+        # base_action_prime[3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num : 3*self.joint_num + 3*self.joint_rotate_num + 3 * self.joint_ooc_l_num + 3 * self.joint_ooc_r_num + 3 * self.joint_frontalis_num] = 0
 
         # new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
 
@@ -1718,9 +1727,11 @@ class m1_vertexMove_Va001(gym.Env):
         #     print("m1 line 1822, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
 
 
-        new_coords_ooc_l = self.position_ooc_l
-        new_coords_ooc_r = self.position_ooc_r
-        new_coords_frontalis = self.position_frontalis
+        # Lips and jaw are read every step (above). These three are re-read only on steps where
+        # their own joints moved; otherwise their vertices are where they were.
+        new_coords_ooc_l = self._read_if_moved("middleres_OrbicularisOculi_l", self.x_ooc_l_joint, x_ooc_l_joint_, self.vertex_ooc_l_index, self.position_ooc_l)
+        new_coords_ooc_r = self._read_if_moved("middleres_OrbicularisOculi_r", self.x_ooc_r_joint, x_ooc_r_joint_, self.vertex_ooc_r_index, self.position_ooc_r)
+        new_coords_frontalis = self._read_if_moved("middleres_Frontalis", self.x_frontalis_joint, x_frontalis_joint_, self.vertex_frontalis_index, self.position_frontalis)
 
 
         # self.log_plot_every = 5
@@ -3472,6 +3483,16 @@ class m1_vertexMove_Va001(gym.Env):
         for i in np.flatnonzero(np.any(before != after, axis=1)):
             self.cmds.move(float(after[i, 0]), float(after[i, 1]), float(after[i, 2]),
                            f'{name_prefix}_{i + 1:02d}', absolute=True)
+
+    def _read_if_moved(self, object_name, joints_before, joints_after, vertex_indices, current_coords):
+        """Read a tissue's vertices from Maya only if its joints moved this step.
+
+        A tissue whose joints never move (no target motion) is never read, so its position
+        and distance stay exactly what they were at reset.
+        """
+        if np.array_equal(np.asarray(joints_before, dtype=float), np.asarray(joints_after, dtype=float)):
+            return current_coords
+        return self.returnCoordinates(object_name, vertex_indices)
 
     def returnCoordinates(self, object_name, vertex_indices=None):
         # Select the object
