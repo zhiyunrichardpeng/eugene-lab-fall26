@@ -238,6 +238,18 @@ class Evaluator:
 
         self.analytical_gradient_scale = 0.022
 
+        # --- Per-step speed settings. Override them in the args dict of a2_fromFrameGetDeltaB.py. ---
+        # The jaw gradient costs 6 Maya mesh evaluations per call. Recompute it only every
+        # N steps and reuse the last value in between. 1 = recompute every step (old behaviour).
+        self.jaw_gradient_every = max(1, int(getattr(self, "jaw_gradient_every", 10)))
+        # Gradient/trajectory figures are always saved once when a phase ends.
+        # Set > 0 to also save them every N iterations while running (old behaviour was 100).
+        self.gradient_plot_every = int(getattr(self, "gradient_plot_every", 0))
+        # Print a per-step timing breakdown every N steps (0 = off).
+        self.timing_report_every = int(getattr(self, "timing_report_every", 1000))
+        self._jaw_gradient_cache = {}
+        self._jaw_gradient_recomputes = 0
+
         self.next_info.update({
 
             'step_counter_internal': 0,
@@ -418,6 +430,17 @@ class Evaluator:
         done = 0
         info["TimeLimit.truncated"] = False
         self.step_t1 = 0
+        # step_t1 restarts every phase, so a jaw gradient cached in the previous phase is stale.
+        self._jaw_gradient_cache = {}
+        self._jaw_gradient_recomputes = 0
+        # Seconds spent per section since the last timing report.
+        timing = {}
+        timing_window_start = time.perf_counter()
+        timing_window_first_step = 1
+
+        def add_time(section, started_at):
+            timing[section] = timing.get(section, 0.0) + (time.perf_counter() - started_at)
+
         from tqdm import tqdm
         count = self.step_counter_internal_max
         pbar = tqdm(total=count)
@@ -554,6 +577,7 @@ class Evaluator:
             # Compute gradients
 
             object_name = "oor"
+            section_start = time.perf_counter()
             if self.initial_distance <= 0.001:
                 gradient = np.zeros(3 * self.joint_num)
             else:
@@ -566,6 +590,7 @@ class Evaluator:
                     object_name,
                 )
             self.oor_dense_numerical_gradient = np.copy(self.prev_gradients)
+            add_time("grad_oor", section_start)
 
             # RECORD IT HERE!
             self.record_gradient_step("oor", gradient, self.phase_manager.current_phase)
@@ -573,7 +598,14 @@ class Evaluator:
             self.record_gradient_magnitude_step("oor", gradient, self.phase_manager.current_phase)
 
             rotation_values = 3 * self.joint_rotate_num * [0.0]
-            gradient_jaw = self.compute_gradient_rotation(rotation_values, targets_jaw)
+            section_start = time.perf_counter()
+            if self._jaw_is_frozen():
+                # The env zeroes the jaw action once the jaw is paused, so the Maya
+                # round trips would be wasted.
+                gradient_jaw = np.zeros(3 * self.joint_rotate_num, dtype=np.float32)
+            else:
+                gradient_jaw = self.compute_gradient_rotation_cached("current", rotation_values, targets_jaw)
+            add_time("grad_jaw", section_start)
             gradient_ooc_r = np.zeros(3 * self.joint_ooc_r_num)
             gradient_frontalis = np.zeros(3 * self.joint_frontalis_num)
             # this comes back
@@ -609,6 +641,7 @@ class Evaluator:
                     "OOC-L analytical calculator dimensions do not match the "
                     "configured joint and vertex counts."
                 )
+            section_start = time.perf_counter()
             if self.initial_ooc_l_distance <= 0.001:
                 gradient_ooc_l = np.zeros(expected_ooc_l_joint_values)
             else:
@@ -624,6 +657,7 @@ class Evaluator:
                     f"OOC-L gradient has {len(gradient_ooc_l)} values; "
                     f"expected {expected_ooc_l_joint_values}."
                 )
+            add_time("grad_ooc_l", section_start)
 
             # RECORD IT HERE!
             # this may make it slow
@@ -670,6 +704,7 @@ class Evaluator:
             self.current_index = (self.current_index + 1) % len(positions)    
             # For phase 2, compute previous gradients
             if phase >= 2 and abc_execution_count < MAX_ABC_EXECUTIONS:
+                section_start = time.perf_counter()
                 gradient_previous = self.compute_single_gradient(
                     positions,
                     targets_previous,
@@ -678,7 +713,10 @@ class Evaluator:
                     "oor",
                 )
 
-                gradient_jaw_previous = self.compute_gradient_rotation(rotation_values, targets_jaw_previous)
+                # Not skipped when the jaw is frozen: the env adds the previous-phase jaw
+                # action on top of the (zeroed) current one during the overlap.
+                gradient_jaw_previous = self.compute_gradient_rotation_cached("previous", rotation_values, targets_jaw_previous)
+                add_time("grad_previous", section_start)
 
                 action_previous = np.concatenate([
                     gradient_previous,
@@ -700,17 +738,12 @@ class Evaluator:
              # Increment the counter
             self.action_iteration_count += 1
 
-            # Only plot every 100 iterations
-            if self.action_iteration_count % 100 == 0:
-                # Plot gradients
-                #object_names = ["oor", "ooc_l","ooc_r", "frontalis"]  # "oor", ooc_l
-                object_names = ["oor", "ooc_l"]  # "oor", ooc_l
-                for obj_name in object_names:
-                    self.plot_gradient_magnitudes(obj_name, self.phase_manager.current_phase)
-                    self.plot_gradients_over_iterations(obj_name, self.phase_manager.current_phase)
-
-                # Plot landmark vs vertex trajectory (1st oor landmark ↔ 1st vertex, 1-to-1 mapping)
-                self.plot_trajectories(landmark_trajectory, vertex_trajectory, self.phase_manager.current_phase)
+            # The figures are saved once when the phase ends (after this loop). Saving them
+            # while running is opt-in because each round is 5 figures at 300 dpi.
+            if self.gradient_plot_every > 0 and self.action_iteration_count % self.gradient_plot_every == 0:
+                section_start = time.perf_counter()
+                self.save_gradient_plots(landmark_trajectory, vertex_trajectory)
+                add_time("plots", section_start)
 
             # Prepare parameters for environment step
             base_params = {
@@ -743,7 +776,9 @@ class Evaluator:
 
             # Execute environment step
 
+            section_start = time.perf_counter()
             next_obs, reward, done, next_info, r_limit_sigmoid_1000_endList, t_limit_sigmoid_1000_endList = self.env.unwrapped.step(**base_params)
+            add_time("env_step", section_start)
             self.r_limit_sigmoid_1000_endList = r_limit_sigmoid_1000_endList
             self.t_limit_sigmoid_1000_endList = t_limit_sigmoid_1000_endList
             
@@ -769,9 +804,25 @@ class Evaluator:
             # Update progress bar
             if self.step_t1 % update_every == 0:
                 pbar.set_description(f"Step: {self.step_t1}")
-                pbar.update(update_every)            
+                pbar.update(update_every)
 
+            if self.timing_report_every > 0 and self.step_t1 % self.timing_report_every == 0:
+                self.report_step_timing(phase, timing_window_first_step, self.step_t1, timing,
+                                        time.perf_counter() - timing_window_start)
+                timing = {}
+                timing_window_start = time.perf_counter()
+                timing_window_first_step = self.step_t1 + 1
+                self._jaw_gradient_recomputes = 0
 
+        # Report the steps since the last full timing window.
+        if self.timing_report_every > 0 and self.step_t1 >= timing_window_first_step:
+            self.report_step_timing(phase, timing_window_first_step, self.step_t1, timing,
+                                    time.perf_counter() - timing_window_start)
+
+        # Save the gradient and trajectory figures once for the whole phase.
+        plots_start = time.perf_counter()
+        self.save_gradient_plots(landmark_trajectory, vertex_trajectory)
+        print(f"[timing] phase {phase}: end-of-phase gradient plots took {time.perf_counter() - plots_start:.1f} s")
 
         # Post-episode processing
         ep_rs_sum = sum(reward_list)
@@ -1812,6 +1863,66 @@ class Evaluator:
         self.gradients_over_iterations.append(flattened_gradient[idx])
         
         return flattened_gradient
+
+    def _jaw_is_frozen(self):
+        """True once the env has paused the jaw; from then on it zeroes the jaw action."""
+        flags = getattr(self.env.unwrapped, "fix_flag_ship", None)
+        return flags is not None and len(flags) > 1 and flags[1] == 1
+
+    def compute_gradient_rotation_cached(self, cache_key, rotation_values, target):
+        """Jaw gradient, recomputed in Maya only every `self.jaw_gradient_every` steps.
+
+        compute_gradient_rotation() needs 6 rotate / read-mesh / rotate-back round trips,
+        and the env then clips its result to the jaw speed limit (~1e-4 degrees per step),
+        so only the sign of each component reaches Maya. That sign changes far more slowly
+        than once per step. `cache_key` keeps the current-target and previous-target
+        gradients apart.
+        """
+        cached = self._jaw_gradient_cache.get(cache_key)
+        if cached is not None and self.step_t1 - cached[0] < self.jaw_gradient_every:
+            return cached[1]
+        gradient = self.compute_gradient_rotation(rotation_values, target)
+        self._jaw_gradient_cache[cache_key] = (self.step_t1, gradient)
+        self._jaw_gradient_recomputes += 1
+        return gradient
+
+    def save_gradient_plots(self, landmark_trajectory, vertex_trajectory):
+        """Save the gradient and trajectory figures for the current phase.
+
+        A plotting error is reported instead of raised: this now runs at the end of a
+        long phase, and it must not stop the trajectory from being saved afterwards.
+        """
+        current_phase = self.phase_manager.current_phase
+        try:
+            # object_names = ["oor", "ooc_l", "ooc_r", "frontalis"]
+            for obj_name in ["oor", "ooc_l"]:
+                self.plot_gradient_magnitudes(obj_name, current_phase)
+                self.plot_gradients_over_iterations(obj_name, current_phase)
+            # Landmark vs vertex trajectory (1st oor landmark <-> 1st vertex, 1-to-1 mapping)
+            self.plot_trajectories(landmark_trajectory, vertex_trajectory, current_phase)
+        except Exception as e:
+            print(f"Could not save gradient plots for phase {current_phase}: {type(e).__name__}: {e}")
+
+    def report_step_timing(self, phase, first_step, last_step, timing, window_seconds):
+        """Print and log where the wall-clock time of steps first_step..last_step went."""
+        steps = last_step - first_step + 1
+        if steps <= 0 or window_seconds <= 0:
+            return
+        sections = dict(timing)
+        sections["other"] = max(window_seconds - sum(timing.values()), 0.0)
+        parts = [
+            f"{name} {1000 * seconds / steps:.1f} ({100 * seconds / window_seconds:.0f}%)"
+            for name, seconds in sorted(sections.items(), key=lambda item: -item[1])
+        ]
+        line = (
+            f"[timing] phase {phase} steps {first_step}-{last_step}: "
+            f"{1000 * window_seconds / steps:.1f} ms/step | " + " | ".join(parts)
+            + f" | jaw gradient recomputed {self._jaw_gradient_recomputes} times"
+        )
+        from tqdm import tqdm
+        tqdm.write(line)
+        with open(os.path.join(self.save_folder, "step_timing.txt"), 'a') as f:
+            print(line, file=f)
 
     # adam
     def compute_gradient_rotation(self, rotation_values, target, epsilon=1e-3, threshold=1e-4):

@@ -1637,6 +1637,10 @@ def a2_fromFrameGetDeltaB(i_func, x_joint_interFunctional, x_ooc_l_joint_interFu
                 # 'UNIT_PRIME_jaw_translate_phase2': UNIT_PRIME_jaw_translate_phase2,
                 'fowrad_gradient_log_interval': fowrad_gradient_log_interval,
                 'overlapping_length': overlapping_length,
+                # Evaluator speed settings (see Evaluator.__init__ for what each one does).
+                'jaw_gradient_every': 10,     # recompute the jaw gradient in Maya every N steps. 1 = every step (old behaviour).
+                'gradient_plot_every': 0,     # 0 = save gradient plots only when a phase ends. 100 = old behaviour.
+                'timing_report_every': 1000,  # print a per-step timing breakdown every N steps. 0 = off.
                 })
 
         print(f"{__file__}\n\n\n ***************************\nmax_iteration: {args['max_iteration']}\n step_counter_internal_max: {args['step_counter_internal_max']}\n initial_distance: {initial_distance}\n distance_min: {args['distance_min']}\n initial_distance ooc r: {initial_ooc_r_distance}\n distance_min ooc r: {args['distance_ooc_r_min']}\n initial_distance ooc l: {initial_ooc_l_distance}\n distance_min ooc l: {args['distance_ooc_l_min']}\n  initial_distance frontalis: {initial_frontalis_distance}\n, distance_min frontalis: {args['distance_frontalis_min']}\n UNIT_PRIME: {args['UNIT_PRIME']}")
