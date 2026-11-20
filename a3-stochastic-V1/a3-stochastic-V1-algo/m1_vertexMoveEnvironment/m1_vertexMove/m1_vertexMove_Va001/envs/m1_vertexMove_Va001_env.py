@@ -753,7 +753,19 @@ class m1_vertexMove_Va001(gym.Env):
         
         self.x_joint = self.x_joint_init
         self.x_joint_rotation = self.x_joint_rotation_init
-        
+
+        # Mesh read-backs remembered by _read_if_moved. The lips get no entry here, so the first
+        # step after a reset always reads them from Maya. The other three tissues start from the
+        # positions set above and are read only once their own joints move, as before.
+        self._readback_cache = {}
+        for object_name, joints, coords in (
+            ("middleres_OrbicularisOculi_l", getattr(self, "x_ooc_l_joint", None), self.position_ooc_l),
+            ("middleres_OrbicularisOculi_r", getattr(self, "x_ooc_r_joint", None), self.position_ooc_r),
+            ("middleres_Frontalis", getattr(self, "x_frontalis_joint", None), self.position_frontalis),
+        ):
+            if joints is not None:
+                self._readback_cache[object_name] = (np.array(joints, dtype=float), np.array(coords, dtype=float))
+
         if not return_info:
             return self._get_obs()
         else:
@@ -1010,6 +1022,8 @@ class m1_vertexMove_Va001(gym.Env):
 
 
                     self.opened_file_status = True  # Update the state to indicate the file is open
+                    # The scene was just reloaded, so a remembered lip read no longer describes it.
+                    self.__dict__.setdefault("_readback_cache", {}).pop("middleres_OrbicularisOris", None)
                 else:
                     pass
                     # print("File is already open. Skipping the open operation.")
@@ -1705,8 +1719,16 @@ class m1_vertexMove_Va001(gym.Env):
         #     print("m1 line 1801, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
 
 
-        new_coords = self.returnCoordinates("middleres_OrbicularisOris", self.vertex_index)
-        
+        # The lip mesh is read from Maya only when the lip joints are not where they were at the
+        # last read. While the lips sit still and only the jaw rotates, the last read is reused:
+        # the sampled lip vertices do not move with the jaw (11/19 full run: the lip distance was
+        # identical for 35,800 steps of jaw rotation). read_lips_every_step=True restores the
+        # old read on every step.
+        if getattr(self, "read_lips_every_step", False):
+            new_coords = self.returnCoordinates("middleres_OrbicularisOris", self.vertex_index)
+        else:
+            new_coords = self._read_if_moved("middleres_OrbicularisOris", x_joint_, self.vertex_index)
+
         new_coords_jaw = self.returnCoordinates("middleres_Jaw", self.vertex_jaw_index)
         # new_coords_ooc_r = self.returnCoordinates("middleres_OrbicularisOculi_r", self.vertex_ooc_r_index)
         # new_coords_ooc_l = self.returnCoordinates("middleres_OrbicularisOculi_l", self.vertex_ooc_l_index)
@@ -1727,11 +1749,11 @@ class m1_vertexMove_Va001(gym.Env):
         #     print("m1 line 1822, at the start of phase 3, the jaw pose and the phoneme T distance is", distance_jaw_adhoc)
 
 
-        # Lips and jaw are read every step (above). These three are re-read only on steps where
-        # their own joints moved; otherwise their vertices are where they were.
-        new_coords_ooc_l = self._read_if_moved("middleres_OrbicularisOculi_l", self.x_ooc_l_joint, x_ooc_l_joint_, self.vertex_ooc_l_index, self.position_ooc_l)
-        new_coords_ooc_r = self._read_if_moved("middleres_OrbicularisOculi_r", self.x_ooc_r_joint, x_ooc_r_joint_, self.vertex_ooc_r_index, self.position_ooc_r)
-        new_coords_frontalis = self._read_if_moved("middleres_Frontalis", self.x_frontalis_joint, x_frontalis_joint_, self.vertex_frontalis_index, self.position_frontalis)
+        # The jaw is read every step (above). These three, like the lips, are re-read only when
+        # their own joints are not where they were at the last read.
+        new_coords_ooc_l = self._read_if_moved("middleres_OrbicularisOculi_l", x_ooc_l_joint_, self.vertex_ooc_l_index)
+        new_coords_ooc_r = self._read_if_moved("middleres_OrbicularisOculi_r", x_ooc_r_joint_, self.vertex_ooc_r_index)
+        new_coords_frontalis = self._read_if_moved("middleres_Frontalis", x_frontalis_joint_, self.vertex_frontalis_index)
 
 
         # self.log_plot_every = 5
@@ -3484,15 +3506,21 @@ class m1_vertexMove_Va001(gym.Env):
             self.cmds.move(float(after[i, 0]), float(after[i, 1]), float(after[i, 2]),
                            f'{name_prefix}_{i + 1:02d}', absolute=True)
 
-    def _read_if_moved(self, object_name, joints_before, joints_after, vertex_indices, current_coords):
-        """Read a tissue's vertices from Maya only if its joints moved this step.
+    def _read_if_moved(self, object_name, joints_now, vertex_indices):
+        """Read a tissue's sampled vertices from Maya, or reuse the last read of that mesh if its
+        joints are exactly where they were then. Same function as on main (c57f2b3).
 
-        A tissue whose joints never move (no target motion) is never read, so its position
-        and distance stay exactly what they were at reset.
+        reset() empties the cache and then seeds ooc_l / ooc_r / frontalis, so a tissue whose
+        joints never move is never read and keeps the position it was given at reset.
         """
-        if np.array_equal(np.asarray(joints_before, dtype=float), np.asarray(joints_after, dtype=float)):
-            return current_coords
-        return self.returnCoordinates(object_name, vertex_indices)
+        cache = self.__dict__.setdefault("_readback_cache", {})
+        joints_now = np.array(joints_now, dtype=float)
+        last = cache.get(object_name)
+        if last is not None and np.array_equal(last[0], joints_now):
+            return last[1].copy()
+        coords = self.returnCoordinates(object_name, vertex_indices)
+        cache[object_name] = (joints_now, np.array(coords))
+        return coords
 
     def returnCoordinates(self, object_name, vertex_indices=None):
         # Select the object
