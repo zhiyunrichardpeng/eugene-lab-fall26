@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1535" width="1400" height="1535" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+<title>How one run works on update-deprecated-e52</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#52606D"/></marker></defs>
+<rect width="1400" height="1535" fill="#FFFFFF"/>
+<text x="40.0" y="50" font-size="26" text-anchor="start" fill="#1F2933" font-weight="700">How one run works on update-deprecated-e52</text>
+<text x="40.0" y="80" font-size="15" text-anchor="start" fill="#52606D">1 launch  →  up to 8 phases  →  about 37,000 steps per phase  →  every step: look, decide, limit, move, measure</text>
+<rect x="978.0" y="24" width="16.0" height="14" rx="3" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="1002.0" y="36" font-size="12" text-anchor="start" fill="#52606D">Launch scripts and Trainer</text>
+<rect x="978.0" y="46" width="16.0" height="14" rx="3" fill="#DCE9FB" stroke="#2F6FDB" stroke-width="1.5"/>
+<text x="1002.0" y="58" font-size="12" text-anchor="start" fill="#52606D">Evaluator</text>
+<rect x="978.0" y="68" width="16.0" height="14" rx="3" fill="#DDF3EA" stroke="#1E8E63" stroke-width="1.5"/>
+<text x="1002.0" y="80" font-size="12" text-anchor="start" fill="#52606D">Env (env.step)</text>
+<rect x="1208.0" y="24" width="16.0" height="14" rx="3" fill="#FCE9D2" stroke="#C7751A" stroke-width="1.5"/>
+<text x="1232.0" y="36" font-size="12" text-anchor="start" fill="#52606D">Maya</text>
+<rect x="1208.0" y="46" width="16.0" height="14" rx="3" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="1232.0" y="58" font-size="12" text-anchor="start" fill="#52606D">Files</text>
+<rect x="40" y="105" width="1320" height="125" rx="12" fill="#F6F7F9" stroke="#D5DAE1"/>
+<text x="60.0" y="130" font-size="15" text-anchor="start" fill="#1F2933" font-weight="700">Where this run sits in the whole method</text>
+<text x="368.0" y="130" font-size="13" text-anchor="start" fill="#52606D">(from the paper)</text>
+<rect x="60.0" y="145" width="224.0" height="70" rx="8" fill="#FFFFFF" stroke="#B6BEC8" stroke-width="1.5"/>
+<text x="172.0" y="174.7" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">Two poses from the artist</text>
+<text x="172.0" y="195.0" font-size="12" text-anchor="middle" fill="#1F2933">a start pose and a target pose</text>
+<rect x="324.0" y="145" width="224.0" height="70" rx="8" fill="#2F6FDB" stroke="#1F4FA3" stroke-width="1.5"/>
+<text x="436.0" y="166.4" font-size="14" text-anchor="middle" fill="#FFFFFF" font-weight="700">THIS RUN</text>
+<text x="436.0" y="186.7" font-size="12" text-anchor="middle" fill="#FFFFFF">search for the small moves that</text>
+<text x="436.0" y="203.2" font-size="12" text-anchor="middle" fill="#FFFFFF">take the muscles to the target</text>
+<polyline points="284.0,180.0 324.0,180.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="588.0" y="145" width="224.0" height="70" rx="8" fill="#FFFFFF" stroke="#B6BEC8" stroke-width="1.5"/>
+<text x="700.0" y="166.4" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">Transition table</text>
+<text x="700.0" y="186.7" font-size="12" text-anchor="middle" fill="#1F2933">the moves are stored as a</text>
+<text x="700.0" y="203.2" font-size="12" text-anchor="middle" fill="#1F2933">reusable controller</text>
+<polyline points="548.0,180.0 588.0,180.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="852.0" y="145" width="224.0" height="70" rx="8" fill="#FFFFFF" stroke="#B6BEC8" stroke-width="1.5"/>
+<text x="964.0" y="166.4" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">Compose</text>
+<text x="964.0" y="186.7" font-size="12" text-anchor="middle" fill="#1F2933">chain controllers, with overlap,</text>
+<text x="964.0" y="203.2" font-size="12" text-anchor="middle" fill="#1F2933">into speech and expressions</text>
+<polyline points="812.0,180.0 852.0,180.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1116.0" y="145" width="224.0" height="70" rx="8" fill="#FFFFFF" stroke="#B6BEC8" stroke-width="1.5"/>
+<text x="1228.0" y="166.4" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">Skin</text>
+<text x="1228.0" y="186.7" font-size="12" text-anchor="middle" fill="#1F2933">muscles and bones drive</text>
+<text x="1228.0" y="203.2" font-size="12" text-anchor="middle" fill="#1F2933">the skin on top</text>
+<polyline points="1076.0,180.0 1116.0,180.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="40" y="250" width="1320" height="265" rx="12" fill="#F6F7F9" stroke="#D5DAE1"/>
+<text x="60.0" y="278" font-size="17" text-anchor="start" fill="#1F2933" font-weight="700">1   Launch</text>
+<text x="160.0" y="278" font-size="13" text-anchor="start" fill="#52606D">happens once, on the Windows lab machine</text>
+<rect x="400.0" y="298" width="220.0" height="100" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="510.0" y="326.1" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">run_d1_b99.bat</text>
+<text x="510.0" y="346.4" font-size="12" text-anchor="middle" fill="#1F2933">sets the stop thresholds</text>
+<text x="510.0" y="363.0" font-size="12" text-anchor="middle" fill="#1F2933">(0.1 = within 10% of the</text>
+<text x="510.0" y="379.5" font-size="12" text-anchor="middle" fill="#1F2933">start distance) and the step cap</text>
+<rect x="640.0" y="298" width="220.0" height="100" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="750.0" y="334.4" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">d1-adhoc-for-b99.py</text>
+<text x="750.0" y="354.7" font-size="12" text-anchor="middle" fill="#1F2933">runs under mayapy, wrapped</text>
+<text x="750.0" y="371.2" font-size="12" text-anchor="middle" fill="#1F2933">in cProfile (output.prof)</text>
+<polyline points="620.0,348.0 640.0,348.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="880.0" y="298" width="220.0" height="100" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="990.0" y="326.1" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">a2_fromFrameGetDeltaB.py</text>
+<text x="990.0" y="346.4" font-size="12" text-anchor="middle" fill="#1F2933">loads the poses, measures the</text>
+<text x="990.0" y="363.0" font-size="12" text-anchor="middle" fill="#1F2933">start distances, builds the</text>
+<text x="990.0" y="379.5" font-size="12" text-anchor="middle" fill="#1F2933">env, Evaluator and Trainer</text>
+<polyline points="860.0,348.0 880.0,348.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1120.0" y="298" width="220.0" height="100" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="1230.0" y="334.4" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">Trainer.train()</text>
+<text x="1230.0" y="354.7" font-size="12" text-anchor="middle" fill="#1F2933">runs the phases</text>
+<text x="1230.0" y="371.2" font-size="12" text-anchor="middle" fill="#1F2933">one after another</text>
+<polyline points="1100.0,348.0 1120.0,348.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="60.0" y="345" font-size="13" text-anchor="start" fill="#52606D" font-weight="700">Start here:</text>
+<text x="60.0" y="365" font-size="12" text-anchor="start" fill="#52606D">double-click the .bat, or run it</text>
+<text x="60.0" y="382" font-size="12" text-anchor="start" fill="#52606D">from PowerShell</text>
+<polyline points="262.0,348.0 400.0,348.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="60.0" y="462" font-size="13" text-anchor="start" fill="#52606D" font-weight="700">Inputs a2 loads:</text>
+<rect x="400.0" y="428" width="220.0" height="70" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="510.0" y="449.1" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">Poses  (database/)</text>
+<text x="510.0" y="469.0" font-size="12" text-anchor="middle" fill="#1F2933">dataV22.py = target pose</text>
+<text x="510.0" y="485.6" font-size="12" text-anchor="middle" fill="#1F2933">dataV22_for_rest_adhoc.py = start</text>
+<rect x="640.0" y="428" width="220.0" height="70" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="750.0" y="449.1" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">Maya scene</text>
+<text x="750.0" y="469.0" font-size="12" text-anchor="middle" fill="#1F2933">the head with its muscles</text>
+<text x="750.0" y="485.6" font-size="12" text-anchor="middle" fill="#1F2933">and joints (Ziva)</text>
+<rect x="880.0" y="428" width="220.0" height="70" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="990.0" y="449.1" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">Skin weights  (automation/)</text>
+<text x="990.0" y="469.0" font-size="12" text-anchor="middle" fill="#1F2933">*.json: which joint pulls which</text>
+<text x="990.0" y="485.6" font-size="12" text-anchor="middle" fill="#1F2933">vertex, for the gradient formula</text>
+<polyline points="510.0,428.0 510.0,413.0 990.0,413.0 990.0,398.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="750.0,428.0 750.0,413.0 990.0,413.0 990.0,398.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="990.0,428.0 990.0,398.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="40" y="540" width="1320" height="150" rx="12" fill="#F6F7F9" stroke="#D5DAE1"/>
+<text x="60.0" y="568" font-size="17" text-anchor="start" fill="#1F2933" font-weight="700">2   Phase loop</text>
+<text x="196.0" y="568" font-size="13" text-anchor="start" fill="#52606D">Trainer: up to 8 phases. Each phase is one call of Evaluator.run_evaluation(phase, payload).</text>
+<polyline points="1230.0,398.0 1230.0,540.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="1240" y="532" font-size="12" fill="#52606D" text-anchor="start">for each phase</text>
+<rect x="63.0" y="585" width="140.0" height="50" rx="8" fill="#DCE9FB" stroke="#2F6FDB" stroke-width="1.5"/>
+<text x="133.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 1</text>
+<text x="133.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">Neutral → N</text>
+<rect x="225.0" y="585" width="140.0" height="50" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="295.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 2</text>
+<text x="295.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">N → AA</text>
+<polyline points="203.0,610.0 225.0,610.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="387.0" y="585" width="140.0" height="50" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="457.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 3</text>
+<text x="457.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">AA → T</text>
+<polyline points="365.0,610.0 387.0,610.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="549.0" y="585" width="140.0" height="50" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="619.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 4</text>
+<text x="619.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">T → IY</text>
+<polyline points="527.0,610.0 549.0,610.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="711.0" y="585" width="140.0" height="50" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="781.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 5</text>
+<text x="781.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">IY → V</text>
+<polyline points="689.0,610.0 711.0,610.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="873.0" y="585" width="140.0" height="50" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="943.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 6</text>
+<text x="943.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">V → N</text>
+<polyline points="851.0,610.0 873.0,610.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1035.0" y="585" width="140.0" height="50" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="1105.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 7</text>
+<text x="1105.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">N → Y</text>
+<polyline points="1013.0,610.0 1035.0,610.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1197.0" y="585" width="140.0" height="50" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="1267.0" y="603.3" font-size="12" text-anchor="middle" fill="#1F2933" font-weight="700">Phase 8</text>
+<text x="1267.0" y="623.9" font-size="13" text-anchor="middle" fill="#1F2933">Y → UW</text>
+<polyline points="1175.0,610.0 1197.0,610.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="225.0" y="660" font-size="12" text-anchor="start" fill="#52606D">Phase 1's target is whatever is in dataV22.py. Phases 2 to 8 are fixed in evaluator.py.</text>
+<text x="225.0" y="677" font-size="12" text-anchor="start" fill="#52606D">Each arrow is the payload: the pose a phase ends in is the pose the next one starts from.</text>
+<rect x="40" y="715" width="1320" height="400" rx="12" fill="#F6F7F9" stroke="#D5DAE1"/>
+<text x="60.0" y="743" font-size="17" text-anchor="start" fill="#1F2933" font-weight="700">3   Step loop</text>
+<text x="182.0" y="743" font-size="13" text-anchor="start" fill="#52606D">inside one phase, repeated about 36,800 times for Neutral → N</text>
+<polyline points="133.0,635.0 133.0,715.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="6 4"/>
+<text x="143" y="706" font-size="12" fill="#52606D" text-anchor="start">zoom into one phase</text>
+<rect x="60.0" y="778" width="236.0" height="160" rx="8" fill="#DCE9FB" stroke="#2F6FDB" stroke-width="1.5"/>
+<text x="178.0" y="828.1" font-size="15" text-anchor="middle" fill="#1F2933" font-weight="700">1   Look</text>
+<text x="178.0" y="848.8" font-size="12" text-anchor="middle" fill="#1F2933">Read the observation: where</text>
+<text x="178.0" y="865.4" font-size="12" text-anchor="middle" fill="#1F2933">the joints and the sampled</text>
+<text x="178.0" y="881.9" font-size="12" text-anchor="middle" fill="#1F2933">vertices are now, and where</text>
+<text x="178.0" y="898.5" font-size="12" text-anchor="middle" fill="#1F2933">the target pose wants them.</text>
+<rect x="316.0" y="778" width="236.0" height="160" rx="8" fill="#DCE9FB" stroke="#2F6FDB" stroke-width="1.5"/>
+<text x="434.0" y="811.6" font-size="15" text-anchor="middle" fill="#1F2933" font-weight="700">2   Decide</text>
+<text x="434.0" y="832.3" font-size="12" text-anchor="middle" fill="#1F2933">Work out which way to move.</text>
+<text x="434.0" y="848.8" font-size="12" text-anchor="middle" fill="#1F2933">Lips, ooc_l, ooc_r, frontalis:</text>
+<text x="434.0" y="865.4" font-size="12" text-anchor="middle" fill="#1F2933">a formula (skinning + Adam).</text>
+<text x="434.0" y="881.9" font-size="12" text-anchor="middle" fill="#1F2933">Jaw: a trial rotation in Maya,</text>
+<text x="434.0" y="898.5" font-size="12" text-anchor="middle" fill="#1F2933">refreshed every 10 steps.</text>
+<text x="434.0" y="915.1" font-size="12" text-anchor="middle" fill="#1F2933">Out: one action, 3,603 numbers.</text>
+<polyline points="296.0,858.0 316.0,858.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="572.0" y="778" width="236.0" height="160" rx="8" fill="#DDF3EA" stroke="#1E8E63" stroke-width="1.5"/>
+<text x="690.0" y="819.9" font-size="15" text-anchor="middle" fill="#1F2933" font-weight="700">3   Limit</text>
+<text x="690.0" y="840.5" font-size="12" text-anchor="middle" fill="#1F2933">env.step clips the action.</text>
+<text x="690.0" y="857.1" font-size="12" text-anchor="middle" fill="#1F2933">Lips: a small cap that eases in.</text>
+<text x="690.0" y="873.7" font-size="12" text-anchor="middle" fill="#1F2933">Jaw: an anatomical speed curve,</text>
+<text x="690.0" y="890.2" font-size="12" text-anchor="middle" fill="#1F2933">halved for the last 15%.</text>
+<text x="690.0" y="906.8" font-size="12" text-anchor="middle" fill="#1F2933">Finished tissues are frozen.</text>
+<polyline points="552.0,858.0 572.0,858.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="828.0" y="778" width="236.0" height="160" rx="8" fill="#FCE9D2" stroke="#C7751A" stroke-width="1.5"/>
+<text x="946.0" y="811.6" font-size="15" text-anchor="middle" fill="#1F2933" font-weight="700">4   Move</text>
+<text x="946.0" y="832.3" font-size="12" text-anchor="middle" fill="#1F2933">Maya moves only the joints</text>
+<text x="946.0" y="848.8" font-size="12" text-anchor="middle" fill="#1F2933">that changed and deforms</text>
+<text x="946.0" y="865.4" font-size="12" text-anchor="middle" fill="#1F2933">the muscle meshes.</text>
+<text x="946.0" y="881.9" font-size="12" text-anchor="middle" fill="#1F2933">Read sampled vertices back:</text>
+<text x="946.0" y="898.5" font-size="12" text-anchor="middle" fill="#1F2933">jaw every step, the others only</text>
+<text x="946.0" y="915.1" font-size="12" text-anchor="middle" fill="#1F2933">when their own joints moved.</text>
+<polyline points="808.0,858.0 828.0,858.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1084.0" y="778" width="236.0" height="160" rx="8" fill="#DDF3EA" stroke="#1E8E63" stroke-width="1.5"/>
+<text x="1202.0" y="828.1" font-size="15" text-anchor="middle" fill="#1F2933" font-weight="700">5   Measure</text>
+<text x="1202.0" y="848.8" font-size="12" text-anchor="middle" fill="#1F2933">Distance from each tissue's</text>
+<text x="1202.0" y="865.4" font-size="12" text-anchor="middle" fill="#1F2933">sampled vertices to its target:</text>
+<text x="1202.0" y="881.9" font-size="12" text-anchor="middle" fill="#1F2933">lips, jaw, ooc_l, ooc_r,</text>
+<text x="1202.0" y="898.5" font-size="12" text-anchor="middle" fill="#1F2933">frontalis.</text>
+<polyline points="1064.0,858.0 1084.0,858.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="60.0,948.0 60.0,954.0 552.0,954.0 552.0,948.0" fill="none" stroke="#52606D" stroke-width="1.2"/>
+<text x="306.0" y="972" font-size="12" text-anchor="middle" fill="#52606D">gradients: about 4 ms</text>
+<polyline points="572.0,948.0 572.0,954.0 1320.0,954.0 1320.0,948.0" fill="none" stroke="#52606D" stroke-width="1.2"/>
+<text x="860.0" y="972" font-size="12" text-anchor="middle" fill="#52606D">env.step: about 47 ms of the 52 ms a step takes</text>
+<polygon points="1202.0,990 1312,1042.0 1202.0,1094 1092,1042.0" fill="#DDF3EA" stroke="#1E8E63" stroke-width="1.5"/>
+<text x="1202.0" y="1029.2" font-size="12" text-anchor="middle" fill="#1F2933">All five within</text>
+<text x="1202.0" y="1045.8" font-size="12" text-anchor="middle" fill="#1F2933">10% of their start</text>
+<text x="1202.0" y="1062.4" font-size="12" text-anchor="middle" fill="#1F2933">distance?</text>
+<polyline points="1202.0,938.0 1202.0,990.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="1312.0,1042.0 1342.0,1042.0 1342.0,760.0 178.0,760.0 178.0,778.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="1332" y="753" font-size="12" fill="#52606D" text-anchor="end">not yet: next step</text>
+<rect x="640.0" y="1004" width="340.0" height="76" rx="8" fill="#E6EAF0" stroke="#5B6B7C" stroke-width="1.5"/>
+<text x="810.0" y="1028.4" font-size="14" text-anchor="middle" fill="#1F2933" font-weight="700">Phase done</text>
+<text x="810.0" y="1048.7" font-size="12" text-anchor="middle" fill="#1F2933">Save the moves, logs and plots.</text>
+<text x="810.0" y="1065.2" font-size="12" text-anchor="middle" fill="#1F2933">Hand the end pose to the next phase.</text>
+<polyline points="1092.0,1042.0 980.0,1042.0" fill="none" stroke="#52606D" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="1036" y="1034" font-size="12" fill="#52606D" text-anchor="start">yes</text>
+<text x="60.0" y="1030" font-size="12" text-anchor="start" fill="#52606D">Timings are from the 11/19 full run,</text>
+<text x="60.0" y="1047" font-size="12" text-anchor="start" fill="#52606D">before the lip read was skipped</text>
+<text x="60.0" y="1064" font-size="12" text-anchor="start" fill="#52606D">(step 4 used to read the lips every step).</text>
+<rect x="40" y="1140" width="1320" height="240" rx="12" fill="#F6F7F9" stroke="#D5DAE1"/>
+<text x="60.0" y="1168" font-size="17" text-anchor="start" fill="#1F2933" font-weight="700">What one phase looks like in time</text>
+<text x="372.0" y="1168" font-size="13" text-anchor="start" fill="#52606D">Neutral → N, 11/19 full run: 36,782 steps, 33.6 minutes</text>
+<text x="60.0" y="1232" font-size="14" text-anchor="start" fill="#1F2933" font-weight="700">Lips</text>
+<text x="60.0" y="1292" font-size="14" text-anchor="start" fill="#1F2933" font-weight="700">Jaw</text>
+<rect x="150.0" y="1212" width="30.7" height="34" rx="2" fill="#2F6FDB" stroke="#1F4FA3" stroke-width="1.5"/>
+<rect x="180.7" y="1212" width="1159.3" height="34" rx="2" fill="#ECEFF3" stroke="#B6BEC8" stroke-width="1.5"/>
+<text x="760.4" y="1232.8" font-size="12" text-anchor="middle" fill="#1F2933">at the target, sitting still and waiting for the jaw: about 35,800 steps</text>
+<polyline points="165.4,1212.0 165.4,1198.0" fill="none" stroke="#52606D" stroke-width="1.2"/>
+<text x="159.4" y="1194" font-size="12" text-anchor="start" fill="#52606D">moving: about 950 steps</text>
+<rect x="150.0" y="1272" width="129.4" height="34" rx="2" fill="#FDF3E3" stroke="#C7751A" stroke-width="1.5"/>
+<text x="214.7" y="1292.8" font-size="12" text-anchor="middle" fill="#1F2933">speeding up</text>
+<rect x="279.4" y="1272" width="770.0" height="34" rx="2" fill="#FCE9D2" stroke="#C7751A" stroke-width="1.5"/>
+<text x="664.4" y="1292.8" font-size="12" text-anchor="middle" fill="#1F2933">full speed: the anatomical limit on how fast a jaw can rotate</text>
+<rect x="1049.4" y="1272" width="290.6" height="34" rx="2" fill="#FDF3E3" stroke="#C7751A" stroke-width="1.5"/>
+<text x="1194.7" y="1292.8" font-size="12" text-anchor="middle" fill="#1F2933">half speed for the last 15%</text>
+<polyline points="150.0,1310.0 150.0,1318.0" fill="none" stroke="#52606D" stroke-width="1.2"/>
+<text x="150.0" y="1334" font-size="11" text-anchor="start" fill="#52606D">step 0</text>
+<polyline points="279.4,1310.0 279.4,1318.0" fill="none" stroke="#52606D" stroke-width="1.2"/>
+<text x="279.4" y="1334" font-size="11" text-anchor="middle" fill="#52606D">step 4,000</text>
+<polyline points="1049.4,1310.0 1049.4,1318.0" fill="none" stroke="#52606D" stroke-width="1.2"/>
+<text x="1049.4" y="1334" font-size="11" text-anchor="middle" fill="#52606D">step 27,800</text>
+<polyline points="1340.0,1310.0 1340.0,1318.0" fill="none" stroke="#52606D" stroke-width="1.2"/>
+<text x="1340.0" y="1334" font-size="11" text-anchor="end" fill="#52606D">step 36,782</text>
+<text x="60.0" y="1362" font-size="13" text-anchor="start" fill="#1F2933" font-weight="700">The lips need about 950 steps. The jaw's speed limit decides the other 35,800, which is 96% of the run time.</text>
+<rect x="40" y="1405" width="1320" height="108" rx="12" fill="#F6F7F9" stroke="#D5DAE1"/>
+<text x="60.0" y="1432" font-size="15" text-anchor="start" fill="#1F2933" font-weight="700">What a run leaves in the save folder</text>
+<rect x="60.0" y="1446" width="232.0" height="52" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="176.0" y="1466.3" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">log0.txt</text>
+<text x="176.0" y="1486.3" font-size="12" text-anchor="middle" fill="#1F2933">distances, every 200 steps</text>
+<rect x="322.0" y="1446" width="232.0" height="52" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="438.0" y="1466.3" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">step_timing.txt</text>
+<text x="438.0" y="1486.3" font-size="12" text-anchor="middle" fill="#1F2933">ms per step, every 1,000 steps</text>
+<rect x="584.0" y="1446" width="232.0" height="52" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="700.0" y="1466.3" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">final_epoch_action_list.pkl</text>
+<text x="700.0" y="1486.3" font-size="12" text-anchor="middle" fill="#1F2933">the moves: this is the controller</text>
+<rect x="846.0" y="1446" width="232.0" height="52" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="962.0" y="1466.3" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">Gradient plots</text>
+<text x="962.0" y="1486.3" font-size="12" text-anchor="middle" fill="#1F2933">saved once, when a phase ends</text>
+<rect x="1108.0" y="1446" width="232.0" height="52" rx="8" fill="#FFFFFF" stroke="#8A96A3" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="1224.0" y="1466.3" font-size="13" text-anchor="middle" fill="#1F2933" font-weight="700">output.prof</text>
+<text x="1224.0" y="1486.3" font-size="12" text-anchor="middle" fill="#1F2933">cProfile of the whole run</text>
+</svg>
